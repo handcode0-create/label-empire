@@ -8,6 +8,7 @@ export const ARTIST_SKILLS = ['voix', 'ecriture', 'charisme', 'scene', 'creativi
 export interface NewGameConfig {
   labelName: string
   logoId: string
+  founderPhoto?: string
   founderName: string
   nationality: string
   mainGenre: string
@@ -123,7 +124,7 @@ export interface GameState {
   ap: number // actions restantes cette semaine
   cash: number
   reputation: number
-  label: { name: string; logoId: string; hqCityId: string; currency: Currency; difficulty: Difficulty; founder: string; nationality: string; mainGenre: string }
+  label: { name: string; logoId: string; photo?: string; hqCityId: string; currency: Currency; difficulty: Difficulty; founder: string; nationality: string; mainGenre: string }
   staffSkills: Skills
   artists: Artist[] // artistes sous contrat (et fondateur)
   pool: Artist[] // artistes découvrables

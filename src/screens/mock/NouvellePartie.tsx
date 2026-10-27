@@ -2,6 +2,7 @@ import Chip from '../../components/Chip'
 import { useGame } from '../../store/gameStore'
 
 // Fichier généré par scripts/port-mockups.cjs depuis la maquette (NouvellePartie.dc.html).
+const readFile = (f: File | undefined, cb: (d: string) => void) => { if (!f) return; if (f.size > 1_500_000) { useGame.getState().say('Image trop lourde (1,5 Mo maximum).', 'err'); return } const r = new FileReader(); r.onload = () => cb(String(r.result)); r.readAsDataURL(f) }
 export default function NouvellePartie() {
   const c = useGame((st) => st.config)
   const patch = useGame((st) => st.patch)
@@ -21,14 +22,14 @@ export default function NouvellePartie() {
           <input id="nm" className="in" style={{marginTop: 6, fontSize: 18, fontWeight: 700}} value={c.labelName} onChange={(e) => patch({ labelName: e.target.value })} />
           <div className="lbl" style={{marginTop: 18}}>Logo</div>
           <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginTop: 10}}>
-            <div className="pn" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#FFC63D,#FF3D9A)', clipPath: 'polygon(50% 0,100% 50%,50% 100%,0 50%)'}} /></div>
-            <div className="pn sel" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0}}><div style={{width: 38, height: 38, borderRadius: '50%', border: '7px solid #FF3D9A', boxShadow: '0 0 14px rgba(255,61,154,0.6)'}} /></div>
-            <div className="pn" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0}}><div style={{width: 40, height: 40, background: 'linear-gradient(135deg,#35D3F0,#8B5CF6)', clipPath: 'polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%)'}} /></div>
-            <div className="pn" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#3DDC97,#35D3F0)', clipPath: 'polygon(50% 0,100% 100%,0 100%)'}} /></div>
-            <div className="pn" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#FF5470,#FFC63D)', borderRadius: 10, transform: 'rotate(45deg)'}} /></div>
-            <div className="pn" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0}}><div className="disp" style={{fontSize: 30, color: '#FFC63D'}}>SR</div></div>
-            <div className="pn" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#8B5CF6,#FF3D9A)', clipPath: 'polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)'}} /></div>
-            <a href="NouvellePartie.dc.html" className="pn" style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#B3A6D9', boxShadow: 'inset 0 0 0 2px var(--ln)', background: 'transparent'}}>Importer<br />mon logo</a>
+            <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'diamant' })} className={'pn' + (c.logoId === 'diamant' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#FFC63D,#FF3D9A)', clipPath: 'polygon(50% 0,100% 50%,50% 100%,0 50%)'}} /></div>
+            <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'anneau' })} className={'pn' + (c.logoId === 'anneau' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div style={{width: 38, height: 38, borderRadius: '50%', border: '7px solid #FF3D9A', boxShadow: '0 0 14px rgba(255,61,154,0.6)'}} /></div>
+            <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'hexagone' })} className={'pn' + (c.logoId === 'hexagone' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div style={{width: 40, height: 40, background: 'linear-gradient(135deg,#35D3F0,#8B5CF6)', clipPath: 'polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%)'}} /></div>
+            <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'triangle' })} className={'pn' + (c.logoId === 'triangle' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#3DDC97,#35D3F0)', clipPath: 'polygon(50% 0,100% 100%,0 100%)'}} /></div>
+            <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'losange' })} className={'pn' + (c.logoId === 'losange' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#FF5470,#FFC63D)', borderRadius: 10, transform: 'rotate(45deg)'}} /></div>
+            <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'monogramme' })} className={'pn' + (c.logoId === 'monogramme' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div className="disp" style={{fontSize: 30, color: '#FFC63D'}}>SR</div></div>
+            <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'blason' })} className={'pn' + (c.logoId === 'blason' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#8B5CF6,#FF3D9A)', clipPath: 'polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)'}} /></div>
+            <label className={'pn' + (c.logoId.startsWith('data:') ? ' sel' : '')} style={{cursor: 'pointer', height: 76, display: 'grid', placeItems: 'center', padding: 0, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#B3A6D9', boxShadow: 'inset 0 0 0 2px var(--ln)', background: 'transparent'}}>Importer<br />mon logo<input type="file" accept="image/*" hidden onChange={(e) => readFile(e.target.files?.[0], (d) => patch({ logoId: d }))} /></label>
           </div>
           <div className="mut" style={{fontSize: 13, marginTop: 10}}>Logos provisoires. Les logos du jeu seront ajoutés plus tard avec l'outil interne du studio.</div>
         </div>
@@ -41,8 +42,8 @@ export default function NouvellePartie() {
       <div className="pn cut" style={{position: 'absolute', left: 510, top: 112, width: 470, height: 676}}>
         <div className="lbl">Fondateur du label</div>
         <div style={{display: 'flex', alignItems: 'center', gap: 18, marginTop: 14}}>
-          <div className="av" style={{width: 112, height: 112, fontSize: 40, background: 'linear-gradient(135deg,#FF3D9A,#8B5CF6)', boxShadow: '0 0 0 4px var(--ln), 0 0 30px rgba(255,61,154,0.4)'}}>{c.founderName.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</div>
-          <div style={{display: 'flex', flexDirection: 'column', gap: 8}}><a href="NouvellePartie.dc.html" className="btn s sm">Choisir une photo</a><span className="mut" style={{fontSize: 13}}>Photo ou avatar. Facultatif.</span></div>
+          <div className="av" style={{width: 112, height: 112, fontSize: 40, background: 'linear-gradient(135deg,#FF3D9A,#8B5CF6)', boxShadow: '0 0 0 4px var(--ln), 0 0 30px rgba(255,61,154,0.4)'}}>{c.founderPhoto ? <img src={c.founderPhoto} alt="" style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%'}} /> : <>{c.founderName.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</>}</div>
+          <div style={{display: 'flex', flexDirection: 'column', gap: 8}}><label className="btn s sm" style={{cursor: 'pointer'}}>Choisir une photo<input type="file" accept="image/*" hidden onChange={(e) => readFile(e.target.files?.[0], (d) => patch({ founderPhoto: d }))} /></label><span className="mut" style={{fontSize: 13}}>Photo ou avatar. Facultatif.</span></div>
         </div>
         <label htmlFor="fn" className="mut" style={{fontSize: 13, display: 'block', marginTop: 18}}>Nom complet</label>
         <input id="fn" className="in" style={{marginTop: 6}} value={c.founderName} onChange={(e) => patch({ founderName: e.target.value })} />
@@ -62,7 +63,7 @@ export default function NouvellePartie() {
         <div className="pn cut">
           <div className="lbl">Aperçu</div>
           <div style={{display: 'flex', alignItems: 'center', gap: 14, marginTop: 12}}>
-            <div style={{width: 60, height: 60, display: 'grid', placeItems: 'center', background: '#2A1B4D', borderRadius: 14}}><div style={{width: 30, height: 30, borderRadius: '50%', border: '6px solid #FF3D9A'}} /></div>
+            <div style={{width: 60, height: 60, display: 'grid', placeItems: 'center', background: '#2A1B4D', borderRadius: 14, overflow: 'hidden'}}>{c.logoId.startsWith('data:') ? <img src={c.logoId} alt="Logo" style={{width: '100%', height: '100%', objectFit: 'cover'}} /> : <div style={{width: 30, height: 30, borderRadius: '50%', border: '6px solid #FF3D9A'}} />}</div>
             <div><div className="disp" style={{fontSize: 26, lineHeight: 1}}>{c.labelName}</div><div className="mut" style={{fontSize: 13}}>Fondé par {c.founderName} · {c.nationality} · {c.mainGenre.toLowerCase()}</div></div>
           </div>
           <div style={{display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap'}}><span className="tag ti">Réputation 15</span><span className="tag te">Artiste fondateur</span><span className="tag tg">Cash $120 000</span></div>
