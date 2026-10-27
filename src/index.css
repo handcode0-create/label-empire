@@ -1,2 +1,4 @@
 @import './le.css';
 html,body,#root{margin:0;height:100%;background:#0C0719}
+.chip{cursor:pointer}
+input,select{font-family:inherit}

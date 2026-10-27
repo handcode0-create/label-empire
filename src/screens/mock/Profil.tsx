@@ -1,4 +1,6 @@
 // Fichier généré par scripts/port-mockups.cjs depuis la maquette (Profil.dc.html).
+import Hud from '../../components/Hud'
+
 export default function Profil() {
   return (
     <div className="scr">
@@ -13,16 +15,7 @@ export default function Profil() {
         <a className="dk" href="Equipe.dc.html" aria-label="Équipe"><svg viewBox="0 0 24 24"><rect x={3} y={7} width={18} height={13} rx={2} /><path d="M9 7V5h6v2M3 13h18" /></svg>Équipe</a>
         <a className="dk" href="Finances.dc.html" aria-label="Finances"><svg viewBox="0 0 24 24"><path d="M3 7h16a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2V7zM3 7l2-3h12M16 14h2" /></svg>Finances</a>
       </nav>
-      <header className="hud">
-        <div className="av" style={{background: 'linear-gradient(135deg,#8B5CF6,#FF3D9A)'}}>SR</div>
-        <div><div className="disp" style={{fontSize: 22, lineHeight: 1}}>Savane Records</div><div className="lbl" style={{marginTop: 3}}>Palier 2 · Label national</div></div>
-        <div className="sp" />
-        <div className="coin"><i style={{background: '#FFC63D'}}>$</i><b>128 400</b></div>
-        <div className="coin"><i style={{background: '#8B5CF6', color: '#fff'}}>★</i><b>34</b><small>Réputation</small></div>
-        <div className="coin"><i style={{background: '#35D3F0'}}>♪</i><b>2,4 M</b><small>Fans</small></div>
-        <div className="coin"><i style={{background: '#3DDC97'}}>◆</i><b>4/6</b><small>Actions</small></div>
-        <div style={{textAlign: 'right'}}><div className="lbl">Semaine</div><div className="disp" style={{fontSize: 22, lineHeight: 1}}>14 · An 2</div></div>
-      </header>
+      <Hud />
       <div className="main" style={{padding: '0 0 0 0'}}>
         <div style={{position: 'relative', height: 300, overflow: 'hidden', background: 'radial-gradient(600px 300px at 18% 110%, rgba(139,92,246,0.7), transparent), radial-gradient(500px 260px at 90% -10%, rgba(255,61,154,0.55), transparent), linear-gradient(135deg,#2A1B4D,#0C0719)'}}>
           <div className="map" style={{position: 'absolute', inset: 0, opacity: '0.22'}}><div className="mk c" style={{left: '57.8%', top: '64.4%'}} /></div>

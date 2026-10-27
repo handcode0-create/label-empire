@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type MouseEvent } from 'react'
 import { SCREENS } from './screens/registry'
+import { useGame } from './store/gameStore'
 
 const W = 1440, H = 900
 
@@ -20,7 +21,13 @@ export default function App() {
   const ref = useRef<HTMLDivElement>(null)
   const Screen: ComponentType = SCREENS[screen] ?? SCREENS.Main
 
+  const [error, setError] = useState<string | null>(null)
   useEffect(() => { location.hash = screen }, [screen])
+  useEffect(() => {
+    const h = () => { const n = location.hash.slice(1); if (SCREENS[n]) setScreen(n) }
+    window.addEventListener('hashchange', h)
+    return () => window.removeEventListener('hashchange', h)
+  }, [])
 
   const onClick = (e: MouseEvent) => {
     const a = (e.target as HTMLElement).closest('a')
@@ -28,14 +35,29 @@ export default function App() {
     if (!a || !href) return
     e.preventDefault()
     const m = href.match(/^([A-Za-z0-9]+)\.dc\.html$/)
-    if (m && SCREENS[m[1]]) setScreen(m[1])
+    if (!m || !SCREENS[m[1]]) return
+    const target = m[1]
+    const store = useGame.getState()
+    if (screen === 'NouvellePartie' && target === 'NouvellePartie2') {
+      const c = store.config
+      if (!c.labelName.trim() || !c.founderName.trim()) { setError('Renseignez le nom du label et le nom du fondateur.'); return }
+    }
+    if (screen === 'NouvellePartie2' && target === 'Hub') {
+      const errs = store.errors()
+      if (errs.length) { setError(errs.join(' · ')); return }
+      store.start()
+    }
+    if (screen === 'Hub' && target === 'Rapport') store.nextWeek()
+    setError(null)
+    setScreen(target)
   }
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
       <div ref={ref} onClick={onClick} style={{ width: W * scale, height: H * scale }}>
-        <div style={{ width: W, height: H, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+        <div style={{ position: 'relative', width: W, height: H, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
           <Screen />
+          {error && <div role="alert" style={{ position: 'absolute', left: 0, right: 0, bottom: 110, textAlign: 'center', color: '#FF5470', fontWeight: 700, fontSize: 16 }}>{error}</div>}
         </div>
       </div>
     </div>
