@@ -17,7 +17,7 @@ const SAVE_KEY = 'label-empire-save-v1'
 const readSave = (): GameState | null => { try { const t = localStorage.getItem(SAVE_KEY); return t ? (JSON.parse(t) as GameState) : null } catch { return null } }
 const writeSave = (g: GameState | null) => { try { if (g) localStorage.setItem(SAVE_KEY, JSON.stringify(g)); else localStorage.removeItem(SAVE_KEY) } catch { /* stockage indisponible */ } }
 
-export interface Selection { candidateId: string | null; artistId: string | null; songId: string | null; cityId: string | null; studioId: string | null; week: number | null }
+export interface Selection { duelId: string | null; candidateId: string | null; artistId: string | null; songId: string | null; cityId: string | null; studioId: string | null; week: number | null }
 export interface Toast { id: number; text: string; tone: 'ok' | 'err' }
 export type Modal = null | 'options' | 'credits' | 'save'
 
@@ -27,6 +27,7 @@ interface Store {
   sel: Selection
   toast: Toast | null
   modal: Modal
+  scene: string | null
   options: { sound: boolean; autosave: boolean }
   patch: (p: Partial<NewGameConfig>) => void
   setSkill: (group: 'staffSkills' | 'artistSkills', key: string, delta: number) => void
@@ -42,6 +43,8 @@ interface Store {
   load: () => boolean
   quit: () => void
   setModal: (m: Modal) => void
+  playScene: (id: string) => void
+  endScene: () => void
   setOption: (k: 'sound' | 'autosave', v: boolean) => void
   go: (screen: string) => void
   freeMode: () => void
@@ -51,9 +54,10 @@ let toastId = 0
 export const useGame = create<Store>((set, get) => ({
   config: initial,
   game: null,
-  sel: { candidateId: null, artistId: null, songId: null, cityId: null, studioId: null, week: null },
+  sel: { duelId: null, candidateId: null, artistId: null, songId: null, cityId: null, studioId: null, week: null },
   toast: null,
   modal: null,
+  scene: null,
   options: { sound: true, autosave: true },
   patch: (p) => set((s) => ({ config: { ...s.config, ...p } })),
   setSkill: (group, key, delta) => set((s) => {
@@ -67,7 +71,7 @@ export const useGame = create<Store>((set, get) => ({
   start: () => {
     if (validateConfig(get().config).length) return false
     const g = createGame({ ...get().config, seed: Date.now() % 2 ** 31 })
-    set({ game: g, sel: { candidateId: null, artistId: null, songId: null, cityId: null, studioId: null, week: null } })
+    set({ game: g, sel: { duelId: null, candidateId: null, artistId: null, songId: null, cityId: null, studioId: null, week: null } })
     writeSave(g)
     return true
   },
@@ -98,11 +102,21 @@ export const useGame = create<Store>((set, get) => ({
   load: () => {
     const g = readSave()
     if (!g) { get().say('Aucune sauvegarde trouvée.', 'err'); return false }
-    set({ game: g })
+    set({ game: { ...g, tournament: g.tournament ?? null, seenScenes: g.seenScenes ?? [] } })
     return true
   },
   quit: () => { set({ game: null }) },
   setModal: (m) => set({ modal: m }),
+  playScene: (id) => set({ scene: id }),
+  endScene: () => {
+    const id = get().scene
+    const g = get().game
+    set({ scene: null })
+    if (!id || !g) return
+    const n = { ...g, seenScenes: [...new Set([...(g.seenScenes ?? []), id])] }
+    set({ game: n })
+    if (get().options.autosave) writeSave(n)
+  },
   setOption: (k, v) => set((s) => ({ options: { ...s.options, [k]: v } })),
   go: (screen) => { location.hash = screen },
   freeMode: () => {
@@ -115,3 +129,6 @@ export const useGame = create<Store>((set, get) => ({
 
 /** Raccourci pour les boutons : exécute fn ; reste sur l'écran si fn renvoie false. */
 export const guard = (fn: () => boolean | void) => (e: { preventDefault: () => void }) => { if (fn() === false) e.preventDefault() }
+
+// Outil de test en développement : permet aux scripts de navigateur de lire/écrire l'état.
+if (import.meta.env.DEV) (window as unknown as { __game: typeof useGame }).__game = useGame

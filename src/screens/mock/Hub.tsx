@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
-import { CITIES, CONTINENTS, cityById } from '../../data/world'
+import { CITIES, CONTINENTS } from '../../data/world'
 import { agenda, alerts, fansByCity, fansByContinent, projection } from '../../engine/selectors'
 import { guard, useGame } from '../../store/gameStore'
 import { compact, usd } from '../../lib'

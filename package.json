@@ -9,6 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
+    "avatars": "python3 tools/avatars/pack.py",
+    "avatar-prompts": "python3 tools/avatars/prompts.py",
     "logos": "python3 tools/logo_gen/logo_gen.py --presets --out public/logos"
   },
   "dependencies": {

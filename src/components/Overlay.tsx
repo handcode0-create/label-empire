@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+import { nextStoryScene } from '../data/story'
 import { useGame } from '../store/gameStore'
+import Cinematic from './Cinematic'
 
 /** Notifications (toast) et fenêtres modales (Options, Crédits). */
 export default function Overlay() {
@@ -7,8 +10,20 @@ export default function Overlay() {
   const setModal = useGame((s) => s.setModal)
   const options = useGame((s) => s.options)
   const setOption = useGame((s) => s.setOption)
+  const game = useGame((s) => s.game)
+  const scene = useGame((s) => s.scene)
+  const playScene = useGame((s) => s.playScene)
+  // Déclenche la prochaine scène de l'histoire, sauf pendant un battle ou une scène déjà ouverte.
+  useEffect(() => {
+    if (!game || scene || modal || game.outcome || location.hash === '#Battle') return
+    const next = nextStoryScene(game)
+    if (!next) return
+    const t = setTimeout(() => playScene(next.id), 500)
+    return () => clearTimeout(t)
+  }, [game, scene, modal, playScene])
   return (
     <>
+      <Cinematic />
       {toast && (
         <div role="status" style={{ position: 'absolute', left: '50%', bottom: 28, fontFamily: "'DM Sans', system-ui, sans-serif", transform: 'translateX(-50%)', zIndex: 50, maxWidth: 760, padding: '12px 22px', borderRadius: 14, fontWeight: 700, fontSize: 15, color: toast.tone === 'err' ? '#FFD3DB' : '#D6FFEA', background: toast.tone === 'err' ? 'rgba(90,16,40,.96)' : 'rgba(14,64,48,.96)', boxShadow: `inset 0 0 0 2px ${toast.tone === 'err' ? '#FF5470' : '#3DDC97'}, 0 10px 40px rgba(0,0,0,.5)` }}>
           {toast.text}

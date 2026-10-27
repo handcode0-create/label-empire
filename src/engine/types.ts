@@ -95,6 +95,18 @@ export interface Contest {
   startWeek: number; endWeek: number; status: 'ouvert' | 'termine'; finalists: string[]; candidates: number
 }
 
+export interface Duel { id: string; a: string; b: string; coached?: string; coachPoints?: number; scoreA?: number; scoreB?: number; winner?: string }
+export interface TournamentRound { name: string; duels: Duel[]; byes: string[] }
+export interface Tournament {
+  id: string; name: string; cityId: string; startWeek: number
+  status: 'recrutement' | 'en_cours' | 'choix' | 'termine'
+  entrants: Artist[]
+  rounds: TournamentRound[] // la dernière est la phase en cours
+  eliminated: string[]
+  winnerId?: string
+  favoriteId?: string // vainqueur du vote du public et du jury en finale
+}
+
 export interface StaffMember { id: string; name: string; role: string; cityId: string; level: number; salary: number; morale: number; skill: string }
 export interface Office { cityId: string; kind: 'siege' | 'bureau' | 'partenaire'; since: number }
 
@@ -129,6 +141,8 @@ export interface GameState {
   artists: Artist[] // artistes sous contrat (et fondateur)
   pool: Artist[] // artistes découvrables
   contests: Contest[]
+  tournament: Tournament | null
+  seenScenes: string[]
   songs: Song[]
   tours: Tour[]
   staff: StaffMember[]

@@ -1,4 +1,5 @@
 import Artistes from './mock/Artistes'
+import Battle from './mock/Battle'
 import Classements from './mock/Classements'
 import Concours from './mock/Concours'
 import Contrat from './mock/Contrat'
@@ -19,9 +20,11 @@ import Rapport from './mock/Rapport'
 import Sortie from './mock/Sortie'
 import Studio from './mock/Studio'
 import Tournee from './mock/Tournee'
+import Tournoi from './mock/Tournoi'
 
 export const SCREENS: Record<string, () => React.JSX.Element> = {
   Artistes,
+  Battle,
   Classements,
   Concours,
   Contrat,
@@ -42,4 +45,5 @@ export const SCREENS: Record<string, () => React.JSX.Element> = {
   Sortie,
   Studio,
   Tournee,
+  Tournoi,
 }

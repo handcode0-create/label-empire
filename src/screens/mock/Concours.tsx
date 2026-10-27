@@ -53,6 +53,7 @@ export default function Concours() {
             </div>
           </div>
           <div className="sp" />
+          <a href="Tournoi.dc.html" className="btn g" style={{height: 52}}>Grand Tournoi mondial</a>
           <a href="Decouverte.dc.html" className="btn" style={{height: 60}} onClick={(e) => { e.preventDefault(); if (run((s) => startContest(s, { name, cityId, format, budget, jury }))) say(`Concours « ${name} » lancé : finale dans 2 semaines.`) }}>Lancer le concours</a>
         </div>
         <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 14}}>

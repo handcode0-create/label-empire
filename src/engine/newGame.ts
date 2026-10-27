@@ -46,7 +46,7 @@ export function createGame(c: NewGameConfig): GameState {
     reputation: c.startReputation,
     label: { name: c.labelName, logoId: c.logoId, photo: c.founderPhoto, hqCityId: c.hqCityId, currency: c.currency, difficulty: c.difficulty, founder: c.founderName, nationality: c.nationality, mainGenre: c.mainGenre },
     staffSkills: full(STAFF_SKILLS, c.staffSkills),
-    artists, pool: [], contests: [], songs: [], tours: [], staff,
+    artists, pool: [], contests: [], tournament: null, seenScenes: [], songs: [], tours: [], staff,
     offices: [{ cityId: c.hqCityId, kind: 'siege', since: 1 }],
     pending: [], loan: null, event: null, report: null, cashHistory: [startingCash(c.startReputation, c.difficulty)], negWeeks: 0,
     outcome: null, freeMode: false, rngState: c.seed >>> 0, spent: 0, log: [],
