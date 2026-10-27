@@ -17,7 +17,7 @@ const SAVE_KEY = 'label-empire-save-v1'
 const readSave = (): GameState | null => { try { const t = localStorage.getItem(SAVE_KEY); return t ? (JSON.parse(t) as GameState) : null } catch { return null } }
 const writeSave = (g: GameState | null) => { try { if (g) localStorage.setItem(SAVE_KEY, JSON.stringify(g)); else localStorage.removeItem(SAVE_KEY) } catch { /* stockage indisponible */ } }
 
-export interface Selection { candidateId: string | null; artistId: string | null; songId: string | null; cityId: string | null; studioId: string | null }
+export interface Selection { candidateId: string | null; artistId: string | null; songId: string | null; cityId: string | null; studioId: string | null; week: number | null }
 export interface Toast { id: number; text: string; tone: 'ok' | 'err' }
 export type Modal = null | 'options' | 'credits' | 'save'
 
@@ -51,7 +51,7 @@ let toastId = 0
 export const useGame = create<Store>((set, get) => ({
   config: initial,
   game: null,
-  sel: { candidateId: null, artistId: null, songId: null, cityId: null, studioId: null },
+  sel: { candidateId: null, artistId: null, songId: null, cityId: null, studioId: null, week: null },
   toast: null,
   modal: null,
   options: { sound: true, autosave: true },
@@ -67,7 +67,7 @@ export const useGame = create<Store>((set, get) => ({
   start: () => {
     if (validateConfig(get().config).length) return false
     const g = createGame({ ...get().config, seed: Date.now() % 2 ** 31 })
-    set({ game: g, sel: { candidateId: null, artistId: null, songId: null, cityId: null, studioId: null } })
+    set({ game: g, sel: { candidateId: null, artistId: null, songId: null, cityId: null, studioId: null, week: null } })
     writeSave(g)
     return true
   },

@@ -43,7 +43,7 @@ export default function Hub() {
               const locked = c.minRep > g.reputation
               const cls = office ? (office.kind === 'partenaire' ? 'c' : 'g') : locked ? 'd' : ''
               const fans = cities[c.id] ?? 0
-              const nameY = ['abidjan', 'lagos', 'mumbai'].includes(c.id) ? 4 : 0
+              const nameY = ({ abidjan: 4, lagos: -4.4, london: -4, berlin: -3, paris: 2.5, mumbai: 4 } as Record<string, number>)[c.id] ?? 0
               return (
                 <div key={c.id}>
                   <div className={'mk ' + cls} role="button" tabIndex={0} aria-label={c.name} onClick={() => openCity(c.id)} style={{left: c.x + '%', top: c.y + '%', cursor: 'pointer', opacity: !office && !fans && !locked ? 0.65 : 1}} />

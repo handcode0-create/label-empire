@@ -1,45 +1,83 @@
-// Fichier généré par scripts/port-mockups.cjs depuis la maquette (Studio.dc.html).
+import { useState } from 'react'
 import Hud from '../../components/Hud'
+import Dock from '../../components/Dock'
+import { STUDIOS, SESSION_OPTIONS } from '../../data/people'
+import { cityById } from '../../data/world'
+import { bookStudio, recordingEstimate, studioAvailability, travelCost } from '../../engine/production'
+import { useGame } from '../../store/gameStore'
+import { currentSong, usd } from '../../lib'
+
+const STEPS = [['Ecriture', '1 Écrire'], ['Studio', '2 Enregistrer'], ['Mixage', '3 Mixer'], ['Sortie', '4 Sortir']]
+const CONTS = ['Afrique', 'Europe', 'Amérique', 'Asie', 'Océanie']
 
 export default function Studio() {
+  const g = useGame((s) => s.game)!
+  const { sel, run, select, go } = useGame()
+  const song = currentSong(g, sel.songId, ['written'])
+  const [cont, setCont] = useState<string | null>(null)
+  const [byQuality, setByQuality] = useState(true)
+  const [cheap, setCheap] = useState(false)
+  const [days, setDays] = useState(4)
+  const [studioId, setStudioId] = useState(sel.studioId ?? 'ebene')
+  if (!song) return (
+    <div className="scr"><Dock active="studio" /><Hud />
+      <div className="main"><div className="pn cut" style={{maxWidth: 620}}><div className="h2">Aucune chanson à enregistrer</div><p className="mut">Écrivez d'abord un titre : l'étape d'enregistrement s'applique à une chanson écrite.</p><a href="Ecriture.dc.html" className="btn">Écrire un titre</a></div></div></div>
+  )
+  const artist = g.artists.find((a) => a.id === song.artistId)!
+  const list = STUDIOS
+    .filter((s) => !cont || cityById(s.cityId).continent.startsWith(cont))
+    .filter((s) => !cheap || s.pricePerDay <= 2000)
+    .sort((a, b) => (byQuality ? b.quality - a.quality : a.pricePerDay - b.pricePerDay))
+  const st = STUDIOS.find((s) => s.id === studioId) ?? STUDIOS[0]
+  const sc = cityById(st.cityId)
+  const t = travelCost(artist.originCityId, st)
+  const est = recordingEstimate(g, song, st, days)
+  const av = studioAvailability(st, g.week)
+  const total = st.pricePerDay * days
+  const submit = () => { if (run((s) => bookStudio(s, song.id, st.id, days))) { select({ songId: song.id, studioId: st.id }); go('Mixage') } }
+  const written = g.songs.filter((s) => s.stage === 'written')
   return (
     <div className="scr">
-      <nav className="dock" aria-label="Navigation du jeu">
-        <div className="lg">LE</div>
-        <a className="dk" href="Hub.dc.html" aria-label="Monde"><svg viewBox="0 0 24 24"><circle cx={12} cy={12} r={9} /><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></svg>Monde</a>
-        <a className="dk" href="Artistes.dc.html" aria-label="Artistes"><svg viewBox="0 0 24 24"><circle cx={9} cy={8} r="3.2" /><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" /><circle cx="17.5" cy={9} r="2.5" /><path d="M17 14.2c2.4.3 4 2.2 4 5.3" /></svg>Artistes</a>
-        <a className="dk on" href="Ecriture.dc.html" aria-label="Studio"><svg viewBox="0 0 24 24"><rect x={9} y={3} width={6} height={11} rx={3} /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>Studio</a>
-        <a className="dk" href="Sortie.dc.html" aria-label="Sorties"><svg viewBox="0 0 24 24"><circle cx={12} cy={12} r={9} /><circle cx={12} cy={12} r={3} /></svg>Sorties</a>
-        <a className="dk" href="Classements.dc.html" aria-label="Classem."><svg viewBox="0 0 24 24"><path d="M5 20v-6M12 20V5M19 20v-10" /></svg>Classem.</a>
-        <a className="dk" href="Tournee.dc.html" aria-label="Tournées"><svg viewBox="0 0 24 24"><path d="M3 13l18-9-6 17-3-7-9-1z" /></svg>Tournées</a>
-        <a className="dk" href="Equipe.dc.html" aria-label="Équipe"><svg viewBox="0 0 24 24"><rect x={3} y={7} width={18} height={13} rx={2} /><path d="M9 7V5h6v2M3 13h18" /></svg>Équipe</a>
-        <a className="dk" href="Finances.dc.html" aria-label="Finances"><svg viewBox="0 0 24 24"><path d="M3 7h16a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2V7zM3 7l2-3h12M16 14h2" /></svg>Finances</a>
-      </nav>
+      <Dock active="studio" />
       <Hud />
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 780, display: 'flex', flexDirection: 'column', gap: 10}}>
-          <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}><span className="chip">1 Écrire</span><span className="chip on">2 Enregistrer</span><span className="chip">3 Mixer</span><span className="chip">4 Sortir</span></div>
-          <div style={{display: 'flex', alignItems: 'center', gap: 12}}><h1 className="h1" style={{fontSize: 36}}>Choisir le studio</h1><span className="sp" /><span className="tag ti">« Soleil d'Abidjan » · Kozen</span></div>
-          <div style={{display: 'flex', gap: 8, flexWrap: 'wrap'}}><span className="chip on">Tous les continents</span><span className="chip">Afrique</span><span className="chip">Europe</span><span className="chip">Amérique</span><span className="chip">Asie</span><span className="chip">Trié par qualité</span><span className="chip">Budget max $2 000</span></div>
-          <div style={{display: 'flex', flexDirection: 'column', gap: 6}}><a href="Studio.dc.html" className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Studio Ébène</b><div className="mut" style={{fontSize: 13}}>Abidjan, Côte d'Ivoire</div></div><span style={{color: '#FFC63D'}}>★★</span><b>$420/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>62</span><span className="tag tg">Disponible</span></a><a href="Studio.dc.html" className="pn sel" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Eko Sound Lab</b><div className="mut" style={{fontSize: 13}}>Lagos, Nigeria</div></div><span style={{color: '#FFC63D'}}>★★★</span><b>$900/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>74</span><span className="tag tg">Disponible</span></a><a href="Studio.dc.html" className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Maison Rivoli</b><div className="mut" style={{fontSize: 13}}>Paris, France</div></div><span style={{color: '#FFC63D'}}>★★★★</span><b>$1 800/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>83</span><span className="tag te">Dans 2 sem.</span></a><a href="Studio.dc.html" className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Sunset Rec</b><div className="mut" style={{fontSize: 13}}>Los Angeles, États-Unis</div></div><span style={{color: '#FFC63D'}}>★★★★★</span><b>$3 200/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>92</span><span className="tag te">Dans 5 sem.</span></a><a href="Studio.dc.html" className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Joburg Tapes</b><div className="mut" style={{fontSize: 13}}>Johannesburg, Afrique du Sud</div></div><span style={{color: '#FFC63D'}}>★★★</span><b>$1 100/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>78</span><span className="tag tg">Disponible</span></a><a href="Studio.dc.html" className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Cairo Vox</b><div className="mut" style={{fontSize: 13}}>Le Caire, Égypte</div></div><span style={{color: '#FFC63D'}}>★★★</span><b>$700/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>70</span><span className="tag tr_">Complet</span></a><a href="Studio.dc.html" className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Han River Studio</b><div className="mut" style={{fontSize: 13}}>Séoul, Corée du Sud</div></div><span style={{color: '#FFC63D'}}>★★★★</span><b>$2 400/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>88</span><span className="tag tg">Disponible</span></a><a href="Studio.dc.html" className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}><div><b>Mix Lab Dakar</b><div className="mut" style={{fontSize: 13}}>Dakar, Sénégal</div></div><span style={{color: '#FFC63D'}}>★★</span><b>$520/j</b><span className="num" style={{fontSize: 22, color: '#35D3F0'}}>66</span><span className="tag tg">Disponible</span></a></div>
-          <div className="mut" style={{fontSize: 13}}>8 studios sur 47 affichés. Les studios loin de l'artiste ajoutent voyage, visa et fatigue.</div>
+          <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>{STEPS.map(([s, l], i) => <a key={s} href={s + '.dc.html'} className={'chip' + (i === 1 ? ' on' : '')}>{l}</a>)}</div>
+          <div style={{display: 'flex', alignItems: 'center', gap: 12}}><h1 className="h1" style={{fontSize: 36}}>Choisir le studio</h1><span className="sp" />
+            <span className="tag ti" style={{cursor: written.length > 1 ? 'pointer' : 'default'}} onClick={() => { if (written.length > 1) select({ songId: written[(written.findIndex((w) => w.id === song.id) + 1) % written.length].id }) }}>« {song.title} » · {artist.stageName}{written.length > 1 ? ' ⇄' : ''}</span></div>
+          <div style={{display: 'flex', gap: 8, flexWrap: 'wrap'}}>
+            <span className={'chip' + (!cont ? ' on' : '')} style={{cursor: 'pointer'}} onClick={() => setCont(null)}>Tous les continents</span>
+            {CONTS.slice(0, 4).map((c) => <span key={c} className={'chip' + (cont === c ? ' on' : '')} style={{cursor: 'pointer'}} onClick={() => setCont(cont === c ? null : c)}>{c}</span>)}
+            <span className="chip on" style={{cursor: 'pointer'}} onClick={() => setByQuality(!byQuality)}>{byQuality ? 'Trié par qualité' : 'Trié par prix'}</span>
+            <span className={'chip' + (cheap ? ' on' : '')} style={{cursor: 'pointer'}} onClick={() => setCheap(!cheap)}>Budget max $2 000/j</span>
+          </div>
+          <div style={{display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 560, overflow: 'auto'}}>
+            {list.map((s) => { const a = studioAvailability(s, g.week); const c = cityById(s.cityId); return (
+              <a key={s.id} href="Studio.dc.html" onClick={(e) => { e.preventDefault(); setStudioId(s.id) }} className={'pn' + (s.id === st.id ? ' sel' : '')} style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}>
+                <div><b>{s.name}</b><div className="mut" style={{fontSize: 13}}>{c.name}, {c.country}</div></div>
+                <span style={{color: '#FFC63D'}}>{'★'.repeat(s.stars)}</span><b>{usd(s.pricePerDay)}/j</b>
+                <span className="num" style={{fontSize: 22, color: '#35D3F0'}}>{s.quality}</span>
+                <span className={'tag ' + (!a.open ? 'tr_' : a.wait ? 'te' : 'tg')}>{a.label}</span>
+              </a>) })}
+          </div>
+          <div className="mut" style={{fontSize: 13}}>{list.length} studios sur {STUDIOS.length} affichés. Les studios loin de l'artiste ajoutent voyage, visa et fatigue.</div>
         </div>
         <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 12}}>
-          <div className="map" style={{height: 190, position: 'relative'}}><div className="mk g" style={{left: '48.9%', top: '47.1%'}} /><div className="mk c" style={{left: '50.9%', top: '46.4%'}} /><div className="mk g" style={{left: '50.6%', top: '22.8%'}} /><div className="mk g" style={{left: '17.2%', top: '31.1%'}} /><div className="mk g" style={{left: '57.8%', top: '64.4%'}} /><div className="mk g" style={{left: '55.5%', top: '33%'}} /><div className="mk g" style={{left: '85.3%', top: '29.2%'}} /><div className="mk g" style={{left: '44.5%', top: '41%'}} /></div>
+          <div className="map" style={{height: 190, position: 'relative'}}>{list.map((s) => { const c = cityById(s.cityId); return <div key={s.id} className={'mk ' + (s.id === st.id ? 'c' : 'g')} style={{left: c.x + '%', top: c.y + '%', cursor: 'pointer'}} onClick={() => setStudioId(s.id)} /> })}</div>
           <div className="pn cut sel">
-            <div style={{display: 'flex', alignItems: 'baseline'}}><span className="h2" style={{fontSize: 28}}>Eko Sound Lab</span><span className="sp" /><span className="mut">Lagos</span></div>
-            <div style={{display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap'}}><span className="tag ti">Afrobeats</span><span className="tag ti">R&amp;B</span><span className="tag te">Producteur : Tayo Bello ★★★★</span></div>
+            <div style={{display: 'flex', alignItems: 'baseline'}}><span className="h2" style={{fontSize: 28}}>{st.name}</span><span className="sp" /><span className="mut">{sc.name}</span></div>
+            <div style={{display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap'}}>{st.genres.map((x) => <span key={x} className="tag ti">{x}</span>)}<span className="tag te">Producteur : {st.producer} {'★'.repeat(st.stars)}</span></div>
             <div className="lbl" style={{marginTop: 12}}>Durée de session</div>
-            <div style={{display: 'flex', gap: 8, marginTop: 8}}><span className="chip">2 jours</span><span className="chip on">4 jours</span><span className="chip">1 semaine</span></div>
+            <div style={{display: 'flex', gap: 8, marginTop: 8}}>{SESSION_OPTIONS.map((o) => <span key={o.days} className={'chip' + (days === o.days ? ' on' : '')} style={{cursor: 'pointer'}} onClick={() => setDays(o.days)}>{o.label}</span>)}</div>
             <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12, fontSize: 14}}>
-              <div><span className="tag tc">Certain</span><div style={{marginTop: 4}}>Studio $3 600 · voyage $420</div></div>
-              <div><span className="tag te">Estimé</span><div style={{marginTop: 4}}>Qualité de prise 74 à 78</div></div>
-              <div><span className="tag ti">Incertain</span><div style={{marginTop: 4}}>Alchimie avec Tayo Bello</div></div>
-              <div><span className="tag tr_">Risque</span><div style={{marginTop: 4}}>Fatigue +12 après le voyage</div></div>
+              <div><span className="tag tc">Certain</span><div style={{marginTop: 4}}>Studio {usd(total)}{t.travel ? ` · voyage ${usd(t.travel)}` : ''}{t.visa ? ` · visa ${usd(t.visa)}` : ''}</div></div>
+              <div><span className="tag te">Estimé</span><div style={{marginTop: 4}}>Qualité de prise {est.low} à {est.high}</div></div>
+              <div><span className="tag ti">Incertain</span><div style={{marginTop: 4}}>{av.open ? `Alchimie avec ${st.producer}${av.wait ? ` · disponible dans ${av.wait} sem.` : ''}` : 'Studio complet cette semaine'}</div></div>
+              <div><span className="tag tr_">Risque</span><div style={{marginTop: 4}}>{est.fatigue ? `Fatigue +${est.fatigue} après le voyage` : 'Faible : studio dans sa ville'}</div></div>
             </div>
           </div>
           <div className="sp" />
-          <div style={{display: 'flex', gap: 12}}><a href="Ecriture.dc.html" className="btn s">Retour</a><a href="Mixage.dc.html" className="btn" style={{flex: 1, height: 60}}>Lancer l'enregistrement</a></div>
+          <div style={{display: 'flex', gap: 12}}><a href="Ecriture.dc.html" className="btn s">Retour</a><a href="Mixage.dc.html" className="btn" style={{flex: 1, height: 60}} onClick={(e) => { e.preventDefault(); submit() }}>Lancer l'enregistrement</a></div>
         </div>
       </div>
     </div>

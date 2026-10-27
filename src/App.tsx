@@ -20,7 +20,15 @@ export default function App() {
   const [screen, setScreen] = useState<string>(() => location.hash.slice(1) || 'Main')
   const scale = useScale()
   const ref = useRef<HTMLDivElement>(null)
-  const Screen: ComponentType = SCREENS[screen] ?? SCREENS.Main
+  const game = useGame((s) => s.game)
+  const needsGame = !['Main', 'Menu', 'NouvellePartie', 'NouvellePartie2'].includes(screen)
+  // Un écran de jeu sans partie en mémoire : on recharge la sauvegarde, sinon retour au menu.
+  const missing = needsGame && !game
+  useEffect(() => {
+    if (!missing) return
+    if (!useGame.getState().load()) setScreen('Menu')
+  }, [missing])
+  const Screen: ComponentType = missing ? SCREENS.Menu : (SCREENS[screen] ?? SCREENS.Main)
 
   const [error, setError] = useState<string | null>(null)
   useEffect(() => { location.hash = screen }, [screen])

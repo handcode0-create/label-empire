@@ -10,7 +10,7 @@ export default function Overlay() {
   return (
     <>
       {toast && (
-        <div role="status" style={{ position: 'absolute', left: '50%', top: 84, transform: 'translateX(-50%)', zIndex: 50, maxWidth: 760, padding: '12px 22px', borderRadius: 14, fontWeight: 700, fontSize: 15, color: toast.tone === 'err' ? '#FFD3DB' : '#D6FFEA', background: toast.tone === 'err' ? 'rgba(90,16,40,.96)' : 'rgba(14,64,48,.96)', boxShadow: `inset 0 0 0 2px ${toast.tone === 'err' ? '#FF5470' : '#3DDC97'}, 0 10px 40px rgba(0,0,0,.5)` }}>
+        <div role="status" style={{ position: 'absolute', left: '50%', bottom: 28, fontFamily: "'DM Sans', system-ui, sans-serif", transform: 'translateX(-50%)', zIndex: 50, maxWidth: 760, padding: '12px 22px', borderRadius: 14, fontWeight: 700, fontSize: 15, color: toast.tone === 'err' ? '#FFD3DB' : '#D6FFEA', background: toast.tone === 'err' ? 'rgba(90,16,40,.96)' : 'rgba(14,64,48,.96)', boxShadow: `inset 0 0 0 2px ${toast.tone === 'err' ? '#FF5470' : '#3DDC97'}, 0 10px 40px rgba(0,0,0,.5)` }}>
           {toast.text}
         </div>
       )}
