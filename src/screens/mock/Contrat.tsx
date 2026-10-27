@@ -1,57 +1,76 @@
-// Fichier généré par scripts/port-mockups.cjs depuis la maquette (Contrat.dc.html).
+import { useMemo, useState } from 'react'
 import Hud from '../../components/Hud'
+import Dock from '../../components/Dock'
+import Slider from '../../components/Slider'
+import { cityById } from '../../data/world'
+import { evaluateOffer, renegotiate, signArtist, type Offer } from '../../engine/scouting'
+import { sum } from '../../engine/util'
+import type { Artist } from '../../engine/types'
+import { useGame } from '../../store/gameStore'
+import { compact, initials, stars, usd } from '../../lib'
+
+const SCOPES = [['local', 'Un pays'], ['region', 'Continent'], ['monde', 'Monde']] as const
+const years = (w: number) => (w % 52 === 0 ? `${w / 52} an${w > 52 ? 's' : ''}` : `${w} sem.`)
 
 export default function Contrat() {
+  const g = useGame((s) => s.game)!
+  const { sel, run, select, go } = useGame()
+  const cand = g.pool.find((x) => x.id === sel.candidateId)
+  const existing = !cand ? g.artists.find((x) => x.id === sel.artistId && x.contract) : undefined
+  const base: Artist | undefined = cand ?? (existing ? { ...existing, asking: { advance: Math.max(2000, existing.contract!.advance), royalty: existing.contract!.royalty, weeks: 104 } } : undefined)
+  const [offer, setOffer] = useState<Offer | null>(null)
+  const o: Offer | null = offer ?? (base ? { advance: base.asking!.advance, royalty: base.asking!.royalty, weeks: base.asking!.weeks, scope: existing?.contract?.scope ?? 'region' } : null)
+  const ev = useMemo(() => (base && o ? evaluateOffer(g, base, o) : null), [g, base, o])
+  if (!base || !o || !ev) return (
+    <div className="scr"><Dock active="artistes" /><Hud /><div className="main"><div className="pn cut" style={{maxWidth: 600}}><div className="h2">Aucun contrat à négocier</div><p className="mut">Choisissez un artiste depuis la liste de découverte ou « Mes artistes ».</p><a href="Artistes.dc.html" className="btn">Mes artistes</a></div></div></div>
+  )
+  const c = cityById(base.originCityId)
+  const set = (p: Partial<Offer>) => setOffer({ ...o, ...p })
+  const ask = base.asking!
+  const labelShare = Math.round((1 - o.royalty) * 100)
+  const submit = () => {
+    const done = existing ? run((s) => renegotiate(s, existing.id, o)) : run((s) => signArtist(s, base.id, o))
+    if (done) { select({ artistId: base.id, candidateId: null }); go('Artistes') }
+  }
+  const chanceTone = ev.chance === 'Probable' ? 'tg' : ev.chance === 'Incertain' ? 'te' : 'tr_'
   return (
     <div className="scr">
-      <nav className="dock" aria-label="Navigation du jeu">
-        <div className="lg">LE</div>
-        <a className="dk" href="Hub.dc.html" aria-label="Monde"><svg viewBox="0 0 24 24"><circle cx={12} cy={12} r={9} /><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></svg>Monde</a>
-        <a className="dk on" href="Artistes.dc.html" aria-label="Artistes"><svg viewBox="0 0 24 24"><circle cx={9} cy={8} r="3.2" /><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" /><circle cx="17.5" cy={9} r="2.5" /><path d="M17 14.2c2.4.3 4 2.2 4 5.3" /></svg>Artistes</a>
-        <a className="dk" href="Studio.dc.html" aria-label="Studio"><svg viewBox="0 0 24 24"><rect x={9} y={3} width={6} height={11} rx={3} /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>Studio</a>
-        <a className="dk" href="Sortie.dc.html" aria-label="Sorties"><svg viewBox="0 0 24 24"><circle cx={12} cy={12} r={9} /><circle cx={12} cy={12} r={3} /></svg>Sorties</a>
-        <a className="dk" href="Classements.dc.html" aria-label="Classements"><svg viewBox="0 0 24 24"><path d="M5 20v-6M12 20V5M19 20v-10" /></svg>Classem.</a>
-        <a className="dk" href="Tournee.dc.html" aria-label="Tournées"><svg viewBox="0 0 24 24"><path d="M3 13l18-9-6 17-3-7-9-1z" /></svg>Tournées</a>
-        <a className="dk" href="Equipe.dc.html" aria-label="Équipe"><svg viewBox="0 0 24 24"><rect x={3} y={7} width={18} height={13} rx={2} /><path d="M9 7V5h6v2M3 13h18" /></svg>Équipe</a>
-        <a className="dk" href="Finances.dc.html" aria-label="Finances"><svg viewBox="0 0 24 24"><path d="M3 7h16a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2V7zM3 7l2-3h12M16 14h2" /></svg>Finances</a>
-      </nav>
+      <Dock active="artistes" />
       <Hud />
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 470, display: 'flex', flexDirection: 'column', gap: 14}}>
-          <div className="pn cut" style={{height: 330, padding: 0, overflow: 'hidden', background: 'radial-gradient(300px 220px at 50% 40%, rgba(139,92,246,0.55), transparent), #1C1236'}}>
+          <div className="pn cut" style={{height: 330, padding: 0, overflow: 'hidden', background: 'radial-gradient(300px 220px at 50% 40%, rgba(139,92,246,0.55), transparent), #1C1236', position: 'relative'}}>
             <div className="map" style={{position: 'absolute', inset: 0, opacity: '0.25'}} />
-            <div className="av" style={{position: 'absolute', left: 160, top: 52, width: 150, height: 150, fontSize: 56, background: 'linear-gradient(135deg,#35D3F0,#8B5CF6)'}}>ZD</div>
-            <div style={{position: 'absolute', left: 24, bottom: 20}}><div className="lbl">Artiste à signer</div><div className="disp" style={{fontSize: 42, lineHeight: 1}}>ZOLA DUBE</div><div className="mut" style={{fontSize: 14}}>Johannesburg, Afrique du Sud · amapiano, house</div></div>
-            <span className="tag tc" style={{position: 'absolute', right: 20, top: 20}}>Potentiel : ★★★★★</span>
+            <div className="av" style={{position: 'absolute', left: 160, top: 52, width: 150, height: 150, fontSize: 56, background: `linear-gradient(135deg,${base.gradient})`}}>{initials(base.stageName)}</div>
+            <div style={{position: 'absolute', left: 24, bottom: 20}}><div className="lbl">{existing ? 'Contrat à renégocier' : 'Artiste à signer'}</div><div className="disp" style={{fontSize: 42, lineHeight: 1}}>{base.stageName.toUpperCase()}</div><div className="mut" style={{fontSize: 14}}>{c.name}, {c.country} · {base.genre.toLowerCase()}</div></div>
+            <span className="tag tc" style={{position: 'absolute', right: 20, top: 20}}>Potentiel : {stars(base.potential)}</span>
           </div>
-          <div className="bub"><span className="tag ti" style={{marginRight: 8}}>Attentif</span>« Je veux une avance solide et un contrat qui couvre l'Afrique et l'Europe. »</div>
+          <div className="bub"><span className="tag ti" style={{marginRight: 8}}>Attentif</span>« {base.rivalInterest ? "J'ai d'autres propositions. Soyez à la hauteur." : 'Je veux une avance correcte et un contrat qui me permette de grandir.'} »</div>
           <div className="pn" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 14}}>
-            <div><div className="lbl">Ego</div><div style={{marginTop: 4}}>Élevé</div></div>
-            <div><div className="lbl">Fiabilité</div><div style={{marginTop: 4}}>Moyenne</div></div>
-            <div><div className="lbl">Langues</div><div style={{marginTop: 4}}>Anglais, zoulou</div></div>
-            <div><div className="lbl">Fans actuels</div><div style={{marginTop: 4}}>210 k, surtout Afrique australe</div></div>
+            <div><div className="lbl">Ego</div><div style={{marginTop: 4}}>{base.traits.some((t) => /Ambitieux|Exigeant/.test(t)) ? 'Élevé' : 'Moyen'}</div></div>
+            <div><div className="lbl">Moral</div><div style={{marginTop: 4}}>{Math.round(base.morale)}</div></div>
+            <div><div className="lbl">Langues</div><div style={{marginTop: 4}}>{base.lang}</div></div>
+            <div><div className="lbl">Fans actuels</div><div style={{marginTop: 4}}>{compact(sum(base.fans))}</div></div>
           </div>
         </div>
         <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 14}}>
-          <h1 className="h1">Négocier le contrat</h1>
+          <div style={{display: 'flex', alignItems: 'center', gap: 14}}><h1 className="h1">{existing ? 'Renégocier le contrat' : 'Négocier le contrat'}</h1><span className={'tag ' + chanceTone}>Chances d'acceptation : {ev.chance}</span></div>
           <div className="pn" style={{display: 'grid', gridTemplateColumns: '140px 1fr 110px', gap: '22px 16px', alignItems: 'center'}}>
-            <span>Durée</span><div className="sl"><i style={{width: '50%'}} /><u style={{left: '50%'}} /></div><b style={{textAlign: 'right'}}>3 ans</b>
-            <span>Avance</span><div className="sl"><i style={{width: '36%'}} /><u style={{left: '36%'}} /></div><b style={{textAlign: 'right', color: '#FFC63D'}}>$18 000</b>
-            <span>Part du label</span><div className="sl"><i style={{width: '62%'}} /><u style={{left: '62%'}} /></div><b style={{textAlign: 'right'}}>55 %</b>
-            <span>Titres exigés</span><div className="sl"><i style={{width: '56%'}} /><u style={{left: '56%'}} /></div><b style={{textAlign: 'right'}}>8 titres</b>
-            <span>Territoires</span><div style={{display: 'flex', gap: 8}}><span className="chip">Un pays</span><span className="chip on">Continent</span><span className="chip">Monde</span></div><b style={{textAlign: 'right'}}>Afrique + Europe</b>
+            <span>Durée</span><Slider min={26} max={156} step={26} value={o.weeks} onChange={(v) => set({ weeks: v })} /><b style={{textAlign: 'right'}}>{years(o.weeks)}</b>
+            <span>{existing ? 'Prime de signature' : 'Avance'}</span><Slider min={0} max={Math.max(ask.advance * 3, 10000)} step={500} value={o.advance} onChange={(v) => set({ advance: v })} /><b style={{textAlign: 'right', color: '#FFC63D'}}>{usd(o.advance)}</b>
+            <span>Part du label</span><Slider min={30} max={80} step={1} value={labelShare} onChange={(v) => set({ royalty: 1 - v / 100 })} /><b style={{textAlign: 'right'}}>{labelShare} %</b>
+            <span>Territoires</span><div style={{display: 'flex', gap: 8}}>{SCOPES.map(([k, l]) => <span key={k} className={'chip' + (o.scope === k ? ' on' : '')} style={{cursor: 'pointer'}} onClick={() => set({ scope: k })}>{l}</span>)}</div><b style={{textAlign: 'right'}}>{o.scope === 'local' ? 'Un pays' : o.scope === 'region' ? 'Continent' : 'Monde'}</b>
           </div>
           <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
-            <div className="pn"><span className="tag tc">Certain</span><div style={{marginTop: 8}}><b>Coût immédiat</b><div className="mut" style={{fontSize: 14}}>$18 000 versés à la signature</div></div></div>
-            <div className="pn"><span className="tag te">Estimé</span><div style={{marginTop: 8}}><b>Revenus sur 3 ans</b><div className="mut" style={{fontSize: 14}}>de $210 000 à $340 000 pour le label</div></div></div>
-            <div className="pn"><span className="tag ti">Incertain</span><div style={{marginTop: 8}}><b>Acceptation</b><div className="mut" style={{fontSize: 14}}>Dépend de son ego et d'un label rival intéressé</div></div></div>
-            <div className="pn"><span className="tag tr_">Risque moyen</span><div style={{marginTop: 8}}><b>Moral</b><div className="mut" style={{fontSize: 14}}>Une part de 55 % peut réduire sa fidélité</div></div></div>
+            {ev.tags.map((t, i) => (
+              <div key={i} className="pn"><span className={'tag ' + ({ Certain: 'tc', Estimé: 'te', Incertain: 'ti', Risque: 'tr_' } as const)[t.tag]}>{t.tag}</span><div style={{marginTop: 8}}><div className="mut" style={{fontSize: 14}}>{t.text}</div></div></div>
+            ))}
           </div>
           <div className="sp" />
           <div style={{display: 'flex', gap: 14, justifyContent: 'flex-end', alignItems: 'center'}}>
-            <span className="mut" style={{fontSize: 14}}>Cette proposition coûte 1 action sur 4.</span>
-            <a href="Artistes.dc.html" className="btn s">Annuler</a>
-            <a href="Artistes.dc.html" className="btn" style={{height: 60}}>Proposer le contrat</a>
+            <span className="mut" style={{fontSize: 14}}>Cette proposition coûte 1 action ({g.ap}/6 restantes).</span>
+            <a href="Artistes.dc.html" className="btn s" onClick={(e) => { e.preventDefault(); go(existing ? 'Artistes' : 'Profil') }}>Annuler</a>
+            <a href="Artistes.dc.html" className="btn" style={{height: 60}} onClick={(e) => { e.preventDefault(); submit() }}>{existing ? 'Proposer la révision' : 'Proposer le contrat'}</a>
           </div>
         </div>
       </div>

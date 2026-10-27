@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType, type MouseEvent } from 'react'
 import { SCREENS } from './screens/registry'
 import { useGame } from './store/gameStore'
+import Overlay from './components/Overlay'
 
 const W = 1440, H = 900
 
@@ -30,6 +31,7 @@ export default function App() {
   }, [])
 
   const onClick = (e: MouseEvent) => {
+    if (e.defaultPrevented) return // une action a refusé la navigation
     const a = (e.target as HTMLElement).closest('a')
     const href = a?.getAttribute('href')
     if (!a || !href) return
@@ -47,7 +49,6 @@ export default function App() {
       if (errs.length) { setError(errs.join(' · ')); return }
       store.start()
     }
-    if (screen === 'Hub' && target === 'Rapport') store.nextWeek()
     setError(null)
     setScreen(target)
   }
@@ -57,6 +58,7 @@ export default function App() {
       <div ref={ref} onClick={onClick} style={{ width: W * scale, height: H * scale }}>
         <div style={{ position: 'relative', width: W, height: H, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
           <Screen />
+          <Overlay />
           {error && <div role="alert" style={{ position: 'absolute', left: 0, right: 0, bottom: 110, textAlign: 'center', color: '#FF5470', fontWeight: 700, fontSize: 16 }}>{error}</div>}
         </div>
       </div>
