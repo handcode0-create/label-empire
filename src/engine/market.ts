@@ -1,4 +1,5 @@
 import { RIVAL_ARTISTS, RIVAL_LABELS, RIVAL_TITLES } from '../data/people'
+import { mediaById, mediaReaches } from '../data/media'
 import { CITIES, affinity, cityById, type City } from '../data/world'
 import { createRng, hash } from './rng'
 import type { ChartRow, GameState, Song } from './types'
@@ -13,6 +14,16 @@ function locBoost(song: Song, city: City) {
   if (loc.includes('amapiano') && city.region === 'afrique-australe') b += 0.3
   if (loc.includes('clip')) b += 0.12
   return b
+}
+function mediaBoost(song: Song, city: City) {
+  let b = 0
+  const q = (song.quality ?? 50) / 100
+  for (const id of song.release?.media ?? []) {
+    const m = mediaById(id)
+    if (!m || !mediaReaches(m, city)) continue
+    b += m.boost * (0.6 + 0.4 * q) * (m.genres.includes(song.genre) ? 1.15 : 1)
+  }
+  return Math.min(0.7, b)
 }
 function officeBoost(s: GameState, city: City) {
   let b = 0
@@ -32,10 +43,10 @@ export function weeklyStreams(s: GameState, song: Song, city: City, week: number
   const t = week - r.week
   const decay = t === 0 ? 0.9 : t === 1 ? 1 : Math.max(0.04, Math.pow(0.86, t - 1))
   const q = song.quality / 100
-  const fans = fansInCity(s, city.id)
+  const fans = fansInCity(s, city.id) + (song.feat?.fans[city.id] ?? 0) * 0.5
   const fanF = Math.min(1, fans / (city.base * 0.15))
   const promoF = Math.min(0.8, r.promo / r.cityIds.length / (city.base * 0.004)) + staffSkill(s, 'marketing') * 0.02
-  const M = promoF + locBoost(song, city) + officeBoost(s, city)
+  const M = promoF + locBoost(song, city) + officeBoost(s, city) + mediaBoost(song, city)
   const direct = r.cityIds.includes(city.id)
   const base = city.base * 0.25 * q * q * affinity(song.genre, city) * (1 + M) * (1 + fanF) * decay * (1 + song.hype)
   if (direct) return base
@@ -49,7 +60,7 @@ export function weeklyStreams(s: GameState, song: Song, city: City, week: number
   return diffusion
 }
 
-export const royaltyShare = (s: GameState, song: Song) => s.artists.find((a) => a.id === song.artistId)?.contract?.royalty ?? 0
+export const royaltyShare = (s: GameState, song: Song) => (s.artists.find((a) => a.id === song.artistId)?.contract?.royalty ?? 0) + (song.feat?.share ?? 0)
 
 // ---------- classements ----------
 function rivalRow(cityId: string, week: number, i: number) {

@@ -10,3 +10,5 @@ export function currentSong(g: GameState, id: string | null, stages: Song['stage
   if (s && stages.includes(s.stage)) return s
   return [...g.songs].reverse().find((x) => stages.includes(x.stage))
 }
+/** Titre affiché, avec le partenaire d'un feat. */
+export const songName = (s: { title: string; feat?: { name: string } }) => (s.feat ? `${s.title} (feat. ${s.feat.name})` : s.title)

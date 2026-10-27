@@ -1,12 +1,19 @@
+import { mediaById } from '../data/media'
 import { LOC_OPTIONS, MASTERING, MIX_OPTIONS, SESSION_OPTIONS, studioById, STUDIOS, type Studio } from '../data/people'
 import { CITIES, cityById } from '../data/world'
 import { hash } from './rng'
 import { songQuality } from './quality'
-import type { GameState, Result, Song, SongRelease } from './types'
+import type { Artist, Feat, GameState, Result, Song, SongRelease } from './types'
 import { clamp, clone, drawRng, fail, money, ok, spend, staffSkill, useAp } from './util'
 
-export interface SongDraft { title: string; artistId: string; genre: string; theme: string; lang: string; mood: string; lyrics: string; writer: 'artiste' | 'externe' }
+export interface SongDraft { title: string; artistId: string; genre: string; theme: string; lang: string; mood: string; lyrics: string; writer: 'artiste' | 'externe'; feat?: { kind: 'label' | 'externe'; id: string } }
 export const EXTERNAL_WRITER_COST = 2000
+/** Cachet d'un artiste externe pour un feat : selon le potentiel et la notoriété. */
+export const featFee = (a: Artist) => Math.max(1500, Math.round((a.potential * a.potential * 500 + Object.values(a.fans).reduce((t, v) => t + v, 0) * 0.02) / 100) * 100)
+export const featBonus = (a: Artist) => clamp(Math.round(((a.skills.voix ?? 0) + (a.skills.charisme ?? 0)) / 2 * 0.1 + a.potential * 0.8 - 3), 0, 9)
+export function makeFeat(a: Artist, external: boolean): Feat {
+  return { name: a.stageName, artistId: external ? undefined : a.id, poolId: external ? a.id : undefined, cityId: a.originCityId, fee: external ? featFee(a) : 0, share: external ? 0.12 : 0, bonus: featBonus(a), fans: { ...a.fans } }
+}
 export const words = (t: string) => t.trim().split(/\s+/).filter(Boolean).length
 
 export function lyricsEstimate(s: GameState, d: Pick<SongDraft, 'artistId' | 'lyrics' | 'writer' | 'theme'>) {
@@ -33,16 +40,24 @@ export function writeSong(s0: GameState, d: SongDraft): Result {
   if (words(d.lyrics) < 8) return fail(s0, 'Écrivez au moins quelques lignes de paroles (8 mots minimum).')
   const e = useAp(s)
   if (e) return fail(s0, e)
+  let feat: Feat | undefined
+  if (d.feat) {
+    const partner = d.feat.kind === 'label' ? s.artists.find((x) => x.id === d.feat!.id) : s.pool.find((x) => x.id === d.feat!.id)
+    if (!partner) return fail(s0, 'Partenaire du feat introuvable.')
+    if (partner.id === d.artistId) return fail(s0, 'Un artiste ne peut pas faire un feat avec lui-même.')
+    feat = makeFeat(partner, d.feat.kind === 'externe')
+  }
   if (d.writer === 'externe') { const e2 = spend(s, EXTERNAL_WRITER_COST, 'Auteur externe'); if (e2) return fail(s0, e2) }
+  if (feat && feat.fee > 0) { const e3 = spend(s, feat.fee, `Feat avec ${feat.name}`); if (e3) return fail(s0, e3) }
   const rng = drawRng(s)
   const est = lyricsEstimate(s, d)
   const song: Song = {
     id: `s-${s.week}-${rng.int(1000, 9999)}`, title: d.title.trim(), artistId: d.artistId, genre: d.genre, theme: d.theme, lang: d.lang, mood: d.mood, lyrics: d.lyrics, writer: d.writer,
-    lyricsQ: clamp(est.ecriture + rng.int(-4, 4), 10, 98), mastering: false, stage: 'written', readyWeek: s.week + 1, hype: 0,
+    lyricsQ: clamp(est.ecriture + rng.int(-4, 4) + (feat?.bonus ?? 0), 10, 98), mastering: false, stage: 'written', readyWeek: s.week + 1, hype: 0, feat,
     stats: { streams: 0, revenue: 0, fans: 0, weeks: 0, byCity: {}, lastByCity: {}, prevByCity: {}, peak: {} },
   }
   s.songs.push(song)
-  return { state: s, info: `« ${song.title} » est écrit.` }
+  return { state: s, info: `« ${song.title} » est écrit${feat ? ` en feat avec ${feat.name}` : ''}.` }
 }
 
 // ---------- studios ----------
@@ -128,8 +143,8 @@ export const STRATEGIES = {
   crossover: { label: 'Crossover', desc: 'Duo avec un autre pays', risk: 'Incertain', maxCities: 3 },
 } as const
 
-export function releaseCost(r: Pick<SongRelease, 'promo' | 'loc'>) {
-  return r.promo + r.loc.reduce((t, id) => t + (LOC_OPTIONS.find((l) => l.id === id)?.cost ?? 0), 0)
+export function releaseCost(r: Pick<SongRelease, 'promo' | 'loc' | 'media'>) {
+  return r.promo + r.loc.reduce((t, id) => t + (LOC_OPTIONS.find((l) => l.id === id)?.cost ?? 0), 0) + (r.media ?? []).reduce((t, id) => t + (mediaById(id)?.cost ?? 0), 0)
 }
 
 export function scheduleRelease(s0: GameState, songId: string, r: SongRelease): Result {
@@ -143,6 +158,7 @@ export function scheduleRelease(s0: GameState, songId: string, r: SongRelease): 
   const strat = STRATEGIES[r.strategy]
   if (r.cityIds.length > strat.maxCities) return fail(s0, `La stratégie ${strat.label.toLowerCase()} limite à ${strat.maxCities} territoire(s).`)
   for (const id of r.cityIds) if (cityById(id).minRep > s.reputation) return fail(s0, `${cityById(id).name} est verrouillé (réputation ${cityById(id).minRep} requise).`)
+  for (const id of r.media ?? []) { const m = mediaById(id); if (!m) return fail(s0, 'Média inconnu.'); if (m.minRep > s.reputation) return fail(s0, `${m.name} exige ${m.minRep} de réputation.`) }
   const locWeeks = Math.max(0, ...r.loc.map((id) => LOC_OPTIONS.find((l) => l.id === id)?.weeks ?? 0))
   if (r.week - s.week < locWeeks) return fail(s0, `Les adaptations demandent ${locWeeks} semaine(s) : choisissez une date plus tardive.`)
   const e = useAp(s)

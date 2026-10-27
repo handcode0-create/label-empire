@@ -4,6 +4,8 @@ import Dock from '../../components/Dock'
 import Slider from '../../components/Slider'
 import { LOC_OPTIONS } from '../../data/people'
 import { CITIES, affinity } from '../../data/world'
+import { MEDIA, mediaScopeLabel } from '../../data/media'
+import { MediaLogo } from '../../components/Logo'
 import { STREAM_VALUE, royaltyShare, weeklyStreams } from '../../engine/market'
 import { STRATEGIES, releaseCalendar, releaseCost, scheduleRelease } from '../../engine/production'
 import { fansByCity } from '../../engine/selectors'
@@ -23,6 +25,8 @@ export default function Sortie() {
   const [strategy, setStrategy] = useState<Strat>('regionale')
   const [cityIds, setCityIds] = useState<string[]>(() => unlocked.slice(0, 5).map((c) => c.id))
   const [loc, setLoc] = useState<string[]>([])
+  const [media, setMedia] = useState<string[]>([])
+  const [tab, setTab] = useState<'media' | 'loc'>('media')
   const [promo, setPromo] = useState(Math.min(5000, Math.max(0, Math.floor(g.cash * 0.1 / 500) * 500)))
   const [week, setWeek] = useState<number | null>(sel.week)
   if (!song) return (
@@ -35,7 +39,7 @@ export default function Sortie() {
   const chosen = week && week >= from ? week : from
   const cal = releaseCalendar(g, from, 5)
   const strat = STRATEGIES[strategy]
-  const draft: SongRelease = { week: chosen, strategy, cityIds, promo, loc }
+  const draft: SongRelease = { week: chosen, strategy, cityIds, promo, loc, media }
   const cost = releaseCost(draft)
   const proj = (() => {
     const sim = { ...song, release: draft, stage: 'released' as const }
@@ -83,12 +87,24 @@ export default function Sortie() {
                   {CITIES.filter((c) => c.minRep > g.reputation).slice(0, 2).map((c) => <div key={c.id} className="row" style={{gridTemplateColumns: '24px 1fr 170px', opacity: 0.5}}><span>🔒</span><b>{c.name}</b><span className="mut" style={{fontSize: 13}}>Réputation {c.minRep} requise</span></div>)}
                 </div>
               </div>
-              <div className="pn" style={{width: 300}}>
-                <div className="lbl">Localisation</div>
+              <div className="pn" style={{width: 340}}>
+                <div style={{display: 'flex', gap: 8}}>
+                  <span className={'chip' + (tab === 'media' ? ' on' : '')} role="button" onClick={() => setTab('media')}>Médias & marketing</span>
+                  <span className={'chip' + (tab === 'loc' ? ' on' : '')} role="button" onClick={() => setTab('loc')}>Localisation</span>
+                </div>
+                {tab === 'loc' ? (
                 <div style={{display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12, fontSize: 14}}>
                   {LOC_OPTIONS.map((l) => { const on = loc.includes(l.id); return (
                     <div key={l.id} style={{cursor: 'pointer'}} onClick={() => setLoc(on ? loc.filter((x) => x !== l.id) : [...loc, l.id])}><span style={{color: on ? '#FF7DBB' : '#9C90CC'}}>{on ? '■' : '□'}</span> <b>{l.name}</b><div className="mut" style={{fontSize: 13, marginLeft: 20}}>{usd(l.cost)} · {l.weeks} semaine{l.weeks > 1 ? 's' : ''} · {l.desc}</div></div>) })}
-                </div>
+                </div>) : (
+                <div style={{marginTop: 8, maxHeight: 320, overflow: 'auto'}}>
+                  {MEDIA.map((m) => { const on = media.includes(m.id); const locked = m.minRep > g.reputation; return (
+                    <div key={m.id} className="row" role="button" style={{gridTemplateColumns: '44px 1fr auto', gap: 10, cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.5 : 1, background: on ? '#3A1B52' : undefined}} onClick={() => { if (locked) return say(`${m.name} exige ${m.minRep} de réputation.`, 'err'); setMedia(on ? media.filter((x) => x !== m.id) : [...media, m.id]) }}>
+                      <MediaLogo id={m.id} size={40} />
+                      <div><b style={{fontSize: 14}}>{m.name}</b><div className="mut" style={{fontSize: 12}}>{m.kind} · {mediaScopeLabel(m)}{locked ? ` · 🔒 Réputation ${m.minRep}` : ` · +${Math.round(m.boost * 100)} %`}</div></div>
+                      <span style={{color: on ? '#FF7DBB' : '#FFC63D', fontSize: 13, fontWeight: 700}}>{on ? '■' : usd(m.cost)}</span>
+                    </div>) })}
+                </div>)}
               </div>
             </div>
           </div>
@@ -104,7 +120,7 @@ export default function Sortie() {
             <div className="pn">
               <div className="lbl">Budget de promotion</div>
               <div style={{display: 'grid', gridTemplateColumns: '1fr 100px', gap: 16, alignItems: 'center', marginTop: 14}}><Slider min={0} max={30000} step={500} value={promo} onChange={setPromo} /><b style={{textAlign: 'right', color: '#FFC63D', fontSize: 18}}>{usd(promo)}</b></div>
-              <div className="mut" style={{fontSize: 13, marginTop: 10}}>Radio, réseaux sociaux et presse locale dans les territoires choisis. Coût total de la sortie : <b style={{color: '#FFC63D'}}>{usd(cost)}</b>.</div>
+              <div className="mut" style={{fontSize: 13, marginTop: 10}}>Radio, TV, presse et web : les médias choisis ({media.length}) boostent les écoutes dans leur zone. Coût total de la sortie : <b style={{color: '#FFC63D'}}>{usd(cost)}</b>.</div>
             </div>
             <div className="pn cut">
               <div className="lbl">Projection de la première semaine</div>

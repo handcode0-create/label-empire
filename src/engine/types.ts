@@ -56,6 +56,19 @@ export interface SongRelease {
   cityIds: string[]
   promo: number
   loc: string[]
+  media?: string[] // médias démarchés pour cette sortie
+}
+
+/** Collaboration (feat) : un artiste du label ou un artiste découvert, payé au cachet et à la part de revenus. */
+export interface Feat {
+  name: string
+  artistId?: string // artiste du label
+  poolId?: string // artiste externe
+  cityId: string
+  fee: number
+  share: number // part des revenus reversée au partenaire
+  bonus: number // points de qualité apportés
+  fans: Record<string, number> // audience apportée par ville
 }
 
 export interface Song {
@@ -81,6 +94,7 @@ export interface Song {
   release?: SongRelease
   stats: { streams: number; revenue: number; fans: number; weeks: number; byCity: Record<string, number>; lastByCity: Record<string, number>; prevByCity: Record<string, number>; peak: Record<string, number> }
   hype: number // bonus viral temporaire
+  feat?: Feat
 }
 
 export interface TourStop { cityId: string; venue: string; capacity: number; week: number; price: number; sold?: number; revenue?: number }
