@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import Chip from '../../components/Chip'
 import { useGame } from '../../store/gameStore'
 
@@ -7,6 +8,9 @@ export default function NouvellePartie() {
   const c = useGame((st) => st.config)
   const patch = useGame((st) => st.patch)
   const cash = useGame((st) => st.cash)()
+  const [pack, setPack] = useState<{ id: string; icon: string; name: string }[]>([])
+  useEffect(() => { fetch('/logos/manifest.json').then((r) => r.json()).then(setPack).catch(() => setPack([])) }, [])
+  const isImg = c.logoId.startsWith('data:') || c.logoId.startsWith('/logos/')
   return (
     <div className="scr">
       <div style={{position: 'absolute', left: 56, top: 36, right: 56, display: 'flex', alignItems: 'center', gap: 16}}>
@@ -31,7 +35,10 @@ export default function NouvellePartie() {
             <div role="button" tabIndex={0} onClick={() => patch({ logoId: 'blason' })} className={'pn' + (c.logoId === 'blason' ? ' sel' : '')} style={{height: 76, display: 'grid', placeItems: 'center', padding: 0, cursor: 'pointer'}}><div style={{width: 38, height: 38, background: 'linear-gradient(135deg,#8B5CF6,#FF3D9A)', clipPath: 'polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)'}} /></div>
             <label className={'pn' + (c.logoId.startsWith('data:') ? ' sel' : '')} style={{cursor: 'pointer', height: 76, display: 'grid', placeItems: 'center', padding: 0, textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#B3A6D9', boxShadow: 'inset 0 0 0 2px var(--ln)', background: 'transparent'}}>Importer<br />mon logo<input type="file" accept="image/*" hidden onChange={(e) => readFile(e.target.files?.[0], (d) => patch({ logoId: d }))} /></label>
           </div>
-          <div className="mut" style={{fontSize: 13, marginTop: 10}}>Logos provisoires. Les logos du jeu seront ajoutés plus tard avec l'outil interne du studio.</div>
+          <div className="lbl" style={{marginTop: 14}}>Logos du studio</div>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 6, marginTop: 8, maxHeight: 96, overflow: 'auto'}}>
+            {pack.map((l) => <img key={l.id} src={'/logos/' + l.icon} alt={l.name} title={l.name} onClick={() => patch({ logoId: '/logos/' + l.icon })} style={{width: '100%', aspectRatio: '1', borderRadius: 8, cursor: 'pointer', boxShadow: c.logoId === '/logos/' + l.icon ? '0 0 0 2px #FF3D9A' : 'none'}} />)}
+          </div>
         </div>
         <div className="pn">
           <div className="lbl">Réglages de la partie</div>
@@ -63,7 +70,7 @@ export default function NouvellePartie() {
         <div className="pn cut">
           <div className="lbl">Aperçu</div>
           <div style={{display: 'flex', alignItems: 'center', gap: 14, marginTop: 12}}>
-            <div style={{width: 60, height: 60, display: 'grid', placeItems: 'center', background: '#2A1B4D', borderRadius: 14, overflow: 'hidden'}}>{c.logoId.startsWith('data:') ? <img src={c.logoId} alt="Logo" style={{width: '100%', height: '100%', objectFit: 'cover'}} /> : <div style={{width: 30, height: 30, borderRadius: '50%', border: '6px solid #FF3D9A'}} />}</div>
+            <div style={{width: 60, height: 60, display: 'grid', placeItems: 'center', background: '#2A1B4D', borderRadius: 14, overflow: 'hidden'}}>{isImg ? <img src={c.logoId} alt="Logo" style={{width: '100%', height: '100%', objectFit: 'cover'}} /> : <div style={{width: 30, height: 30, borderRadius: '50%', border: '6px solid #FF3D9A'}} />}</div>
             <div><div className="disp" style={{fontSize: 26, lineHeight: 1}}>{c.labelName}</div><div className="mut" style={{fontSize: 13}}>Fondé par {c.founderName} · {c.nationality} · {c.mainGenre.toLowerCase()}</div></div>
           </div>
           <div style={{display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap'}}><span className="tag ti">Réputation 15</span><span className="tag te">Artiste fondateur</span><span className="tag tg">Cash $120 000</span></div>

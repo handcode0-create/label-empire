@@ -16,7 +16,7 @@ export default function Hud() {
   const pal = palierFor(rep)
   return (
     <header className="hud">
-      <div className="av" style={{ background: 'linear-gradient(135deg,#8B5CF6,#FF3D9A)', overflow: 'hidden' }}>{logo.startsWith('data:') ? <img src={logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(name)}</div>
+      <div className="av" style={{ background: 'linear-gradient(135deg,#8B5CF6,#FF3D9A)', overflow: 'hidden' }}>{(logo.startsWith('data:') || logo.startsWith('/logos/')) ? <img src={logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(name)}</div>
       <div><div className="disp" style={{ fontSize: 22, lineHeight: 1 }}>{name}</div><div className="lbl" style={{ marginTop: 3 }}>Palier {pal.n} · {pal.name}</div></div>
       <div className="sp" />
       <div className="coin" title="Trésorerie"><i style={{ background: '#FFC63D' }}>$</i><b style={cash < 0 ? { color: '#FF5470' } : undefined}>{cash < 0 ? '−' : ''}{fmt(Math.abs(cash))}</b></div>
