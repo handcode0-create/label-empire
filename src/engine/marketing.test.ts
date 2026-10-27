@@ -40,3 +40,20 @@ describe('EP & albums', () => {
     expect(projectKindFor(7)).toBe('Album')
   })
 })
+
+import { rivalWorld } from './rivals'
+import { chartFor } from './market'
+describe('monde rival', () => {
+  it('est déterministe, avec des ids sur les lignes de classement', () => {
+    const w = rivalWorld()
+    expect(w.artists.length).toBeGreaterThanOrEqual(60)
+    expect(new Set(w.artists.map((a) => a.stageName)).size).toBe(w.artists.length)
+    const g = createGame(cfg)
+    for (const kind of ['singles', 'artistes', 'eps', 'albums'] as const) {
+      const rows = chartFor(g, 'monde', 'abidjan', kind)
+      expect(rows.length).toBeGreaterThan(5)
+      expect(rows.every((r) => r.artistId)).toBe(true)
+    }
+    expect(chartFor(g, 'monde', 'abidjan', 'singles').every((r) => r.songId)).toBe(true)
+  })
+})

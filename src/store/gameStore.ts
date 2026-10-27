@@ -17,7 +17,7 @@ const SAVE_KEY = 'label-empire-save-v1'
 const readSave = (): GameState | null => { try { const t = localStorage.getItem(SAVE_KEY); return t ? (JSON.parse(t) as GameState) : null } catch { return null } }
 const writeSave = (g: GameState | null) => { try { if (g) localStorage.setItem(SAVE_KEY, JSON.stringify(g)); else localStorage.removeItem(SAVE_KEY) } catch { /* stockage indisponible */ } }
 
-export interface Selection { duelId: string | null; candidateId: string | null; artistId: string | null; songId: string | null; cityId: string | null; studioId: string | null; week: number | null }
+export interface Selection { duelId: string | null; candidateId: string | null; artistId: string | null; songId: string | null; cityId: string | null; studioId: string | null; week: number | null; rivalId?: string | null; labelName?: string | null; viewSongId?: string | null; projectId?: string | null }
 export interface Toast { id: number; text: string; tone: 'ok' | 'err' }
 export type Modal = null | 'options' | 'credits' | 'save'
 

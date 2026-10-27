@@ -118,6 +118,3 @@ export const SIGNATURE: { stage: string; real: string; cityId: string; genre: st
   { stage: 'Yara Fogo', real: 'Yara Costa', cityId: 'luanda', genre: 'Kuduro', lang: 'portugais' },
 ]
 
-export const RIVAL_LABELS = ['Meridian Group', 'Harmattan Music', 'Atlas Sound', 'Vox Nova']
-export const RIVAL_TITLES = ['Nuit de Plateau', 'Marcory Sunset', 'Ndjamena Flow', 'Lagune', 'Route de Bassam', 'Plateau 2000', 'Quartier Haut', 'Soleil Rouge', 'Harmattan Blues', 'Cité Lumière', 'Fièvre du Samedi', 'Mirage Doré', 'Marée Haute', 'Étoile Filante', 'Orage Tropical', 'Ciel de Cuivre', 'Rue Princesse', 'Velours Noir', 'Danse des Rois', 'Minuit à Cocody', 'Rythme Royal', 'Neon Savane', 'Cauris', 'Baobab Groove']
-export const RIVAL_ARTISTS = ['Dama Keita', 'Sika Ouattara', 'Brice Tamba', 'Awa Diallo', 'Yao Kassi', 'Mia Soro', 'Lucas Bamba', 'Nina Faye', 'Tom Adjei', 'Zara Bello', 'Eli Konan', 'Sam Okoye']

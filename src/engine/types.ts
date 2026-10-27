@@ -136,7 +136,7 @@ export interface Office { cityId: string; kind: 'siege' | 'bureau' | 'partenaire
 export interface Pending { week: number; amount: number; cityId: string }
 export interface Loan { principal: number; remaining: number; weekly: number; weeksLeft: number }
 
-export interface ChartRow { rank: number; title: string; artist: string; label: string; streams: number; delta: number | null; mine: boolean }
+export interface ChartRow { rank: number; title: string; artist: string; label: string; streams: number; delta: number | null; mine: boolean; artistId?: string; songId?: string; projectId?: string }
 
 export interface EventChoice { id: string; label: string; detail: string; cost: number }
 export interface GameEvent { id: string; kind: string; title: string; text: string; cityId?: string; choices: EventChoice[]; resolved?: string; week: number }

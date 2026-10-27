@@ -1,7 +1,9 @@
-import { RIVAL_ARTISTS, RIVAL_LABELS, RIVAL_TITLES } from '../data/people'
 import { mediaById, mediaReaches } from '../data/media'
 import { CITIES, affinity, cityById, type City } from '../data/world'
+import { songName } from '../lib'
+import { projectSongs } from './projects'
 import { createRng, hash } from './rng'
+import { rivalArtist, rivalWorld } from './rivals'
 import type { ChartRow, GameState, Song } from './types'
 import { fansInCity, staffSkill } from './util'
 
@@ -66,32 +68,49 @@ export const royaltyShare = (s: GameState, song: Song) => (s.artists.find((a) =>
 function rivalRow(cityId: string, week: number, i: number) {
   const city = cityById(cityId)
   const h = hash(cityId)
+  const world = rivalWorld()
   const noise = createRng(hash(`${cityId}${week}${i}`)).next()
-  return {
-    title: RIVAL_TITLES[(h + i * 5) % RIVAL_TITLES.length],
-    artist: RIVAL_ARTISTS[(h + i * 3) % RIVAL_ARTISTS.length],
-    label: RIVAL_LABELS[(h + i) % RIVAL_LABELS.length],
-    streams: Math.round(city.base * 0.6 * Math.pow(0.82, i) * (0.85 + 0.3 * noise)),
-  }
+  const artist = world.artists[(h + i * 7) % world.artists.length]
+  const song = artist.songs[(h + i + Math.floor(week / 6)) % artist.songs.length]
+  return { song, artist, streams: Math.round(city.base * 0.6 * Math.pow(0.82, i) * (0.85 + 0.3 * noise)) }
+}
+function rivalProjectRow(cityId: string, week: number, i: number, kind: 'EP' | 'Album') {
+  const city = cityById(cityId)
+  const list = rivalWorld().artists.flatMap((a) => a.projects).filter((p) => p.kind === kind)
+  const project = list[(hash(cityId + kind) + i * 5) % list.length]
+  const noise = createRng(hash(`${cityId}${week}${kind}${i}`)).next()
+  return { project, artist: rivalArtist(project.artistId)!, streams: Math.round(city.base * (kind === 'Album' ? 1.3 : 0.9) * Math.pow(0.84, i) * (0.85 + 0.3 * noise)) }
 }
 
-type Raw = { key: string; title: string; artist: string; label: string; streams: number; mine: boolean }
-function rawCity(s: GameState, cityId: string, week: number, mineStreams: (song: Song) => number): Raw[] {
-  const rows: Raw[] = Array.from({ length: 14 }, (_, i) => { const r = rivalRow(cityId, week, i); return { key: `${r.title}|${r.artist}`, ...r, mine: false } })
+type Raw = { key: string; title: string; artist: string; label: string; streams: number; mine: boolean; artistId?: string; songId?: string; projectId?: string }
+function rawCity(s: GameState, cityId: string, week: number, cur: boolean, kind: ChartKind): Raw[] {
+  const val = (song: Song) => (cur ? song.stats.lastByCity[cityId] : song.stats.prevByCity[cityId]) ?? 0
+  const myName = (id: string) => s.artists.find((a) => a.id === id)?.stageName ?? ''
+  if (kind === 'eps' || kind === 'albums') {
+    const pk = kind === 'eps' ? 'EP' : 'Album'
+    const rows: Raw[] = Array.from({ length: 12 }, (_, i) => { const r = rivalProjectRow(cityId, week, i, pk); return { key: r.project.id, title: r.project.name, artist: r.artist.stageName, label: r.artist.labelName, streams: r.streams, mine: false, artistId: r.artist.id, projectId: r.project.id } })
+    for (const p of s.projects) {
+      if (p.status !== 'sorti' || p.kind !== pk) continue
+      const st = projectSongs(s, p).reduce((t, x) => t + val(x), 0)
+      if (st > 0) rows.push({ key: `mine|${p.id}`, title: p.name, artist: myName(p.artistId), label: s.label.name, streams: st, mine: true, artistId: p.artistId, projectId: p.id })
+    }
+    return rows
+  }
+  const rows: Raw[] = Array.from({ length: 14 }, (_, i) => { const r = rivalRow(cityId, week, i); return { key: r.song.id, title: r.song.title, artist: r.artist.stageName, label: r.artist.labelName, streams: r.streams, mine: false, artistId: r.artist.id, songId: r.song.id } })
   for (const song of s.songs) {
-    const st = mineStreams(song)
-    if (st > 0) rows.push({ key: `mine|${song.id}`, title: song.title, artist: s.artists.find((a) => a.id === song.artistId)?.stageName ?? '', label: s.label.name, streams: st, mine: true })
+    const st = val(song)
+    if (st > 0) rows.push({ key: `mine|${song.id}`, title: songName(song), artist: myName(song.artistId), label: s.label.name, streams: st, mine: true, artistId: song.artistId, songId: song.id })
   }
   return rows
 }
 function toChart(rows: Raw[], prev: Raw[]): ChartRow[] {
   const sorted = [...rows].sort((a, b) => b.streams - a.streams)
   const prevRank = new Map([...prev].sort((a, b) => b.streams - a.streams).map((r, i) => [r.key, i + 1]))
-  return sorted.map((r, i) => ({ rank: i + 1, title: r.title, artist: r.artist, label: r.label, streams: r.streams, mine: r.mine, delta: prevRank.has(r.key) ? (prevRank.get(r.key)! - (i + 1)) : null }))
+  return sorted.map((r, i) => ({ rank: i + 1, title: r.title, artist: r.artist, label: r.label, streams: r.streams, mine: r.mine, artistId: r.artistId, songId: r.songId, projectId: r.projectId, delta: prevRank.has(r.key) ? (prevRank.get(r.key)! - (i + 1)) : null }))
 }
 
 export type ChartLevel = 'ville' | 'pays' | 'continent' | 'monde'
-export type ChartKind = 'singles' | 'artistes'
+export type ChartKind = 'singles' | 'artistes' | 'eps' | 'albums'
 
 /** Classement de la dernière semaine jouée. */
 export function chartFor(s: GameState, level: ChartLevel, cityId: string, kind: ChartKind = 'singles'): ChartRow[] {
@@ -101,8 +120,8 @@ export function chartFor(s: GameState, level: ChartLevel, cityId: string, kind: 
   const merge = (cur: boolean): Raw[] => {
     const map = new Map<string, Raw>()
     for (const c of cities) {
-      for (const r of rawCity(s, c.id, cur ? week : week - 1, (song) => (cur ? song.stats.lastByCity[c.id] : song.stats.prevByCity[c.id]) ?? 0)) {
-        const key = kind === 'artistes' ? `${r.artist}|${r.mine}` : r.key
+      for (const r of rawCity(s, c.id, cur ? week : week - 1, cur, kind === 'artistes' ? 'singles' : kind)) {
+        const key = kind === 'artistes' ? `${r.artistId}|${r.mine}` : r.key
         const ex = map.get(key)
         if (ex) ex.streams += r.streams
         else map.set(key, { ...r, key, title: kind === 'artistes' ? r.artist : r.title })
