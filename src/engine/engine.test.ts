@@ -22,7 +22,7 @@ describe('nouvelle partie', () => {
   it('crée le fondateur comme artiste et un vivier de candidats', () => {
     const g = createGame(cfg)
     expect(g.artists).toHaveLength(1)
-    expect(g.cash).toBe(120_000)
+    expect(g.cash).toBe(88_000)
     expect(g.staff).toHaveLength(3)
     expect(visibleCandidates(g).length).toBeGreaterThan(5)
   })
