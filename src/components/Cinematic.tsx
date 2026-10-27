@@ -120,8 +120,10 @@ export default function Cinematic() {
             <div className={on && !done ? 'an-talk' : ''} style={{ display: 'flex', justifyContent: 'center' }}>
               <Avatar keyName={c.portrait} name={nm} gradient={c.gradient} size={230} style={{ boxShadow: `0 0 0 6px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.6), 0 0 90px ${on ? 'rgba(255,61,154,.5)' : 'transparent'}`, fontSize: 90 }} />
             </div>
-            <div className="disp" style={{ marginTop: 14, fontSize: 26 }}>{nm}</div>
-            <div className="lbl">{c.role}</div>
+            <div style={{ display: 'inline-block', marginTop: 14, padding: '6px 16px 8px', borderRadius: 14, background: 'rgba(12,8,32,.72)', backdropFilter: 'blur(6px)' }}>
+              <div className="disp" style={{ fontSize: 26 }}>{nm}</div>
+              <div className="lbl">{c.role}</div>
+            </div>
           </div>
         )
       })}
