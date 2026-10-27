@@ -38,3 +38,9 @@ places d'artistes : 3 au départ, +1 par bureau et par palier.
 - **Titre auto** (`src/data/titles.ts`), **feats** (artiste du label gratuit, ou artiste découvert payant + 12 % des revenus) et **médias** (`src/data/media.ts`, 17 médias fictifs avec logos `public/media/*.svg`, générés par `tools/logo_gen/media_logos.py`).
 - **EP / albums** (`src/engine/projects.ts`, écran `Projets`) : EP 3–6 titres, album 7–20, publication une fois les titres sortis.
 - **Monde rival déterministe** (`src/engine/rivals.ts`) : 23 labels (logos `public/logos`), ~69 artistes, titres, EP, albums, contrats. Les lignes de classement portent `artistId/songId/projectId` et ouvrent les fiches `Artiste`, `Titre`, `Label`. Classements : singles, albums, EP, artistes.
+
+## Génération automatique des avatars
+1. Copier `.env.example` en `.env` et y mettre `OPENAI_API_KEY=...` (le fichier `.env` n'est jamais commité).
+2. `npm run avatars:generate` : génère dans `avatars_src/` les images manquantes (personnages de l'histoire d'abord). Options : `-- --only story`, `-- --force`, `-- --dry`.
+3. `npm run avatars` : conversion WebP 512 px dans `public/avatars/` + manifeste.
+Les prompts viennent de `docs/avatars/prompts.json`, régénéré par `python3 tools/avatars/prompts.py`.

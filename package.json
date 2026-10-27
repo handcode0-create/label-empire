@@ -11,7 +11,8 @@
     "test": "vitest run",
     "avatars": "python3 tools/avatars/pack.py",
     "avatar-prompts": "python3 tools/avatars/prompts.py",
-    "logos": "python3 tools/logo_gen/logo_gen.py --presets --out public/logos"
+    "logos": "python3 tools/logo_gen/logo_gen.py --presets --out public/logos",
+    "avatars:generate": "node tools/avatars/generate.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",
