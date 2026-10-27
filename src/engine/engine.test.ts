@@ -22,15 +22,18 @@ describe('nouvelle partie', () => {
   it('crée le fondateur comme artiste et un vivier de candidats', () => {
     const g = createGame(cfg)
     expect(g.artists).toHaveLength(1)
-    expect(g.cash).toBe(88_000)
+    expect(g.cash).toBe(500_000)
     expect(g.staff).toHaveLength(3)
     expect(visibleCandidates(g).length).toBeGreaterThan(5)
   })
   it('refuse une répartition de points invalide', () => {
     expect(validateConfig({ ...cfg, staffSkills: { negociation: 9 } })).toContain('Répartir exactement 10 points de staff')
   })
-  it('réputation haute = moins de cash', () => {
-    expect(startingCash(60, 'normal')).toBeLessThan(startingCash(10, 'normal'))
+  it('capital de départ : 500 000 $ puis 3 tranches', () => {
+    expect(startingCash(10, 'normal')).toBe(500_000)
+    expect(startingCash(10, 'normal', 'riche')).toBe(5_000_000)
+    expect(startingCash(10, 'normal', 'majeur')).toBe(10_000_000)
+    expect(startingCash(10, 'normal', 'milliardaire')).toBe(1_000_000_000)
   })
 })
 

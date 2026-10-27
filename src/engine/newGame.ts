@@ -15,11 +15,15 @@ export function validateConfig(c: NewGameConfig): string[] {
   return e
 }
 
-/** Plus la réputation de départ est haute, moins il y a de cash. */
-export function startingCash(reputation: number, difficulty: NewGameConfig['difficulty']): number {
-  const base = 110_000 - reputation * 1_500
-  const k = difficulty === 'facile' ? 1.25 : difficulty === 'difficile' ? 0.8 : 1
-  return Math.round((base * k) / 1000) * 1000
+/** Capital de départ au choix : 500 000 $ en standard, puis 3 tranches (5 M, 10 M, 1 Md). */
+export const CAPITALS = {
+  standard: { label: 'Standard', cash: 500_000 },
+  riche: { label: 'Riche', cash: 5_000_000 },
+  majeur: { label: 'Majeur', cash: 10_000_000 },
+  milliardaire: { label: 'Milliardaire', cash: 1_000_000_000 },
+} as const
+export function startingCash(_reputation: number, _difficulty: NewGameConfig['difficulty'], capital: keyof typeof CAPITALS = 'standard'): number {
+  return CAPITALS[capital].cash
 }
 
 export function createGame(c: NewGameConfig): GameState {
@@ -42,13 +46,13 @@ export function createGame(c: NewGameConfig): GameState {
   })
   const state: GameState = {
     week: 1, ap: 6,
-    cash: startingCash(c.startReputation, c.difficulty),
+    cash: startingCash(c.startReputation, c.difficulty, c.capital),
     reputation: c.startReputation,
     label: { name: c.labelName, logoId: c.logoId, photo: c.founderPhoto, hqCityId: c.hqCityId, currency: c.currency, difficulty: c.difficulty, founder: c.founderName, nationality: c.nationality, mainGenre: c.mainGenre },
     staffSkills: full(STAFF_SKILLS, c.staffSkills),
     artists, pool: [], contests: [], tournament: null, seenScenes: [], songs: [], projects: [], tours: [], staff,
     offices: [{ cityId: c.hqCityId, kind: 'siege', since: 1 }],
-    pending: [], loan: null, event: null, report: null, cashHistory: [startingCash(c.startReputation, c.difficulty)], negWeeks: 0,
+    pending: [], loan: null, event: null, report: null, cashHistory: [startingCash(c.startReputation, c.difficulty, c.capital)], negWeeks: 0,
     outcome: null, freeMode: false, rngState: c.seed >>> 0, spent: 0, log: [],
     stats: { totalRevenue: 0, totalFans: 0, countriesReached: [c.hqCityId] },
   }

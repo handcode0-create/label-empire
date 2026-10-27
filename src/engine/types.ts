@@ -13,6 +13,7 @@ export interface NewGameConfig {
   nationality: string
   mainGenre: string
   startReputation: number
+  capital?: 'standard' | 'riche' | 'majeur' | 'milliardaire'
   alsoArtist: boolean
   staffSkills: Skills
   artistSkills: Skills

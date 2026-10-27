@@ -67,7 +67,7 @@ export const useGame = create<Store>((set, get) => ({
     return { config: { ...s.config, [group]: { ...cur, [key]: next } } }
   }),
   errors: () => validateConfig(get().config),
-  cash: () => startingCash(get().config.startReputation, get().config.difficulty),
+  cash: () => startingCash(get().config.startReputation, get().config.difficulty, get().config.capital),
   start: () => {
     if (validateConfig(get().config).length) return false
     const g = createGame({ ...get().config, seed: Date.now() % 2 ** 31 })
