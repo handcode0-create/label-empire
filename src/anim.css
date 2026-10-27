@@ -29,3 +29,5 @@
   .an-fade,.an-rise,.an-pop,.an-slide-l,.an-slide-r{animation-duration:.01s}
   .an-talk,.an-pulse,.an-shake,.cursor::after{animation:none}
 }
+
+@keyframes kenburns{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.09) translate(-1.2%,-1%)}}

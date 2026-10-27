@@ -8,6 +8,18 @@ const SKY: Record<Bg, string> = {
   bureau: 'linear-gradient(180deg,#1C1236 0%,#3A2570 70%,#FF3D9A 160%)',
   scene: 'radial-gradient(900px 500px at 50% 110%,rgba(255,198,61,.55),transparent),linear-gradient(180deg,#0C0719,#2A1B4D)',
   nuit: 'linear-gradient(180deg,#05030F 0%,#1A1040 70%,#35D3F0 190%)',
+  studio: 'linear-gradient(180deg,#0C0820,#2A1B4D)',
+  arene: 'linear-gradient(180deg,#05030F,#2A1B4D)',
+  finale: 'linear-gradient(180deg,#0C0719,#5A2A6B)',
+  aeroport: 'linear-gradient(180deg,#1C1236,#FF7A59 160%)',
+}
+
+/** Décor illustré (public/scenes/<bg>.webp) ; si l'image manque, le décor dessiné prend le relais. */
+function Backdrop({ bg }: { bg: Bg }) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [bg])
+  if (failed || bg === 'scene') return <Skyline bg={bg} />
+  return <img src={`/scenes/${bg}.webp`} alt="" onError={() => setFailed(true)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', animation: 'kenburns 24s ease-in-out infinite alternate' }} />
 }
 
 function Skyline({ bg }: { bg: Bg }) {
@@ -96,7 +108,7 @@ export default function Cinematic() {
 
   return (
     <div onClick={advance} role="dialog" aria-label="Scène" style={{ position: 'absolute', inset: 0, zIndex: 80, background: SKY[scene.bg], overflow: 'hidden', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif", color: '#F4F0FF' }}>
-      <div className="an-fade" style={{ position: 'absolute', inset: 0 }}><Skyline bg={scene.bg} /></div>
+      <div className="an-fade" style={{ position: 'absolute', inset: 0 }}><Backdrop bg={scene.bg} /></div>
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.55))' }} />
       {/* personnages */}
       {shown.map(({ side, who }) => {

@@ -14,7 +14,7 @@ export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
 export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[] }[] }
-export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit'
+export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport'
 export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean }
 
 export interface Ctx { label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string }
@@ -70,6 +70,22 @@ export const SCENES: Scene[] = [
     ],
   },
   {
+    id: 'premier-studio', bg: 'studio', title: 'Première session', when: (g) => g.songs.some((s) => s.stage === 'recorded' || s.stage === 'mixed' || s.stage === 'scheduled' || s.stage === 'released'),
+    lines: [
+      N('Les néons du studio s’allument. Derrière la vitre, le micro attend.'),
+      I('La prise est bonne, patron. Maintenant, tout se joue au mixage.', 'joie'),
+      P('Un titre ne vaut que par ce que le public en retient. Faisons-le sonner.', 'confiance'),
+    ],
+  },
+  {
+    id: 'depart-tournee', bg: 'aeroport', title: 'Cap sur l’étranger', when: (g) => g.tours.length > 0,
+    lines: [
+      N('Hall des départs, au coucher du soleil. Les valises roulent, les projets aussi.'),
+      I('Premier vol du label. Les visas sont prêts et la scène aussi.', 'joie'),
+      P('Un artiste qui voyage devient une marque. Allons chercher de nouveaux publics.', 'confiance'),
+    ],
+  },
+  {
     id: 'alerte-cash', bg: 'bureau', title: 'Les comptes', when: (g) => g.week > 3 && g.cash < 15000 && g.cash >= 0,
     lines: [
       I('Patron, il faut qu’on parle des comptes. La trésorerie fond plus vite que prévu.', 'tension'),
@@ -81,7 +97,7 @@ export const SCENES: Scene[] = [
     ],
   },
   {
-    id: 'tournoi-ouverture', bg: 'bureau', title: 'Le Grand Tournoi', when: (g) => !!g.tournament,
+    id: 'tournoi-ouverture', bg: 'arene', title: 'Le Grand Tournoi', when: (g) => !!g.tournament,
     lines: [
       I('Patron, voici Kwame Baro. C’est lui qui présentera le tournoi « {tournoi} ».'),
       K('Dix voix, plusieurs pays, un seul vainqueur. Le public ne pardonne ni la peur ni l’ennui.', 'confiance'),
@@ -91,7 +107,7 @@ export const SCENES: Scene[] = [
     ],
   },
   {
-    id: 'tournoi-tirage', bg: 'scene', title: 'Le tirage au sort', when: (g) => g.tournament?.status === 'en_cours' || g.tournament?.status === 'choix' || g.tournament?.status === 'termine',
+    id: 'tournoi-tirage', bg: 'arene', title: 'Le tirage au sort', when: (g) => g.tournament?.status === 'en_cours' || g.tournament?.status === 'choix' || g.tournament?.status === 'termine',
     lines: [
       N('Les projecteurs s’allument sur {ville}. Les candidats se regardent ; certains se saluent, d’autres évitent les regards.'),
       K('Mesdames et messieurs, le tirage est fait ! Les nationalités vont se croiser, et seuls les plus tranchants passeront.', 'joie'),
@@ -100,7 +116,7 @@ export const SCENES: Scene[] = [
     ],
   },
   {
-    id: 'tournoi-finale', bg: 'scene', title: 'La finale', when: (g) => g.tournament?.status === 'choix' || g.tournament?.status === 'termine',
+    id: 'tournoi-finale', bg: 'arene', title: 'La finale', when: (g) => g.tournament?.status === 'choix' || g.tournament?.status === 'termine',
     lines: [
       K('Le public retient son souffle. Deux voix restent. Une seule couronne.', 'tension'),
       I('Le vote du public et du jury est tombé. Mais c’est vous qui décidez, patron.'),
@@ -109,7 +125,7 @@ export const SCENES: Scene[] = [
     ],
   },
   {
-    id: 'tournoi-couronnement', bg: 'scene', title: 'La couronne', when: (g) => g.tournament?.status === 'termine',
+    id: 'tournoi-couronnement', bg: 'finale', title: 'La couronne', when: (g) => g.tournament?.status === 'termine',
     lines: [
       K('Votre vainqueur du soir : {winner} !', 'joie'),
       N('{verdict}'),
@@ -137,7 +153,7 @@ export const SCENES: Scene[] = [
     ],
   },
   {
-    id: 'sommet', bg: 'scene', title: 'Chapitre 4 · Le sommet', when: (g) => g.reputation >= 75,
+    id: 'sommet', bg: 'finale', title: 'Chapitre 4 · Le sommet', when: (g) => g.reputation >= 75,
     lines: [
       N('Les salles se remplissent, les classements se resserrent. {label} n’est plus un secret.'),
       I('Vous avez bâti un label qui compte dans plusieurs pays. Il ne reste qu’un dernier palier.', 'joie'),
