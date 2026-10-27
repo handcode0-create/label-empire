@@ -11,7 +11,7 @@ function buildArtist(rng: Rng, o: { city: City; stage: string; real: string; gen
   const { city, potential } = o
   const skills = Object.fromEntries(ARTIST_SKILLS.map((k) => [k, clamp(Math.round(30 + potential * 9 + rng.int(-10, 12)), 15, 98)]))
   const fans = Math.round(city.base * 0.02 * Math.pow(potential, 1.7) * (0.6 + rng.next() * 0.8))
-  const advance = Math.round((potential * potential * 700 + fans * 0.02) / 500) * 500
+  const advance = Math.round((potential * potential * 1000 + fans * 0.03) / 500) * 500
   const mgrFirst = rng.pick(FIRST[city.continent] ?? FIRST.Afrique)
   const mgrLast = rng.pick(LAST[city.continent] ?? LAST.Afrique)
   const agency = rng.pick(AGENCIES)
@@ -109,7 +109,7 @@ export function signArtist(s0: GameState, id: string, o: Offer): Result {
   void [_a, _s, _c, _e, _r]
   s.artists.push({ ...rest, contract: { royalty: o.royalty, advance: o.advance, weeks: o.weeks, signedWeek: s.week, scope: o.scope }, morale: 75 })
   s.pool.splice(i, 1)
-  s.reputation += 0.5
+  s.reputation += 0.2
   s.log.push(`Signature : ${c.stageName}`)
   return ok(s, `${c.stageName} rejoint le label.`)
 }

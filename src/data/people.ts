@@ -2,26 +2,26 @@ import type { City } from './world'
 
 export interface Studio { id: string; name: string; cityId: string; pricePerDay: number; quality: number; producer: string; stars: number; genres: string[] }
 export const STUDIOS: Studio[] = [
-  { id: 'ebene', name: 'Studio Ébène', cityId: 'abidjan', pricePerDay: 420, quality: 62, producer: 'Yao Séka', stars: 2, genres: ['Coupé-décalé', 'Afro-pop'] },
-  { id: 'dakar', name: 'Mix Lab Dakar', cityId: 'dakar', pricePerDay: 520, quality: 66, producer: 'Ibou Faye', stars: 2, genres: ['Mbalax', 'Hip-hop'] },
-  { id: 'accra', name: 'Accra Tape House', cityId: 'accra', pricePerDay: 650, quality: 68, producer: 'Nana Owusu', stars: 3, genres: ['Hip-hop', 'Afro-pop'] },
-  { id: 'eko', name: 'Eko Sound Lab', cityId: 'lagos', pricePerDay: 900, quality: 74, producer: 'Tayo Bello', stars: 4, genres: ['Afro-pop', 'R&B'] },
-  { id: 'luanda', name: 'Luanda Beat', cityId: 'luanda', pricePerDay: 550, quality: 64, producer: 'Zeca Neto', stars: 2, genres: ['Kuduro'] },
-  { id: 'joburg', name: 'Joburg Tapes', cityId: 'johannesburg', pricePerDay: 1100, quality: 78, producer: 'Lwazi Khumalo', stars: 3, genres: ['Amapiano', 'Hip-hop'] },
-  { id: 'nairobi', name: 'Nairobi Tapes', cityId: 'nairobi', pricePerDay: 600, quality: 67, producer: 'Amani Otieno', stars: 2, genres: ['Afro-pop'] },
-  { id: 'cairo', name: 'Cairo Vox', cityId: 'cairo', pricePerDay: 700, quality: 70, producer: 'Karim Fouad', stars: 3, genres: ['Pop', 'Électro'] },
-  { id: 'rivoli', name: 'Maison Rivoli', cityId: 'paris', pricePerDay: 1800, quality: 83, producer: 'Marc Lefèvre', stars: 4, genres: ['Hip-hop', 'Pop', 'Électro'] },
-  { id: 'abbey', name: 'Abbey Row Studios', cityId: 'london', pricePerDay: 2600, quality: 86, producer: 'Oliver Pryce', stars: 4, genres: ['Pop', 'R&B', 'Rock'] },
-  { id: 'kontrol', name: 'Berlin Kontrol', cityId: 'berlin', pricePerDay: 1500, quality: 80, producer: 'Jana Weiss', stars: 3, genres: ['Électro', 'Rock'] },
-  { id: 'brooklyn', name: 'Brooklyn Basement', cityId: 'newyork', pricePerDay: 2800, quality: 89, producer: 'Dre Hollis', stars: 5, genres: ['Hip-hop', 'R&B'] },
-  { id: 'sunset', name: 'Sunset Rec', cityId: 'losangeles', pricePerDay: 3200, quality: 92, producer: 'Skye Ramirez', stars: 5, genres: ['Pop', 'Hip-hop', 'R&B'] },
-  { id: 'mexico', name: 'Estudio Sonora', cityId: 'mexico', pricePerDay: 1000, quality: 73, producer: 'Diego Salas', stars: 3, genres: ['Pop', 'Hip-hop'] },
-  { id: 'sampa', name: 'Sampa Sound', cityId: 'saopaulo', pricePerDay: 1300, quality: 76, producer: 'Bia Carvalho', stars: 3, genres: ['Pop', 'Électro'] },
-  { id: 'dubai', name: 'Dubai Gold Studio', cityId: 'dubai', pricePerDay: 2000, quality: 84, producer: 'Rami Haddad', stars: 4, genres: ['Pop', 'Électro'] },
-  { id: 'mumbai', name: 'Mumbai Wave', cityId: 'mumbai', pricePerDay: 900, quality: 72, producer: 'Rohan Mehta', stars: 3, genres: ['Pop', 'Électro'] },
-  { id: 'hanriver', name: 'Han River Studio', cityId: 'seoul', pricePerDay: 2400, quality: 88, producer: 'Ji-woo Park', stars: 4, genres: ['Pop', 'Hip-hop', 'R&B'] },
-  { id: 'neon', name: 'Tokyo Neon', cityId: 'tokyo', pricePerDay: 2700, quality: 90, producer: 'Ren Sato', stars: 5, genres: ['Pop', 'Électro', 'Rock'] },
-  { id: 'harbour', name: 'Harbour Rec', cityId: 'sydney', pricePerDay: 2200, quality: 85, producer: 'Jack Moreau', stars: 4, genres: ['Pop', 'Rock', 'Électro'] },
+  { id: 'ebene', name: 'Studio Ébène', cityId: 'abidjan', pricePerDay: 590, quality: 62, producer: 'Yao Séka', stars: 2, genres: ['Coupé-décalé', 'Afro-pop'] },
+  { id: 'dakar', name: 'Mix Lab Dakar', cityId: 'dakar', pricePerDay: 730, quality: 66, producer: 'Ibou Faye', stars: 2, genres: ['Mbalax', 'Hip-hop'] },
+  { id: 'accra', name: 'Accra Tape House', cityId: 'accra', pricePerDay: 910, quality: 68, producer: 'Nana Owusu', stars: 3, genres: ['Hip-hop', 'Afro-pop'] },
+  { id: 'eko', name: 'Eko Sound Lab', cityId: 'lagos', pricePerDay: 1260, quality: 74, producer: 'Tayo Bello', stars: 4, genres: ['Afro-pop', 'R&B'] },
+  { id: 'luanda', name: 'Luanda Beat', cityId: 'luanda', pricePerDay: 770, quality: 64, producer: 'Zeca Neto', stars: 2, genres: ['Kuduro'] },
+  { id: 'joburg', name: 'Joburg Tapes', cityId: 'johannesburg', pricePerDay: 1540, quality: 78, producer: 'Lwazi Khumalo', stars: 3, genres: ['Amapiano', 'Hip-hop'] },
+  { id: 'nairobi', name: 'Nairobi Tapes', cityId: 'nairobi', pricePerDay: 840, quality: 67, producer: 'Amani Otieno', stars: 2, genres: ['Afro-pop'] },
+  { id: 'cairo', name: 'Cairo Vox', cityId: 'cairo', pricePerDay: 980, quality: 70, producer: 'Karim Fouad', stars: 3, genres: ['Pop', 'Électro'] },
+  { id: 'rivoli', name: 'Maison Rivoli', cityId: 'paris', pricePerDay: 2520, quality: 83, producer: 'Marc Lefèvre', stars: 4, genres: ['Hip-hop', 'Pop', 'Électro'] },
+  { id: 'abbey', name: 'Abbey Row Studios', cityId: 'london', pricePerDay: 3640, quality: 86, producer: 'Oliver Pryce', stars: 4, genres: ['Pop', 'R&B', 'Rock'] },
+  { id: 'kontrol', name: 'Berlin Kontrol', cityId: 'berlin', pricePerDay: 2100, quality: 80, producer: 'Jana Weiss', stars: 3, genres: ['Électro', 'Rock'] },
+  { id: 'brooklyn', name: 'Brooklyn Basement', cityId: 'newyork', pricePerDay: 3920, quality: 89, producer: 'Dre Hollis', stars: 5, genres: ['Hip-hop', 'R&B'] },
+  { id: 'sunset', name: 'Sunset Rec', cityId: 'losangeles', pricePerDay: 4480, quality: 92, producer: 'Skye Ramirez', stars: 5, genres: ['Pop', 'Hip-hop', 'R&B'] },
+  { id: 'mexico', name: 'Estudio Sonora', cityId: 'mexico', pricePerDay: 1400, quality: 73, producer: 'Diego Salas', stars: 3, genres: ['Pop', 'Hip-hop'] },
+  { id: 'sampa', name: 'Sampa Sound', cityId: 'saopaulo', pricePerDay: 1820, quality: 76, producer: 'Bia Carvalho', stars: 3, genres: ['Pop', 'Électro'] },
+  { id: 'dubai', name: 'Dubai Gold Studio', cityId: 'dubai', pricePerDay: 2800, quality: 84, producer: 'Rami Haddad', stars: 4, genres: ['Pop', 'Électro'] },
+  { id: 'mumbai', name: 'Mumbai Wave', cityId: 'mumbai', pricePerDay: 1260, quality: 72, producer: 'Rohan Mehta', stars: 3, genres: ['Pop', 'Électro'] },
+  { id: 'hanriver', name: 'Han River Studio', cityId: 'seoul', pricePerDay: 3360, quality: 88, producer: 'Ji-woo Park', stars: 4, genres: ['Pop', 'Hip-hop', 'R&B'] },
+  { id: 'neon', name: 'Tokyo Neon', cityId: 'tokyo', pricePerDay: 3780, quality: 90, producer: 'Ren Sato', stars: 5, genres: ['Pop', 'Électro', 'Rock'] },
+  { id: 'harbour', name: 'Harbour Rec', cityId: 'sydney', pricePerDay: 3080, quality: 85, producer: 'Jack Moreau', stars: 4, genres: ['Pop', 'Rock', 'Électro'] },
 ]
 export const studioById = (id: string) => STUDIOS.find((s) => s.id === id)!
 
@@ -30,16 +30,16 @@ export const SESSION_OPTIONS = [{ days: 2, label: '2 jours', weeks: 1, q: -2 }, 
 export interface MixOption { id: string; name: string; desc: string; cost: number; weeks: number; bonus: number; risk: 'Faible' | 'Moyen'; label: string }
 export const MIX_OPTIONS: MixOption[] = [
   { id: 'interne', name: 'Mix interne', desc: 'Votre équipe mixe sur place.', cost: 0, weeks: 1, bonus: 0, risk: 'Moyen', label: '1 semaine' },
-  { id: 'local', name: 'Ingénieur local', desc: 'Un ingénieur du son reconnu dans la ville du studio.', cost: 1800, weeks: 2, bonus: 6, risk: 'Faible', label: '10 jours' },
-  { id: 'international', name: 'Mix international', desc: 'Studio de renom, master inclus.', cost: 6500, weeks: 3, bonus: 12, risk: 'Faible', label: '3 semaines' },
+  { id: 'local', name: 'Ingénieur local', desc: 'Un ingénieur du son reconnu dans la ville du studio.', cost: 2700, weeks: 2, bonus: 6, risk: 'Faible', label: '10 jours' },
+  { id: 'international', name: 'Mix international', desc: 'Studio de renom, master inclus.', cost: 9500, weeks: 3, bonus: 12, risk: 'Faible', label: '3 semaines' },
 ]
-export const MASTERING = { cost: 600, bonus: 3 }
+export const MASTERING = { cost: 900, bonus: 3 }
 
 export interface LocOption { id: string; name: string; desc: string; cost: number; weeks: number }
 export const LOC_OPTIONS: LocOption[] = [
-  { id: 'en', name: 'Version anglaise', desc: 'Pour les marchés anglophones', cost: 4000, weeks: 1 },
-  { id: 'amapiano', name: 'Remix amapiano', desc: "Pour l'Afrique australe", cost: 2500, weeks: 1 },
-  { id: 'clip', name: 'Clip adapté', desc: 'Image et réseaux sociaux', cost: 9000, weeks: 3 },
+  { id: 'en', name: 'Version anglaise', desc: 'Pour les marchés anglophones', cost: 5500, weeks: 1 },
+  { id: 'amapiano', name: 'Remix amapiano', desc: "Pour l'Afrique australe", cost: 3500, weeks: 1 },
+  { id: 'clip', name: 'Clip adapté', desc: 'Image et réseaux sociaux', cost: 12000, weeks: 3 },
 ]
 
 export interface Partner { id: string; name: string; kind: 'Promoteur' | 'Sponsor' | 'Billetterie' | 'Transport'; desc: string; share: number; guarantee: number; sold: number; fatigue: number; risk: number; minRep: number }
@@ -72,16 +72,16 @@ export const ROLE_SKILL: Record<string, Recruit['skill']> = {
   Producteur: 'production', Booker: 'reseau', 'Directeur artistique': 'negociation', Éclaireuse: 'reperage', Marketing: 'marketing', 'Réalisateur de clips': 'marketing', Comptable: 'finance',
 }
 export const RECRUITS: Recruit[] = [
-  { id: 'r1', name: 'Tayo Bello', role: 'Producteur', cityId: 'lagos', level: 4, salary: 1400, skill: 'production' },
-  { id: 'r2', name: 'Zainab Yusuf', role: 'Booker', cityId: 'lagos', level: 3, salary: 1100, skill: 'reseau' },
-  { id: 'r3', name: 'Marc Lefèvre', role: 'Directeur artistique', cityId: 'paris', level: 3, salary: 1900, skill: 'negociation' },
-  { id: 'r4', name: 'Adjoua Koffi', role: 'Éclaireuse', cityId: 'abidjan', level: 2, salary: 700, skill: 'reperage' },
-  { id: 'r5', name: 'Samuel Ndiaye', role: 'Marketing', cityId: 'dakar', level: 2, salary: 900, skill: 'marketing' },
-  { id: 'r6', name: 'Nadège Aka', role: 'Réalisateur de clips', cityId: 'abidjan', level: 2, salary: 800, skill: 'marketing' },
-  { id: 'r7', name: 'Fatim Cissé', role: 'Comptable', cityId: 'abidjan', level: 2, salary: 650, skill: 'finance' },
-  { id: 'r8', name: 'Kelvin Okoro', role: 'Éclaireuse', cityId: 'lagos', level: 3, salary: 1000, skill: 'reperage' },
-  { id: 'r9', name: 'Chloé Dubreuil', role: 'Marketing', cityId: 'paris', level: 4, salary: 2000, skill: 'marketing' },
-  { id: 'r10', name: 'Thabo Mokoena', role: 'Directeur artistique', cityId: 'johannesburg', level: 3, salary: 1500, skill: 'negociation' },
+  { id: 'r1', name: 'Tayo Bello', role: 'Producteur', cityId: 'lagos', level: 4, salary: 1750, skill: 'production' },
+  { id: 'r2', name: 'Zainab Yusuf', role: 'Booker', cityId: 'lagos', level: 3, salary: 1380, skill: 'reseau' },
+  { id: 'r3', name: 'Marc Lefèvre', role: 'Directeur artistique', cityId: 'paris', level: 3, salary: 2380, skill: 'negociation' },
+  { id: 'r4', name: 'Adjoua Koffi', role: 'Éclaireuse', cityId: 'abidjan', level: 2, salary: 880, skill: 'reperage' },
+  { id: 'r5', name: 'Samuel Ndiaye', role: 'Marketing', cityId: 'dakar', level: 2, salary: 1120, skill: 'marketing' },
+  { id: 'r6', name: 'Nadège Aka', role: 'Réalisateur de clips', cityId: 'abidjan', level: 2, salary: 1000, skill: 'marketing' },
+  { id: 'r7', name: 'Fatim Cissé', role: 'Comptable', cityId: 'abidjan', level: 2, salary: 810, skill: 'finance' },
+  { id: 'r8', name: 'Kelvin Okoro', role: 'Éclaireuse', cityId: 'lagos', level: 3, salary: 1250, skill: 'reperage' },
+  { id: 'r9', name: 'Chloé Dubreuil', role: 'Marketing', cityId: 'paris', level: 4, salary: 2500, skill: 'marketing' },
+  { id: 'r10', name: 'Thabo Mokoena', role: 'Directeur artistique', cityId: 'johannesburg', level: 3, salary: 1880, skill: 'negociation' },
 ]
 
 /** Équipe de départ : 3 personnes (cf. création de partie). */

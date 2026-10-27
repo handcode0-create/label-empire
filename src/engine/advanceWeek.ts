@@ -28,7 +28,7 @@ export function advanceWeek(s0: GameState): GameState {
   for (const song of s.songs) {
     if (song.stage === 'scheduled' && song.release && song.release.week <= W) {
       song.stage = 'released'
-      s.reputation += 0.3
+      s.reputation += 0.1
       for (const id of song.release.cityIds) if (!s.stats.countriesReached.includes(id)) s.stats.countriesReached.push(id)
       notes.push({ tag: 'Sortie', text: `« ${song.title} » est disponible dans ${song.release.cityIds.length} territoire(s).`, tone: 'g' })
     }
@@ -67,14 +67,14 @@ export function advanceWeek(s0: GameState): GameState {
       }
       const rank = rankInCity(c.id, W, st)
       const w = { A: 1.2, B: 1, C: 0.8, D: 0.6 }[c.tier]
-      repGain += (rank <= 3 ? 0.35 : rank <= 10 ? 0.15 : rank <= 30 ? 0.04 : 0) * w
+      repGain += (rank <= 3 ? 0.12 : rank <= 10 ? 0.045 : rank <= 30 ? 0.01 : 0) * w
       if (rank <= 3 && (song.stats.peak[c.id] ?? 99) > 3) notes.push({ tag: 'Classement', text: `« ${song.title} » entre dans le top 3 à ${c.name}.`, tone: 'c' })
       song.stats.peak[c.id] = Math.min(song.stats.peak[c.id] ?? 99, rank)
     }
     if (counted) song.stats.weeks++
     song.hype = song.hype < 0.05 ? 0 : song.hype * 0.55
   }
-  s.reputation += Math.min(2, repGain)
+  s.reputation += Math.min(0.5, repGain)
 
   // 3. tournées, concours, rivaux
   receipts += runTourStops(s, notes)
@@ -94,6 +94,7 @@ export function advanceWeek(s0: GameState): GameState {
   s.cash -= fixed.total
   if (fixed.salaries) items.push({ label: 'Salaires', amount: -fixed.salaries })
   if (fixed.rent) items.push({ label: 'Loyers des bureaux', amount: -fixed.rent })
+  if (fixed.overhead) items.push({ label: 'Frais de structure', amount: -fixed.overhead })
   if (s.loan) {
     s.loan.remaining -= s.loan.weekly; s.loan.weeksLeft--
     items.push({ label: 'Remboursement du prêt', amount: -s.loan.weekly })

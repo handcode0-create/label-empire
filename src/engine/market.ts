@@ -4,7 +4,7 @@ import { createRng, hash } from './rng'
 import type { ChartRow, GameState, Song } from './types'
 import { fansInCity, staffSkill } from './util'
 
-export const STREAM_VALUE = 0.02 // dollars par écoute avant retenues
+export const STREAM_VALUE = 0.009 // dollars par écoute avant retenues
 
 function locBoost(song: Song, city: City) {
   let b = 0

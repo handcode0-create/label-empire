@@ -78,7 +78,8 @@ export function repayLoan(s0: GameState): Result {
 export function weeklyFixedCosts(s: GameState) {
   const salaries = s.staff.reduce((t, m) => t + m.salary, 0)
   const rent = s.offices.filter((o) => o.since <= s.week).reduce((t, o) => t + (o.kind === 'partenaire' ? 0 : cityById(o.cityId).rent / 4.33), 0)
-  return { salaries, rent: Math.round(rent), loan: s.loan?.weekly ?? 0, total: salaries + Math.round(rent) + (s.loan?.weekly ?? 0) }
+  const overhead = Math.round(s.reputation * 30) // frais de structure : un label plus gros coûte plus cher
+  return { salaries, rent: Math.round(rent), overhead, loan: s.loan?.weekly ?? 0, total: salaries + Math.round(rent) + overhead + (s.loan?.weekly ?? 0) }
 }
 
 // ---------- événements ----------

@@ -17,7 +17,7 @@ export function validateConfig(c: NewGameConfig): string[] {
 
 /** Plus la réputation de départ est haute, moins il y a de cash. */
 export function startingCash(reputation: number, difficulty: NewGameConfig['difficulty']): number {
-  const base = 150_000 - reputation * 2_000
+  const base = 110_000 - reputation * 1_500
   const k = difficulty === 'facile' ? 1.25 : difficulty === 'difficile' ? 0.8 : 1
   return Math.round((base * k) / 1000) * 1000
 }
