@@ -3,7 +3,7 @@ import { CITIES, GENRES, cityById, type City } from '../data/world'
 import type { Rng } from './rng'
 import type { Artist, Contest, GameState, Result } from './types'
 import { ARTIST_SKILLS } from './types'
-import { clamp, clone, drawRng, fail, money, ok, spend, staffSkill, sum, useAp } from './util'
+import { artistSlots, signedCount, clamp, clone, drawRng, fail, money, ok, spend, staffSkill, sum, useAp } from './util'
 
 const slugify = (t: string) => t.normalize('NFKD').replace(/[^\w\s-]/g, '').toLowerCase().replace(/\s+/g, '-')
 
@@ -92,6 +92,7 @@ export function signArtist(s0: GameState, id: string, o: Offer): Result {
   if (i < 0) return fail(s0, 'Artiste introuvable.')
   const c = s.pool[i]
   if (s.artists.some((a) => a.id === id)) return fail(s0, 'Déjà sous contrat.')
+  if (signedCount(s) >= artistSlots(s)) return fail(s0, `Plus de place : ${artistSlots(s)} artistes maximum. Ouvrez un bureau ou montez en palier pour agrandir le label.`)
   const ev = evaluateOffer(s, c, o)
   if (o.advance > s.cash) return fail(s0, `Trésorerie insuffisante : avance de ${money(o.advance)}.`)
   const e = useAp(s)

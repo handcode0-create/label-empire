@@ -35,3 +35,7 @@ export function useAp(s: GameState, n = 1): string | null {
   s.ap -= n
   return null
 }
+
+/** Places d'artistes sous contrat : 3 au départ, +1 par bureau ou partenaire, +1 par palier atteint. */
+export const artistSlots = (s: GameState) => 3 + s.offices.length - 1 + Math.floor(s.reputation / 25)
+export const signedCount = (s: GameState) => s.artists.filter((a) => !a.isFounder).length

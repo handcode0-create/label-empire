@@ -1,7 +1,7 @@
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { ARTIST_LABELS, cityById } from '../../data/world'
-import { sum } from '../../engine/util'
+import { artistSlots, signedCount, sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
 import { compact, initials, stars } from '../../lib'
 
@@ -32,7 +32,7 @@ export default function Artistes() {
       <Hud />
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 430, display: 'flex', flexDirection: 'column', gap: 12}}>
-          <div style={{display: 'flex', alignItems: 'center'}}><h1 className="h1">Mes artistes</h1><span className="sp" /><span className="tag ti">{g.artists.length} artiste{g.artists.length > 1 ? 's' : ''}</span></div>
+          <div style={{display: 'flex', alignItems: 'center'}}><h1 className="h1">Mes artistes</h1><span className="sp" /><span className="tag ti">{signedCount(g)} sur {artistSlots(g)} places</span></div>
           {g.artists.map((x) => (
             <div key={x.id} className={'pn' + (a && x.id === a.id ? ' sel' : '')} role="button" tabIndex={0} onClick={() => select({ artistId: x.id })} style={{display: 'flex', gap: 14, alignItems: 'center', padding: '14px 16px', cursor: 'pointer'}}>
               <div className="av" style={{width: 56, height: 56, fontSize: 22, background: grad(x.gradient)}}>{initials(x.stageName)}</div>
