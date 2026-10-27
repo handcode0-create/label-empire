@@ -1,3 +1,4 @@
+import Avatar from '../../components/Avatar'
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -5,7 +6,7 @@ import { cityById } from '../../data/world'
 import { visibleCandidates } from '../../engine/scouting'
 import { sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
-import { compact, initials, stars, usd } from '../../lib'
+import {compact, stars, usd} from '../../lib'
 
 export default function Decouverte() {
   const g = useGame((s) => s.game)!
@@ -45,7 +46,7 @@ export default function Decouverte() {
             {list.length === 0 && <div className="pn mut">Aucun artiste ne correspond à ces filtres.</div>}
             {list.slice(0, 6).map((a, i) => { const [t, label] = tag(a); const c = cityById(a.originCityId); return (
               <a key={a.id} href="Profil.dc.html" onClick={() => select({ candidateId: a.id })} className={'pn' + (i === 0 ? ' sel' : '')} style={{display: 'grid', gridTemplateColumns: '64px 1fr 110px 90px 90px 110px', gap: 14, alignItems: 'center', padding: '12px 18px'}}>
-                <div className="av" style={{width: 56, height: 56, fontSize: 20, background: `linear-gradient(135deg,${a.gradient})`}}>{initials(a.stageName)}</div>
+                <Avatar artist={a} size={56} />
                 <div><b style={{fontSize: 17}}>{a.stageName}</b><div className="mut" style={{fontSize: 13}}>{c.name}, {c.country} · {a.genre}</div></div>
                 <span style={{color: '#FFC63D'}}>{stars(a.potential)}</span>
                 <span><b>{compact(sum(a.fans))}</b><div className="mut" style={{fontSize: 12}}>fans</div></span>

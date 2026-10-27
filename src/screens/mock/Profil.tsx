@@ -1,3 +1,4 @@
+import Avatar from '../../components/Avatar'
 import { useEffect, useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -5,7 +6,7 @@ import { ARTIST_LABELS, cityById } from '../../data/world'
 import { hash } from '../../engine/rng'
 import { sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
-import { compact, initials, stars, usd } from '../../lib'
+import {compact, stars, usd} from '../../lib'
 
 const col = (v: number) => (v >= 75 ? 'cy' : v >= 60 ? 'gd' : v >= 45 ? 'gr' : 'rd')
 const traitTone = (t: string, i: number) => (/dur|Exigeant|Ego/i.test(t) ? 'tr_' : ['tg', 'te', 'tc'][i % 3])
@@ -39,7 +40,7 @@ export default function Profil() {
           <div className="map" style={{position: 'absolute', inset: 0, opacity: '0.22'}}><div className="mk c" style={{left: c.x + '%', top: c.y + '%'}} /></div>
           <div style={{position: 'absolute', left: 36, top: 22}}><a href="Decouverte.dc.html" className="btn s sm">Retour à la liste</a></div>
           <div style={{position: 'absolute', left: 36, bottom: 28, display: 'flex', alignItems: 'flex-end', gap: 28}}>
-            <div className="av" style={{width: 180, height: 180, fontSize: 64, background: `linear-gradient(135deg,${a.gradient})`}}>{initials(a.stageName)}</div>
+            <Avatar artist={a} size={180} />
             <div style={{paddingBottom: 6}}><div style={{display: 'flex', gap: 8}}><span className="tag te">{a.genre}</span><span className={'tag ' + status[0]}>{status[1]}</span><span className="tag ti">{age} ans</span></div><h1 className="disp" style={{fontSize: 72, lineHeight: 1, marginTop: 8}}>{a.stageName}</h1><div className="lbl" style={{fontSize: 15, marginTop: 4}}>{c.name}, {c.country} · {a.lang}</div></div>
           </div>
           <div style={{position: 'absolute', right: 36, bottom: 28, display: 'flex', gap: 12}}><div className="pn" style={{textAlign: 'center', padding: '12px 20px'}}><div className="lbl">Potentiel</div><div style={{color: '#FFC63D', fontSize: 20}}>{stars(a.potential)}</div></div><div className="pn" style={{textAlign: 'center', padding: '12px 20px'}}><div className="lbl">Fans</div><div className="num" style={{color: '#35D3F0'}}>{compact(sum(a.fans))}</div></div><div className="pn" style={{textAlign: 'center', padding: '12px 20px'}}><div className="lbl">Avance demandée</div><div className="num" style={{color: '#FFC63D'}}>{usd(a.asking?.advance ?? 0)}</div></div></div>

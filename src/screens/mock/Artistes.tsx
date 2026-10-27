@@ -1,9 +1,10 @@
+import Avatar from '../../components/Avatar'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { ARTIST_LABELS, cityById } from '../../data/world'
 import { artistSlots, signedCount, sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
-import { compact, initials, stars } from '../../lib'
+import {compact, stars} from '../../lib'
 
 const tone = (m: number) => (m >= 70 ? 'tg' : m >= 45 ? 'te' : 'tr_')
 const barc = (m: number) => (m >= 70 ? 'gr' : m >= 45 ? 'gd' : 'rd')
@@ -20,7 +21,6 @@ export default function Artistes() {
   const g = useGame((s) => s.game)!
   const { sel, select } = useGame()
   const a = g.artists.find((x) => x.id === sel.artistId) ?? g.artists[0]
-  const grad = (x: string) => `linear-gradient(135deg,${x})`
   const [mood, line] = a ? wish(g, a) : ['', '']
   const fansList = a ? Object.entries(a.fans).sort((x, y) => y[1] - x[1]).slice(0, 5) : []
   const maxF = Math.max(1, ...fansList.map((f) => f[1]))
@@ -35,7 +35,7 @@ export default function Artistes() {
           <div style={{display: 'flex', alignItems: 'center'}}><h1 className="h1">Mes artistes</h1><span className="sp" /><span className="tag ti">{signedCount(g)} sur {artistSlots(g)} places</span></div>
           {g.artists.map((x) => (
             <div key={x.id} className={'pn' + (a && x.id === a.id ? ' sel' : '')} role="button" tabIndex={0} onClick={() => select({ artistId: x.id })} style={{display: 'flex', gap: 14, alignItems: 'center', padding: '14px 16px', cursor: 'pointer'}}>
-              <div className="av" style={{width: 56, height: 56, fontSize: 22, background: grad(x.gradient)}}>{initials(x.stageName)}</div>
+              <Avatar artist={x} size={56} />
               <div style={{flex: 1}}><b style={{fontSize: 17}}>{x.stageName}</b><div className="mut" style={{fontSize: 13}}>{cityById(x.originCityId).name} · {x.genre.toLowerCase()}{x.isFounder ? ' · fondateur' : ''}</div><div className={'mt ' + barc(x.morale)} style={{marginTop: 8}}><i style={{width: Math.round(x.morale) + '%'}} /></div></div>
               <span className={'tag ' + tone(x.morale)}>Moral {Math.round(x.morale)}</span>
             </div>
@@ -48,7 +48,7 @@ export default function Artistes() {
         {a ? (
           <div className="pn cut" style={{flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 28px', alignContent: 'start'}}>
             <div style={{gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 18}}>
-              <div className="av" style={{width: 84, height: 84, fontSize: 32, background: grad(a.gradient)}}>{initials(a.stageName)}</div>
+              <Avatar artist={a} size={84} />
               <div><div className="h1">{a.stageName}</div><div className="mut">{cityById(a.originCityId).name}, {cityById(a.originCityId).country} · {a.lang} · {a.genre.toLowerCase()}</div></div>
               <div className="sp" />
               <span className="tag tc">Potentiel : {stars(a.potential)}</span>
@@ -73,9 +73,11 @@ export default function Artistes() {
             <div className="bub" style={{gridColumn: '1 / -1'}}>
               <span className="tag ti" style={{marginRight: 8}}>{mood}</span>« {line} »
             </div>
-            <div style={{gridColumn: '1 / -1', display: 'flex', gap: 12}}>
+            <div style={{gridColumn: '1 / -1', display: 'flex', gap: 10, whiteSpace: 'nowrap'}}>
               <a href="Ecriture.dc.html" className="btn" onClick={() => select({ artistId: a.id })}>Nouveau titre</a>
               <a href="Tournee.dc.html" className="btn s" onClick={() => select({ artistId: a.id })}>Tournée</a>
+              <a href="Artiste.dc.html" className="btn s" onClick={() => select({ artistId: a.id, rivalId: null })}>Discographie</a>
+              <a href="Projets.dc.html" className="btn s">EP & albums</a>
               {a.contract && <a href="Contrat.dc.html" className="btn s" onClick={() => select({ artistId: a.id, candidateId: null })}>Renégocier</a>}
             </div>
           </div>

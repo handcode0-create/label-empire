@@ -28,7 +28,7 @@ export default function Titre() {
   const genre = (mine ?? rs)!.genre
   const total = mine ? mine.stats.streams : rs!.plays
   const proj = mine ? projectOf(g, mine.id)?.name : ra?.projects.find((p) => p.id === rs!.projectId)?.name
-  const avatar = { id: artistId, stageName: stage, realName: ma?.realName ?? ra?.realName, originCityId: ma?.originCityId ?? ra!.originCityId, gradient: ma?.gradient ?? gradientFor(artistId) }
+  const avatar = { id: artistId, stageName: stage, realName: ma?.realName ?? ra?.realName, originCityId: ma?.originCityId ?? ra!.originCityId, gradient: ma?.gradient ?? gradientFor(artistId), isFounder: ma?.isFounder }
   const rank = (lv: 'monde' | 'pays') => { const r = chartFor(g, lv, g.label.hqCityId, 'singles').find((x) => x.songId === sel.viewSongId); return r ? `n°${r.rank}` : 'hors' }
   const byCity = mine ? Object.entries(mine.stats.lastByCity).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6) : []
   const maxS = Math.max(1, ...byCity.map((x) => x[1]))

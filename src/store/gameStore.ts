@@ -13,7 +13,7 @@ const initial: NewGameConfig = {
 
 export const sum = (o: Record<string, number>) => Object.values(o).reduce((a, b) => a + b, 0)
 
-const SAVE_KEY = 'label-empire-save-v1'
+const SAVE_KEY = 'label-empire-save-v2'
 const readSave = (): GameState | null => { try { const t = localStorage.getItem(SAVE_KEY); return t ? (JSON.parse(t) as GameState) : null } catch { return null } }
 const writeSave = (g: GameState | null) => { try { if (g) localStorage.setItem(SAVE_KEY, JSON.stringify(g)); else localStorage.removeItem(SAVE_KEY) } catch { /* stockage indisponible */ } }
 

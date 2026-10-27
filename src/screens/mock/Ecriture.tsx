@@ -1,3 +1,4 @@
+import Avatar from '../../components/Avatar'
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -8,7 +9,7 @@ import { featBonus, featFee } from '../../engine/production'
 import { visibleCandidates } from '../../engine/scouting'
 import { EXTERNAL_WRITER_COST, lyricsEstimate, words, writeSong } from '../../engine/production'
 import { useGame } from '../../store/gameStore'
-import { initials, usd } from '../../lib'
+import {usd} from '../../lib'
 
 const IDEAS = ["Sous le ciel d'Abidjan, le soir se lève doux", 'Mes rêves dans mes poches, des étoiles à genoux', 'On danse jusqu’au matin, la ville nous appartient', 'Même quand tout s’éteint, ta voix reste allumée', 'Le rythme dans mes veines, la rue sous mes pieds', 'Je porte mes racines comme une couronne', 'Un jour ils chanteront ce refrain avec nous', 'La route est longue mais le cœur est lourd d’espoir']
 const STEPS = [['Ecriture', '1 Écrire'], ['Studio', '2 Enregistrer'], ['Mixage', '3 Mixer'], ['Sortie', '4 Sortir']]
@@ -86,7 +87,7 @@ export default function Ecriture() {
           </div></div>
           <div className="pn">
             <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Featuring</span><span className="sp" />{feat ? <span className="chip on" onClick={() => setFeat(null)}>Retirer</span> : <span className="chip" onClick={() => setFeatOpen(!featOpen)}>{featOpen ? 'Fermer' : 'Ajouter un feat'}</span>}</div>
-            {featArtist && <div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 10}}><div className="av" style={{width: 40, height: 40, fontSize: 15, background: `linear-gradient(135deg,${featArtist.gradient})`}}>{initials(featArtist.stageName)}</div><div style={{flex: 1}}><b>{featArtist.stageName}</b><div className="mut" style={{fontSize: 12}}>{cityLabel(featArtist.originCityId)} · +{featBonus(featArtist)} qualité · {feat?.kind === 'externe' ? `${usd(featCost)} + 12 % des revenus` : 'artiste du label'}</div></div></div>}
+            {featArtist && <div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 10}}><Avatar artist={featArtist} size={40} /><div style={{flex: 1}}><b>{featArtist.stageName}</b><div className="mut" style={{fontSize: 12}}>{cityLabel(featArtist.originCityId)} · +{featBonus(featArtist)} qualité · {feat?.kind === 'externe' ? `${usd(featCost)} + 12 % des revenus` : 'artiste du label'}</div></div></div>}
             {!featArtist && !featOpen && <div className="mut" style={{fontSize: 13, marginTop: 8}}>Un duo apporte de la qualité et l'audience du partenaire dans sa ville.</div>}
             {featOpen && !feat && (
               <div style={{marginTop: 8, maxHeight: 190, overflow: 'auto'}}>

@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { avatarKey } from '../data/avatars'
 import { initials } from '../lib'
+import { useGame } from '../store/gameStore'
 
 /** Liste des portraits disponibles (public/avatars/manifest.json) : clé → nom de fichier. */
 let manifest: Record<string, string> | null = null
@@ -17,7 +18,7 @@ function useAvatarFile(key: string): string | null {
 }
 
 interface Props {
-  artist?: { id: string; stageName: string; realName?: string; originCityId: string; gradient: string }
+  artist?: { id: string; stageName: string; realName?: string; originCityId: string; gradient: string; isFounder?: boolean }
   /** Pour un personnage hors artiste (histoire) : clé de portrait, nom et dégradé. */
   keyName?: string; name?: string; gradient?: string
   size?: number
@@ -28,14 +29,16 @@ interface Props {
 
 /** Portrait cartoon si l'image existe, sinon monogramme sur dégradé. */
 export default function Avatar({ artist, keyName, name, gradient, size = 64, style, src: forced }: Props) {
-  const key = keyName ?? (artist ? avatarKey(artist) : '')
+  const label = useGame((st) => st.game?.label)
+  const founder = !!artist?.isFounder
+  const key = keyName ?? (founder ? (label?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur') : artist ? avatarKey(artist) : '')
   const file = useAvatarFile(key)
-  const src = forced ?? file
-  const label = name ?? artist?.stageName ?? '?'
+  const src = forced ?? (founder ? label?.photo : undefined) ?? file
+  const text = name ?? artist?.stageName ?? '?'
   const grad = gradient ?? artist?.gradient ?? '#8B5CF6,#FF3D9A'
   return (
-    <div className="av" style={{ width: size, height: size, fontSize: Math.round(size * 0.36), background: `linear-gradient(135deg,${grad})`, overflow: 'hidden', ...style }} aria-label={label}>
-      {src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(label)}
+    <div className="av" style={{ width: size, height: size, fontSize: Math.round(size * 0.36), background: `linear-gradient(135deg,${grad})`, overflow: 'hidden', ...style }} aria-label={text}>
+      {src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(text)}
     </div>
   )
 }

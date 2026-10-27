@@ -1,3 +1,4 @@
+import Avatar from '../../components/Avatar'
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -5,7 +6,7 @@ import Slider from '../../components/Slider'
 import { CITIES, cityById } from '../../data/world'
 import { CONTEST_FORMATS, startContest } from '../../engine/scouting'
 import { useGame } from '../../store/gameStore'
-import { initials, usd } from '../../lib'
+import {usd} from '../../lib'
 
 export default function Concours() {
   const g = useGame((s) => s.game)!
@@ -68,7 +69,7 @@ export default function Concours() {
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12}}>
               {finalists.map((a, i) => (
                 <div key={a.id} className={'pn' + (i === 0 ? ' sel' : '')} style={{textAlign: 'center', padding: '16px 12px'}}>
-                  <div style={{display: 'flex', justifyContent: 'center'}}><div className="av" style={{width: 76, height: 76, fontSize: 27, background: `linear-gradient(135deg,${a.gradient})`}}>{initials(a.stageName)}</div></div>
+                  <div style={{display: 'flex', justifyContent: 'center'}}><Avatar artist={a} size={76} /></div>
                   <div style={{marginTop: 10}}><b style={{fontSize: 17}}>{a.stageName}</b></div>
                   <div className="mut" style={{fontSize: 13}}>{cityById(a.originCityId).name} · {a.genre}</div>
                   <div className="num" style={{marginTop: 8, color: '#FFC63D'}}>{Math.round(a.demo.quality)}</div><div className="mut" style={{fontSize: 12}}>note du jury</div>

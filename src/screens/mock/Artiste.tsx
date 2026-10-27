@@ -29,7 +29,7 @@ export default function Artiste() {
   const genre = (mine ?? rival)!.genre
   const labelName = mine ? g.label.name : rival!.labelName
   const logoId = mine ? g.label.logoId : undefined
-  const avatar = { id, stageName: stage, realName: mine?.realName ?? rival!.realName, originCityId: city.id, gradient: mine?.gradient ?? gradientFor(id) }
+  const avatar = { id, stageName: stage, realName: mine?.realName ?? rival!.realName, originCityId: city.id, gradient: mine?.gradient ?? gradientFor(id), isFounder: mine?.isFounder }
 
   const songs: SongRow[] = mine
     ? g.songs.filter((s) => s.artistId === id && s.stage === 'released').map((s) => ({ id: s.id, title: songName(s), plays: s.stats.streams, project: projectOf(g, s.id)?.name, mine: true }))

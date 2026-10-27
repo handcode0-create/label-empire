@@ -1,3 +1,4 @@
+import Avatar from '../../components/Avatar'
 import { useMemo, useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -7,7 +8,7 @@ import { evaluateOffer, renegotiate, signArtist, type Offer } from '../../engine
 import { sum } from '../../engine/util'
 import type { Artist } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
-import { compact, initials, stars, usd } from '../../lib'
+import {compact, stars, usd} from '../../lib'
 
 const SCOPES = [['local', 'Un pays'], ['region', 'Continent'], ['monde', 'Monde']] as const
 const years = (w: number) => (w % 52 === 0 ? `${w / 52} an${w > 52 ? 's' : ''}` : `${w} sem.`)
@@ -41,7 +42,7 @@ export default function Contrat() {
         <div style={{width: 470, display: 'flex', flexDirection: 'column', gap: 14}}>
           <div className="pn cut" style={{height: 330, padding: 0, overflow: 'hidden', background: 'radial-gradient(300px 220px at 50% 40%, rgba(139,92,246,0.55), transparent), #1C1236', position: 'relative'}}>
             <div className="map" style={{position: 'absolute', inset: 0, opacity: '0.25'}} />
-            <div className="av" style={{position: 'absolute', left: 160, top: 52, width: 150, height: 150, fontSize: 56, background: `linear-gradient(135deg,${base.gradient})`}}>{initials(base.stageName)}</div>
+            <Avatar artist={base} size={150} style={{position: 'absolute', left: 160, top: 52}} />
             <div style={{position: 'absolute', left: 24, bottom: 20}}><div className="lbl">{existing ? 'Contrat à renégocier' : 'Artiste à signer'}</div><div className="disp" style={{fontSize: 42, lineHeight: 1}}>{base.stageName.toUpperCase()}</div><div className="mut" style={{fontSize: 14}}>{c.name}, {c.country} · {base.genre.toLowerCase()}</div></div>
             <span className="tag tc" style={{position: 'absolute', right: 20, top: 20}}>Potentiel : {stars(base.potential)}</span>
           </div>

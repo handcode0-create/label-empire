@@ -16,8 +16,10 @@ export default function Hud() {
   const pal = palierFor(rep)
   return (
     <header className="hud">
+      <a href="Label.dc.html" title="Fiche du label" style={{ display: 'contents' }} onClick={(e) => { e.preventDefault(); if (!game) return; useGame.getState().select({ labelName: name }); useGame.getState().go('Label') }}>
       <div className="av" style={{ background: 'linear-gradient(135deg,#8B5CF6,#FF3D9A)', overflow: 'hidden' }}>{(logo.startsWith('data:') || logo.startsWith('/logos/')) ? <img src={logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(name)}</div>
       <div><div className="disp" style={{ fontSize: 22, lineHeight: 1 }}>{name}</div><div className="lbl" style={{ marginTop: 3 }}>Palier {pal.n} · {pal.name}</div></div>
+      </a>
       <div className="sp" />
       <div className="coin" title="Trésorerie"><i style={{ background: '#FFC63D' }}>$</i><b style={cash < 0 ? { color: '#FF5470' } : undefined}>{cash < 0 ? '−' : ''}{fmt(Math.abs(cash))}</b></div>
       <div className="coin" title="Réputation (100 = victoire)"><i style={{ background: '#8B5CF6', color: '#fff' }}>★</i><b>{Math.floor(rep)}</b><small>Réputation</small></div>
