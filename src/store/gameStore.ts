@@ -102,7 +102,7 @@ export const useGame = create<Store>((set, get) => ({
   load: () => {
     const g = readSave()
     if (!g) { get().say('Aucune sauvegarde trouvée.', 'err'); return false }
-    set({ game: { ...g, tournament: g.tournament ?? null, seenScenes: g.seenScenes ?? [] } })
+    set({ game: { ...g, tournament: g.tournament ?? null, seenScenes: g.seenScenes ?? [], projects: g.projects ?? [] } })
     return true
   },
   quit: () => { set({ game: null }) },

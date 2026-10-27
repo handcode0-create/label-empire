@@ -52,7 +52,7 @@ export default function Ecriture() {
       <Hud />
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 330, display: 'flex', flexDirection: 'column', gap: 12}}>
-          <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>{STEPS.map(([s, l], i) => <a key={s} href={s + '.dc.html'} className={'chip' + (i === 0 ? ' on' : '')}>{l}</a>)}</div>
+          <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>{STEPS.map(([s, l], i) => <a key={s} href={s + '.dc.html'} className={'chip' + (i === 0 ? ' on' : '')}>{l}</a>)}<a href="Projets.dc.html" className="chip">EP & albums</a></div>
           <div className="pn cut">
             <label htmlFor="tt" className="lbl">Titre</label>
             <div style={{display: 'flex', gap: 8, marginTop: 8}}>

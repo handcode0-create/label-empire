@@ -16,6 +16,7 @@ import NouvellePartie from './mock/NouvellePartie'
 import NouvellePartie2 from './mock/NouvellePartie2'
 import Pays from './mock/Pays'
 import Profil from './mock/Profil'
+import Projets from './mock/Projets'
 import Rapport from './mock/Rapport'
 import Sortie from './mock/Sortie'
 import Studio from './mock/Studio'
@@ -41,6 +42,7 @@ export const SCREENS: Record<string, () => React.JSX.Element> = {
   NouvellePartie2,
   Pays,
   Profil,
+  Projets,
   Rapport,
   Sortie,
   Studio,

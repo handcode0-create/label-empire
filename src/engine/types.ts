@@ -97,6 +97,15 @@ export interface Song {
   feat?: Feat
 }
 
+export type ProjectKind = 'EP' | 'Album'
+/** EP (3 à 6 titres) ou album (7 titres et plus) d'un artiste du label. */
+export interface Project {
+  id: string; name: string; kind: ProjectKind; artistId: string
+  songIds: string[]
+  status: 'brouillon' | 'sorti'
+  releaseWeek?: number
+}
+
 export interface TourStop { cityId: string; venue: string; capacity: number; week: number; price: number; sold?: number; revenue?: number }
 export interface Tour {
   id: string; name: string; artistId: string; stops: TourStop[]; partners: string[]
@@ -158,6 +167,7 @@ export interface GameState {
   tournament: Tournament | null
   seenScenes: string[]
   songs: Song[]
+  projects: Project[]
   tours: Tour[]
   staff: StaffMember[]
   offices: Office[]

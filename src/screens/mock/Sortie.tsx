@@ -69,7 +69,7 @@ export default function Sortie() {
       <Dock active="sorties" />
       <Hud />
       <div className="main">
-        <div style={{display: 'flex', alignItems: 'center', gap: 14}}><h1 className="h1">Programmer la sortie</h1><span className="tag ti">« {song.title} » · {artist.stageName} · qualité {song.quality}</span></div>
+        <div style={{display: 'flex', alignItems: 'center', gap: 14}}><h1 className="h1">Programmer la sortie</h1><a href="Projets.dc.html" className="chip">EP & albums</a><span className="tag ti">« {song.title} » · {artist.stageName} · qualité {song.quality}</span></div>
         <div style={{display: 'flex', gap: 20, marginTop: 16}}>
           <div style={{width: 820}}>
             <div className="lbl">Stratégie</div>

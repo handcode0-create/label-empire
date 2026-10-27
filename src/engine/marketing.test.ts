@@ -24,3 +24,19 @@ describe('médias', () => {
     expect(releaseCost({ promo: 1000, loc: [], media: [m.id] })).toBe(1000 + m.cost)
   })
 })
+
+import { createGame } from './newGame'
+import type { NewGameConfig } from './types'
+const cfg: NewGameConfig = { labelName: 'Savane Records', logoId: 'ring', founderName: 'Smith Junior', nationality: 'Ivoirienne', mainGenre: 'afro-pop', startReputation: 15, alsoArtist: true, staffSkills: { negociation: 3, reperage: 2, production: 1, marketing: 2, finance: 1, reseau: 1 }, artistSkills: { voix: 3, ecriture: 2, charisme: 2, scene: 1, creativite: 1, endurance: 1 }, hqCityId: 'abidjan', currency: 'USD', difficulty: 'normal', seed: 42 }
+import { assignSong, createProject, projectKindFor, releaseProject } from './projects'
+describe('EP & albums', () => {
+  it('refuse la publication sans assez de titres et assigne un titre une seule fois', () => {
+    const g0 = createGame(cfg)
+    const a = g0.artists[0].id
+    const r = createProject(g0, 'Premier', 'EP', a)
+    expect(r.error).toBeUndefined()
+    expect(releaseProject(r.state, r.state.projects[0].id).error).toMatch(/au moins 3/)
+    expect(assignSong(r.state, r.state.projects[0].id, 'nope').error).toBeTruthy()
+    expect(projectKindFor(7)).toBe('Album')
+  })
+})

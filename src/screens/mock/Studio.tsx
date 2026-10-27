@@ -42,7 +42,7 @@ export default function Studio() {
       <Hud />
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 780, display: 'flex', flexDirection: 'column', gap: 10}}>
-          <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>{STEPS.map(([s, l], i) => <a key={s} href={s + '.dc.html'} className={'chip' + (i === 1 ? ' on' : '')}>{l}</a>)}</div>
+          <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>{STEPS.map(([s, l], i) => <a key={s} href={s + '.dc.html'} className={'chip' + (i === 1 ? ' on' : '')}>{l}</a>)}<a href="Projets.dc.html" className="chip">EP & albums</a></div>
           <div style={{display: 'flex', alignItems: 'center', gap: 12}}><h1 className="h1" style={{fontSize: 36}}>Choisir le studio</h1><span className="sp" />
             <span className="tag ti" style={{cursor: written.length > 1 ? 'pointer' : 'default'}} onClick={() => { if (written.length > 1) select({ songId: written[(written.findIndex((w) => w.id === song.id) + 1) % written.length].id }) }}>« {song.title} » · {artist.stageName}{written.length > 1 ? ' ⇄' : ''}</span></div>
           <div style={{display: 'flex', gap: 8, flexWrap: 'wrap'}}>
