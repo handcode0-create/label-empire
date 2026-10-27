@@ -22,12 +22,15 @@ interface Props {
   keyName?: string; name?: string; gradient?: string
   size?: number
   style?: CSSProperties
+  /** Image imposée (ex. photo importée par le joueur), prioritaire. */
+  src?: string
 }
 
 /** Portrait cartoon si l'image existe, sinon monogramme sur dégradé. */
-export default function Avatar({ artist, keyName, name, gradient, size = 64, style }: Props) {
+export default function Avatar({ artist, keyName, name, gradient, size = 64, style, src: forced }: Props) {
   const key = keyName ?? (artist ? avatarKey(artist) : '')
-  const src = useAvatarFile(key)
+  const file = useAvatarFile(key)
+  const src = forced ?? file
   const label = name ?? artist?.stageName ?? '?'
   const grad = gradient ?? artist?.gradient ?? '#8B5CF6,#FF3D9A'
   return (

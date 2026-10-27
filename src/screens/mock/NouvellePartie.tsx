@@ -1,3 +1,4 @@
+import Avatar from '../../components/Avatar'
 import { CAPITALS } from '../../engine/newGame'
 import { useEffect, useState } from 'react'
 import Chip from '../../components/Chip'
@@ -50,8 +51,8 @@ export default function NouvellePartie() {
       <div className="pn cut" style={{position: 'absolute', left: 510, top: 112, width: 470, height: 676}}>
         <div className="lbl">Fondateur du label</div>
         <div style={{display: 'flex', alignItems: 'center', gap: 18, marginTop: 14}}>
-          <div className="av" style={{width: 112, height: 112, fontSize: 40, background: 'linear-gradient(135deg,#FF3D9A,#8B5CF6)', boxShadow: '0 0 0 4px var(--ln), 0 0 30px rgba(255,61,154,0.4)'}}>{c.founderPhoto ? <img src={c.founderPhoto} alt="" style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%'}} /> : <>{c.founderName.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</>}</div>
-          <div style={{display: 'flex', flexDirection: 'column', gap: 8}}><label className="btn s sm" style={{cursor: 'pointer'}}>Choisir une photo<input type="file" accept="image/*" hidden onChange={(e) => readFile(e.target.files?.[0], (d) => patch({ founderPhoto: d }))} /></label><span className="mut" style={{fontSize: 13}}>Photo ou avatar. Facultatif.</span></div>
+          <Avatar keyName={c.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur'} src={c.founderPhoto} name={c.founderName} gradient="#FF3D9A,#8B5CF6" size={112} style={{boxShadow: '0 0 0 4px var(--ln), 0 0 30px rgba(255,61,154,0.4)', fontSize: 40}} />
+          <div style={{display: 'flex', flexDirection: 'column', gap: 8}}><label className="btn s sm" style={{cursor: 'pointer'}}>Choisir une photo<input type="file" accept="image/*" hidden onChange={(e) => readFile(e.target.files?.[0], (d) => patch({ founderPhoto: d }))} /></label><div style={{display: 'flex', gap: 6}}><Chip on={(c.founderLook ?? 'f') === 'f'} onClick={() => patch({ founderLook: 'f' })}>Portrait femme</Chip><Chip on={c.founderLook === 'm'} onClick={() => patch({ founderLook: 'm' })}>Portrait homme</Chip></div><span className="mut" style={{fontSize: 12}}>Photo facultative, sinon portrait illustré.</span></div>
         </div>
         <label htmlFor="fn" className="mut" style={{fontSize: 13, display: 'block', marginTop: 18}}>Nom complet</label>
         <input id="fn" className="in" style={{marginTop: 6}} value={c.founderName} onChange={(e) => patch({ founderName: e.target.value })} />
@@ -76,7 +77,7 @@ export default function NouvellePartie() {
             <div style={{width: 60, height: 60, display: 'grid', placeItems: 'center', background: '#2A1B4D', borderRadius: 14, overflow: 'hidden'}}>{isImg ? <img src={c.logoId} alt="Logo" style={{width: '100%', height: '100%', objectFit: 'cover'}} /> : <div style={{width: 30, height: 30, borderRadius: '50%', border: '6px solid #FF3D9A'}} />}</div>
             <div><div className="disp" style={{fontSize: 26, lineHeight: 1}}>{c.labelName}</div><div className="mut" style={{fontSize: 13}}>Fondé par {c.founderName} · {c.nationality} · {c.mainGenre.toLowerCase()}</div></div>
           </div>
-          <div style={{display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap'}}><span className="tag ti">Réputation 15</span><span className="tag te">Artiste fondateur</span><span className="tag tg">Cash $120 000</span></div>
+          <div style={{display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap'}}><span className="tag ti">Réputation {c.startReputation}</span>{c.alsoArtist && <span className="tag te">Artiste fondateur</span>}<span className="tag tg">Cash {compactUsd(cash)}</span></div>
         </div>
         <div className="sp" />
       </div>

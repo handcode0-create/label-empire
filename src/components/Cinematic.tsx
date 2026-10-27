@@ -60,6 +60,9 @@ export default function Cinematic() {
   const [titleDone, setTitleDone] = useState(false)
   const [picked, setPicked] = useState(false)
   const slots = useRef<{ left?: string; right?: string }>({})
+  const founderLabel = useGame((st) => st.game?.label)
+  const founderKey = founderLabel?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur'
+  const founderPhoto = founderLabel?.photo
 
   useEffect(() => { if (scene) { setQueue(scene.lines); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!scene?.title) return; const t = setTimeout(() => setTitleDone(true), 2300); return () => clearTimeout(t) }, [scene?.id, scene?.title])
@@ -118,7 +121,7 @@ export default function Cinematic() {
         return (
           <div key={who + side} className={side === 'left' ? 'an-slide-l' : 'an-slide-r'} style={{ position: 'absolute', bottom: 300, [side]: 150, width: 320, textAlign: 'center', transition: 'transform .3s, filter .3s, opacity .3s', transform: on ? 'scale(1.08)' : 'scale(.94)', filter: on ? 'none' : 'brightness(.55) saturate(.7)', opacity: titleDone ? 1 : 0 }}>
             <div className={on && !done ? 'an-talk' : ''} style={{ display: 'flex', justifyContent: 'center' }}>
-              <Avatar keyName={c.portrait} name={nm} gradient={c.gradient} size={230} style={{ boxShadow: `0 0 0 6px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.6), 0 0 90px ${on ? 'rgba(255,61,154,.5)' : 'transparent'}`, fontSize: 90 }} />
+              <Avatar keyName={who === 'joueur' ? founderKey : c.portrait} src={who === 'joueur' ? founderPhoto : undefined} name={nm} gradient={c.gradient} size={230} style={{ boxShadow: `0 0 0 6px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.6), 0 0 90px ${on ? 'rgba(255,61,154,.5)' : 'transparent'}`, fontSize: 90 }} />
             </div>
             <div style={{ display: 'inline-block', marginTop: 14, padding: '6px 16px 8px', borderRadius: 14, background: 'rgba(12,8,32,.72)', backdropFilter: 'blur(6px)' }}>
               <div className="disp" style={{ fontSize: 26 }}>{nm}</div>

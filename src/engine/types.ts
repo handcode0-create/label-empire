@@ -9,6 +9,7 @@ export interface NewGameConfig {
   labelName: string
   logoId: string
   founderPhoto?: string
+  founderLook?: 'f' | 'm' // portrait du fondateur dans les scènes
   founderName: string
   nationality: string
   mainGenre: string
@@ -160,7 +161,7 @@ export interface GameState {
   ap: number // actions restantes cette semaine
   cash: number
   reputation: number
-  label: { name: string; logoId: string; photo?: string; hqCityId: string; currency: Currency; difficulty: Difficulty; founder: string; nationality: string; mainGenre: string }
+  label: { name: string; logoId: string; photo?: string; founderLook?: 'f' | 'm'; hqCityId: string; currency: Currency; difficulty: Difficulty; founder: string; nationality: string; mainGenre: string }
   staffSkills: Skills
   artists: Artist[] // artistes sous contrat (et fondateur)
   pool: Artist[] // artistes découvrables

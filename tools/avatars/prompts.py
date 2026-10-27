@@ -93,6 +93,7 @@ STORY = {
     "story-kwame": "Kwame Baro, 40s man, master of ceremonies, West African, charismatic, sparkling gold jacket, headset microphone, big showman smile",
     "story-tomas": "Tomás Reyes, 50s man, rival record executive, Latin American, silver-streaked hair, dark navy suit with violet tie, calculating confident half-smile",
     "story-joueur": "Young label founder, neutral and welcoming, modern smart-casual jacket in violet and gold, determined optimistic expression, unisex friendly look",
+    "story-joueur-m": "Young man, label founder in his late 20s, West African, deep brown skin, short neat fade haircut with a subtle shaved line, short trimmed beard, violet tailored jacket with gold embroidery over a black tee, thin gold chain, determined optimistic half-smile, entrepreneur energy",
 }
 
 
