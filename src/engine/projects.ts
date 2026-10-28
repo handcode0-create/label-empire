@@ -1,5 +1,6 @@
 import { songName } from '../lib'
-import type { GameState, Project, ProjectKind, Result, Song } from './types'
+import { CITIES } from '../data/world'
+import type { GameState, Project, ProjectKind, Result, Song, SongRelease } from './types'
 import { clone, fail, ok, spend, useAp } from './util'
 
 export const PROJECT_RULES: Record<ProjectKind, { min: number; max: number; cost: number; hype: number; label: string }> = {
@@ -25,6 +26,17 @@ export function createProject(s0: GameState, name: string, kind: ProjectKind, ar
   return ok(s, `${kind} « ${n} » créé.`)
 }
 
+/** Met un titre mixé en réserve (standby) : il n'est plus proposé comme single et attend d'être placé dans un EP / album. */
+export function setStandby(s0: GameState, songId: string, on: boolean): Result {
+  const s = clone(s0)
+  const song = s.songs.find((x) => x.id === songId)
+  if (!song) return fail(s0, 'Titre introuvable.')
+  if (song.stage !== 'mixed') return fail(s0, 'Seul un titre mixé, pas encore programmé, peut être mis en standby.')
+  if (!on && projectOf(s, songId)) return fail(s0, 'Ce titre est réservé à un projet : retirez-le du projet d’abord.')
+  song.standby = on
+  return ok(s, on ? `« ${song.title} » est en standby.` : `« ${song.title} » peut de nouveau sortir en single.`)
+}
+
 export function assignSong(s0: GameState, projectId: string, songId: string): Result {
   const s = clone(s0)
   const p = s.projects.find((x) => x.id === projectId)
@@ -35,6 +47,7 @@ export function assignSong(s0: GameState, projectId: string, songId: string): Re
   if (s.projects.some((x) => x.songIds.includes(songId))) return fail(s0, 'Ce titre est déjà dans un projet.')
   if (p.songIds.length >= PROJECT_RULES[p.kind].max) return fail(s0, `Un ${p.kind} contient au plus ${PROJECT_RULES[p.kind].max} titres.`)
   p.songIds.push(songId)
+  if (song.stage === 'mixed') song.standby = true
   return ok(s, `${songName(song)} ajouté à « ${p.name} ».`)
 }
 
@@ -56,8 +69,8 @@ export function deleteProject(s0: GameState, projectId: string): Result {
   return ok(s)
 }
 
-/** Publie le projet : tous les titres doivent être sortis. Bonus de cohérence : hype sur chaque titre + fans. */
-export function releaseProject(s0: GameState, projectId: string): Result {
+/** Publie le projet. Les titres déjà sortis gardent leur date ; les titres mixés (standby) sortent avec le projet, la semaine suivante. */
+export function releaseProject(s0: GameState, projectId: string, plan?: { cityIds?: string[]; promo?: number }): Result {
   const s = clone(s0)
   const p = s.projects.find((x) => x.id === projectId)
   if (!p) return fail(s0, 'Projet introuvable.')
@@ -65,12 +78,22 @@ export function releaseProject(s0: GameState, projectId: string): Result {
   const rule = PROJECT_RULES[p.kind]
   if (p.songIds.length < rule.min) return fail(s0, `Un ${p.kind} demande au moins ${rule.min} titres (${p.songIds.length} actuellement).`)
   const songs = projectSongs(s, p)
-  const pending = songs.filter((x) => x.stage !== 'released')
-  if (pending.length) return fail(s0, `Tous les titres doivent être sortis d'abord (reste : ${pending.map((x) => x.title).join(', ')}).`)
+  const ready = (x: Song) => x.stage === 'released' || (x.stage === 'mixed' && x.readyWeek <= s.week)
+  const pending = songs.filter((x) => !ready(x))
+  if (pending.length) return fail(s0, `Ces titres ne sont pas prêts (il faut qu’ils soient mixés ou sortis) : ${pending.map((x) => x.title).join(', ')}.`)
+  const toRelease = songs.filter((x) => x.stage === 'mixed')
+  const unlocked = CITIES.filter((c) => c.minRep <= s.reputation)
+  const cityIds = (plan?.cityIds?.length ? plan.cityIds : unlocked.slice(0, 6).map((c) => c.id)).slice(0, 6)
+  const promo = toRelease.length ? Math.max(0, plan?.promo ?? 0) : 0
   const e = useAp(s); if (e) return fail(s0, e)
-  const e2 = spend(s, rule.cost, `${p.kind} « ${p.name} »`); if (e2) return fail(s0, e2)
-  p.status = 'sorti'; p.releaseWeek = s.week
+  const e2 = spend(s, rule.cost + promo, `${p.kind} « ${p.name} »`); if (e2) return fail(s0, e2)
+  const when = s.week + 1
+  for (const x of toRelease) {
+    const r: SongRelease = { week: when, strategy: 'regionale', cityIds, promo: Math.round(promo / toRelease.length), loc: [] }
+    x.release = r; x.stage = 'scheduled'; x.standby = false
+  }
+  p.status = 'sorti'; p.releaseWeek = toRelease.length ? when : s.week
   for (const x of songs) x.hype += rule.hype
   s.reputation += p.kind === 'Album' ? 1 : 0.5
-  return ok(s, `${p.kind} « ${p.name} » est sorti : +${Math.round(rule.hype * 100)} % de buzz sur ses titres.`)
+  return ok(s, `${p.kind} « ${p.name} » ${toRelease.length ? `sortira en semaine ${when} avec ${toRelease.length} titre(s) en standby` : 'est sorti'} : +${Math.round(rule.hype * 100)} % de buzz.`)
 }

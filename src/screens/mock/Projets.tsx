@@ -6,7 +6,7 @@ import type { ProjectKind } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
 import { compact, songName, usd } from '../../lib'
 
-const STAGE: Record<string, string> = { written: 'Écrit', recorded: 'Enregistré', mixed: 'Mixé', scheduled: 'Programmé', released: 'Sorti' }
+const STAGE: Record<string, string> = { standby: 'Standby', written: 'Écrit', recorded: 'Enregistré', mixed: 'Mixé', scheduled: 'Programmé', released: 'Sorti' }
 
 export default function Projets() {
   const g = useGame((s) => s.game)!
@@ -59,7 +59,7 @@ export default function Projets() {
                   <div style={{marginTop: 10}}>
                     {projectSongs(g, sel).map((s, i) => (
                       <div key={s.id} className="row" style={{gridTemplateColumns: '28px 1fr 90px 80px auto', gap: 10}}>
-                        <span className="mut">{i + 1}</span><b>{songName(s)}</b><span className={'tag ' + (s.stage === 'released' ? 'tg' : 'te')}>{STAGE[s.stage]}</span><span className="mut" style={{fontSize: 13}}>Q{s.quality ?? '–'}</span>
+                        <span className="mut">{i + 1}</span><b>{songName(s)}</b><span className={'tag ' + (s.stage === 'released' ? 'tg' : 'te')}>{s.standby ? STAGE.standby : STAGE[s.stage]}</span><span className="mut" style={{fontSize: 13}}>Q{s.quality ?? '–'}</span>
                         {sel.status === 'brouillon' ? <span className="chip" role="button" onClick={() => run((st) => removeSong(st, sel.id, s.id))}>Retirer</span> : <span />}
                       </div>
                     ))}
@@ -78,12 +78,12 @@ export default function Projets() {
                     <div style={{maxHeight: 220, overflow: 'auto', marginTop: 6}}>
                       {free.map((s) => (
                         <div key={s.id} className="row" role="button" style={{gridTemplateColumns: '1fr 90px auto', gap: 10, cursor: 'pointer'}} onClick={() => run((st) => assignSong(st, sel.id, s.id))}>
-                          <b>{songName(s)}</b><span className={'tag ' + (s.stage === 'released' ? 'tg' : 'te')}>{STAGE[s.stage]}</span><span className="tag tc">Ajouter</span>
+                          <b>{songName(s)}</b><span className={'tag ' + (s.stage === 'released' ? 'tg' : 'te')}>{s.standby ? STAGE.standby : STAGE[s.stage]}</span><span className="tag tc">Ajouter</span>
                         </div>
                       ))}
                       {free.length === 0 && <p className="mut" style={{fontSize: 14}}>Aucun titre libre pour cet artiste. Écrivez-en de nouveaux dans le Studio.</p>}
                     </div>
-                    <div className="mut" style={{fontSize: 12, marginTop: 8}}>Tous les titres doivent être sortis avant de publier le projet ; la publication donne du buzz à chaque titre.</div>
+                    <div className="mut" style={{fontSize: 12, marginTop: 8}}>Les titres mixés ajoutés ici passent en standby et sortent avec le projet (semaine suivante). Les titres non mixés doivent d'abord être terminés.</div>
                   </div>
                 )}
               </>

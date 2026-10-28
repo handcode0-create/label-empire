@@ -7,11 +7,12 @@ import { CITIES, affinity } from '../../data/world'
 import { MEDIA, mediaScopeLabel } from '../../data/media'
 import { MediaLogo } from '../../components/Logo'
 import { STREAM_VALUE, royaltyShare, weeklyStreams } from '../../engine/market'
+import { setStandby } from '../../engine/projects'
 import { STRATEGIES, releaseCalendar, releaseCost, scheduleRelease } from '../../engine/production'
 import { fansByCity } from '../../engine/selectors'
 import type { SongRelease } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
-import { compact, currentSong, usd } from '../../lib'
+import { compact, usd } from '../../lib'
 
 type Strat = keyof typeof STRATEGIES
 const RISK_TAG: Record<Strat, string> = { locale: 'tg', regionale: 'te', mondiale: 'tr_', crossover: 'ti' }
@@ -19,7 +20,7 @@ const RISK_TAG: Record<Strat, string> = { locale: 'tg', regionale: 'te', mondial
 export default function Sortie() {
   const g = useGame((s) => s.game)!
   const { sel, run, say, go } = useGame()
-  const song = currentSong(g, sel.songId, ['mixed'])
+  const song = g.songs.find((x) => x.id === sel.songId && x.stage === 'mixed') ?? [...g.songs].reverse().find((x) => x.stage === 'mixed' && !x.standby)
   const fans = fansByCity(g)
   const unlocked = useMemo(() => CITIES.filter((c) => c.minRep <= g.reputation).sort((a, b) => (fans[b.id] ?? 0) - (fans[a.id] ?? 0) || b.base - a.base), [g, fans])
   const [strategy, setStrategy] = useState<Strat>('regionale')
@@ -31,7 +32,7 @@ export default function Sortie() {
   const [week, setWeek] = useState<number | null>(sel.week)
   if (!song) return (
     <div className="scr"><Dock active="sorties" /><Hud />
-      <div className="main"><div className="pn cut" style={{maxWidth: 640}}><div className="h2">Aucun titre prêt à sortir</div><p className="mut">Terminez d'abord l'écriture, l'enregistrement et le mixage d'une chanson.</p><a href="Ecriture.dc.html" className="btn">Écrire un titre</a></div></div></div>
+      <div className="main"><div className="pn cut" style={{maxWidth: 640}}><div className="h2">Aucun titre prêt à sortir</div><p className="mut">Terminez d'abord l'écriture, l'enregistrement et le mixage d'une chanson.</p><a href="Ecriture.dc.html" className="btn">Écrire un titre</a> <a href="Catalogue.dc.html" className="btn s">Catalogue</a></div></div></div>
   )
   const artist = g.artists.find((a) => a.id === song.artistId)!
   const locWeeks = Math.max(0, ...loc.map((id) => LOC_OPTIONS.find((l) => l.id === id)?.weeks ?? 0))
@@ -69,7 +70,7 @@ export default function Sortie() {
       <Dock active="sorties" />
       <Hud />
       <div className="main">
-        <div style={{display: 'flex', alignItems: 'center', gap: 14}}><h1 className="h1">Programmer la sortie</h1><a href="Projets.dc.html" className="chip">EP & albums</a><span className="tag ti">« {song.title} » · {artist.stageName} · qualité {song.quality}</span></div>
+        <div style={{display: 'flex', alignItems: 'center', gap: 14}}><h1 className="h1">Programmer la sortie</h1><a href="Catalogue.dc.html" className="chip">Catalogue</a><a href="Projets.dc.html" className="chip">EP & albums</a><span className="tag ti">« {song.title} » · {artist.stageName} · qualité {song.quality}</span></div>
         <div style={{display: 'flex', gap: 20, marginTop: 16}}>
           <div style={{width: 820}}>
             <div className="lbl">Stratégie</div>
@@ -132,7 +133,7 @@ export default function Sortie() {
               </div>
             </div>
             <div className="sp" />
-            <div style={{display: 'flex', gap: 12}}><a href="Mixage.dc.html" className="btn s">Retour</a><a href="Hub.dc.html" className="btn" style={{flex: 1, height: 60}} onClick={(e) => { e.preventDefault(); submit() }}>Programmer la sortie</a></div>
+            <div style={{display: 'flex', gap: 12}}><a href="Catalogue.dc.html" className="btn s" onClick={(e) => { e.preventDefault(); if (run((s) => setStandby(s, song.id, true))) go('Catalogue') }}>Mettre en standby</a><a href="Mixage.dc.html" className="btn s">Retour</a><a href="Hub.dc.html" className="btn" style={{flex: 1, height: 60}} onClick={(e) => { e.preventDefault(); submit() }}>Programmer la sortie</a></div>
           </div>
         </div>
       </div>

@@ -56,3 +56,5 @@ Disques d'or, de platine et de diamant (`src/engine/certifications.ts`, écran C
 Missions à échéance (classement, sorties, fans, recettes, écoutes) : récompense en cash et réputation si réussies, perte de réputation si manquées (max 3 actives). Fil d'actualités : événements du label, vie de l'industrie et manœuvres de Meridian. Écran `Actualites`, accessible depuis le Hub.
 
 Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inactif). Cérémonie annuelle (semaine 52) : titre et artiste de l'année ; si le vainqueur est de votre label : +$60 000 et +2 de réputation ; palmarès dans Actualités.
+
+**Standby et catalogue** : un titre mixé peut être mis en standby (Sortie ou Catalogue) pour rejoindre un EP/album ; les titres en standby d'un projet sortent avec lui (semaine suivante). L'onglet Sorties ouvre le Catalogue : projets, singles et standby par artiste.

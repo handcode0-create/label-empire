@@ -92,6 +92,7 @@ export interface Song {
   mastering: boolean
   mixQ?: number
   quality?: number
+  standby?: boolean // titre mixé mis en réserve (pour un EP / album)
   stage: 'written' | 'recorded' | 'mixed' | 'scheduled' | 'released'
   readyWeek: number
   release?: SongRelease

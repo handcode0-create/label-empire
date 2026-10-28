@@ -152,6 +152,7 @@ export function scheduleRelease(s0: GameState, songId: string, r: SongRelease): 
   const song = s.songs.find((x) => x.id === songId)
   if (!song) return fail(s0, 'Choisissez une chanson mixée.')
   if (song.stage !== 'mixed') return fail(s0, song.stage === 'scheduled' || song.stage === 'released' ? 'Cette chanson est déjà programmée.' : 'La chanson doit être mixée avant la sortie.')
+  if (s.projects.some((pj) => pj.status === 'brouillon' && pj.songIds.includes(songId))) return fail(s0, 'Ce titre est réservé à un EP / album : retirez-le du projet pour le sortir en single.')
   if (r.week < song.readyWeek) return fail(s0, `Le mixage ne sera prêt qu'en semaine ${song.readyWeek}.`)
   if (r.week < s.week) return fail(s0, 'La date de sortie est passée.')
   if (!r.cityIds.length) return fail(s0, 'Choisissez au moins un territoire.')
@@ -165,7 +166,7 @@ export function scheduleRelease(s0: GameState, songId: string, r: SongRelease): 
   if (e) return fail(s0, e)
   const cost = releaseCost(r)
   if (cost > 0) { const e2 = spend(s, cost, `Sortie « ${song.title} »`); if (e2) return fail(s0, e2) }
-  song.release = r; song.stage = 'scheduled'
+  song.release = r; song.stage = 'scheduled'; song.standby = false
   return ok(s, `« ${song.title} » sortira en semaine ${r.week}.`)
 }
 
