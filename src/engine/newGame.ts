@@ -15,13 +15,14 @@ export function validateConfig(c: NewGameConfig): string[] {
   return e
 }
 
-/** Capital de départ au choix : 500 000 $ en standard, puis 3 tranches (5 M, 10 M, 1 Md). */
+/** Capital de départ au choix : 500 000 $ en standard, puis 3 tranches (5 M, 10 M, 1 Md). Chaque tranche fixe aussi la réputation de départ (donc le palier et les marchés débloqués). */
 export const CAPITALS = {
-  standard: { label: 'Standard', cash: 500_000 },
-  riche: { label: 'Riche', cash: 5_000_000 },
-  majeur: { label: 'Majeur', cash: 10_000_000 },
-  milliardaire: { label: 'Milliardaire', cash: 1_000_000_000 },
+  standard: { label: 'Standard', cash: 500_000, reputation: 15 },
+  riche: { label: 'Riche', cash: 5_000_000, reputation: 25 },
+  majeur: { label: 'Majeur', cash: 10_000_000, reputation: 50 },
+  milliardaire: { label: 'Milliardaire', cash: 1_000_000_000, reputation: 75 },
 } as const
+export const startingReputation = (capital: keyof typeof CAPITALS = 'standard') => CAPITALS[capital].reputation
 export function startingCash(_reputation: number, _difficulty: NewGameConfig['difficulty'], capital: keyof typeof CAPITALS = 'standard'): number {
   return CAPITALS[capital].cash
 }
@@ -47,7 +48,7 @@ export function createGame(c: NewGameConfig): GameState {
   const state: GameState = {
     week: 1, ap: 6,
     cash: startingCash(c.startReputation, c.difficulty, c.capital),
-    reputation: c.startReputation,
+    reputation: c.capital ? startingReputation(c.capital) : c.startReputation,
     label: { name: c.labelName, logoId: c.logoId, photo: c.founderPhoto, founderLook: c.founderLook ?? 'f', hqCityId: c.hqCityId, currency: c.currency, difficulty: c.difficulty, founder: c.founderName, nationality: c.nationality, mainGenre: c.mainGenre },
     staffSkills: full(STAFF_SKILLS, c.staffSkills),
     artists, pool: [], contests: [], tournament: null, seenScenes: [], songs: [], projects: [], tours: [], staff,

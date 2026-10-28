@@ -57,3 +57,13 @@ describe('monde rival', () => {
     expect(chartFor(g, 'monde', 'abidjan', 'singles').every((r) => r.songId)).toBe(true)
   })
 })
+
+import { startingReputation } from './newGame'
+describe('capital de départ', () => {
+  it('fixe aussi la réputation de départ', () => {
+    expect([startingReputation('standard'), startingReputation('riche'), startingReputation('majeur'), startingReputation('milliardaire')]).toEqual([15, 25, 50, 75])
+    const g = createGame({ ...cfg, capital: 'majeur' })
+    expect(g.cash).toBe(10_000_000)
+    expect(g.reputation).toBe(50)
+  })
+})
