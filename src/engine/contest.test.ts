@@ -28,14 +28,14 @@ describe('continuité des concours', () => {
 import { albumEquivalent, checkCertifications, levelFor } from './certifications'
 describe('certifications', () => {
   it('niveaux selon les écoutes et prime versée une seule fois', () => {
-    expect(levelFor('titre', 2_999_999)).toBeNull()
-    expect(levelFor('titre', 3_000_000)).toBe('or')
-    expect(levelFor('titre', 10_000_000)).toBe('diamant')
-    expect(levelFor('projet', 10_000_000)).toBe('or')
-    expect(levelFor('projet', 40_000_000)).toBe('platine2')
+    expect(levelFor('titre', 14_999_999)).toBeNull()
+    expect(levelFor('titre', 15_000_000)).toBe('or')
+    expect(levelFor('titre', 50_000_000)).toBe('diamant')
+    expect(levelFor('projet', 50_000_000)).toBe('or')
+    expect(levelFor('projet', 200_000_000)).toBe('platine2')
     expect(albumEquivalent([100, 100, 100])).toBe(250)
     const g = createGame(cfg)
-    g.songs.push({ id: 's1', title: 'Hit', artistId: g.artists[0].id, stage: 'released', stats: { streams: 7_000_000, weeks: 5, revenue: 0, lastByCity: {} } } as never)
+    g.songs.push({ id: 's1', title: 'Hit', artistId: g.artists[0].id, stage: 'released', stats: { streams: 35_000_000, weeks: 5, revenue: 0, lastByCity: {} } } as never)
     const notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[] = []
     const c0 = g.cash
     checkCertifications(g, notes)
@@ -44,5 +44,16 @@ describe('certifications', () => {
     checkCertifications(g, notes)
     expect(g.cash).toBe(c0 + 20_000)
     expect(notes).toHaveLength(1)
+  })
+})
+
+import { revalidateCerts } from './certifications'
+describe('barème réel', () => {
+  it('un diamant obtenu trop tôt est ramené au niveau mérité', () => {
+    const g = createGame(cfg)
+    g.songs.push({ id: 's1', title: 'Hit', artistId: g.artists[0].id, stage: 'released', stats: { streams: 16_800_000 } } as never)
+    g.certs = [{ id: 's1', kind: 'titre', level: 'diamant', week: 9 }]
+    revalidateCerts(g)
+    expect(g.certs[0].level).toBe('or')
   })
 })

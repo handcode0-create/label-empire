@@ -69,7 +69,7 @@ export default function Certifications() {
               </div>
             ))}
             <div className="mut" style={{ fontSize: 12, marginTop: 8 }}>Chaque certification verse une prime et augmente la réputation du label.</div>
-            <div className="mut" style={{ fontSize: 12, marginTop: 6 }}>Barème SNEP (France) : singles 15 M / 30 M / 50 M d’écoutes ; albums 50 000 / 100 000 / 200 000 / 300 000 / 500 000 unités (écoutes de toutes les pistes, la plus écoutée comptée pour moitié, ÷ 1 000). Les seuils de Bakoma sont ×{SNEP_SCALE} pour tenir compte de la taille du marché.</div>
+            <div className="mut" style={{ fontSize: 12, marginTop: 6 }}>Barème SNEP (France) : singles 15 M / 30 M / 50 M d’écoutes ; albums 50 000 / 100 000 / 200 000 / 300 000 / 500 000 unités (écoutes de toutes les pistes, la plus écoutée comptée pour moitié, ÷ 1 000). {SNEP_SCALE !== 1 ? `Les seuils de Bakoma sont ×${SNEP_SCALE}.` : 'Les seuils du jeu sont ceux de la SNEP.'}</div>
           </div>
         </div>
       </div>

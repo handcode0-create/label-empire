@@ -18,9 +18,9 @@ export const CERT_LEVELS: { level: CertLevel; label: string; color: string; rep:
  *  - albums/EP : or 50 000, platine 100 000, double 200 000, triple 300 000, diamant 500 000 unités.
  * Conversion streaming → unités d'album : on additionne les écoutes de toutes les pistes,
  * la plus écoutée comptant pour moitié, puis on divise par 1 000.
- * L'univers de Bakoma est plus petit : seuils (en écoutes) multipliés par SNEP_SCALE.
+ * Les seuils du jeu sont ceux de la SNEP (SNEP_SCALE = 1) ; on peut les réduire avec SNEP_SCALE < 1.
  */
-export const SNEP_SCALE = 0.2
+export const SNEP_SCALE = 1
 export const SNEP_REF = {
   titre: { or: 15_000_000, platine: 30_000_000, diamant: 50_000_000 } as Partial<Record<CertLevel, number>>,
   projetUnites: { or: 50_000, platine: 100_000, platine2: 200_000, platine3: 300_000, diamant: 500_000 } as Partial<Record<CertLevel, number>>,
@@ -52,6 +52,7 @@ export const certOf = (g: GameState, id: string): Cert | undefined => (g.certs ?
 /** Disques certifiés pendant la semaine : primes, réputation, notifications. */
 export function checkCertifications(s: GameState, notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]) {
   s.certs ??= []
+  revalidateCerts(s)
   const grant = (id: string, kind: CertKind, name: string, streams: number) => {
     const lvl = levelFor(kind, streams)
     if (!lvl) return
@@ -65,4 +66,15 @@ export function checkCertifications(s: GameState, notes: { tag: string; text: st
   }
   for (const song of s.songs as Song[]) if (song.stage === 'released') grant(song.id, 'titre', song.title, song.stats.streams)
   for (const p of s.projects) if (p.status === 'sorti') grant(p.id, 'projet', p.name, albumEquivalent(projectSongs(s, p).map((x) => x.stats.streams)))
+}
+
+/** Après un changement de barème : ramène les certifications au niveau que les écoutes justifient (les primes déjà versées restent acquises). */
+export function revalidateCerts(s: GameState) {
+  s.certs = (s.certs ?? []).flatMap((c) => {
+    const streams = c.kind === 'titre'
+      ? (s.songs.find((x) => x.id === c.id)?.stats.streams ?? 0)
+      : (() => { const p = s.projects.find((x) => x.id === c.id); return p ? albumEquivalent(projectSongs(s, p).map((x) => x.stats.streams)) : 0 })()
+    const lvl = levelFor(c.kind, streams)
+    return lvl ? [{ ...c, level: ORDER.indexOf(lvl) < ORDER.indexOf(c.level) ? lvl : c.level }] : []
+  })
 }
