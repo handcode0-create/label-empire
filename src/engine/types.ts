@@ -95,7 +95,7 @@ export interface Song {
   stage: 'written' | 'recorded' | 'mixed' | 'scheduled' | 'released'
   readyWeek: number
   release?: SongRelease
-  stats: { streams: number; revenue: number; fans: number; weeks: number; byCity: Record<string, number>; lastByCity: Record<string, number>; prevByCity: Record<string, number>; peak: Record<string, number> }
+  stats: { streams: number; revenue: number; fans: number; weeks: number; byCity: Record<string, number>; lastByCity: Record<string, number>; prevByCity: Record<string, number>; peak: Record<string, number>; hist?: { w: number; st: number; rk: number }[] }
   hype: number // bonus viral temporaire
   feat?: Feat
 }

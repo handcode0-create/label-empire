@@ -48,6 +48,8 @@ export function advanceWeek(s0: GameState): GameState {
     const artist = s.artists.find((a) => a.id === song.artistId)
     const share = 1 - royaltyShare(s, song)
     let counted = false
+    let weekSt = 0
+    let weekRk = 99
     for (const c of CITIES) {
       const st = Math.round(weeklyStreams(s, song, c, W) * (0.93 + rng.next() * 0.14))
       song.stats.prevByCity[c.id] = song.stats.lastByCity[c.id] ?? 0
@@ -56,6 +58,7 @@ export function advanceWeek(s0: GameState): GameState {
       counted = true
       song.stats.byCity[c.id] = (song.stats.byCity[c.id] ?? 0) + st
       song.stats.streams += st
+      weekSt += st
       streams += st
       const gross = st * STREAM_VALUE * (1 - c.piracy) * (1 - c.tax) * share
       const office = s.offices.find((o) => o.cityId === c.id && o.since <= W)
@@ -73,8 +76,10 @@ export function advanceWeek(s0: GameState): GameState {
       repGain += (rank <= 3 ? 0.12 : rank <= 10 ? 0.045 : rank <= 30 ? 0.01 : 0) * w
       if (rank <= 3 && (song.stats.peak[c.id] ?? 99) > 3) notes.push({ tag: 'Classement', text: `« ${song.title} » entre dans le top 3 à ${c.name}.`, tone: 'c' })
       song.stats.peak[c.id] = Math.min(song.stats.peak[c.id] ?? 99, rank)
+      weekRk = Math.min(weekRk, rank)
     }
     if (counted) song.stats.weeks++
+    song.stats.hist = [...(song.stats.hist ?? []), { w: W, st: weekSt, rk: weekRk }].slice(-52)
     song.hype = song.hype < 0.05 ? 0 : song.hype * 0.55
   }
   s.reputation += Math.min(0.5, repGain)

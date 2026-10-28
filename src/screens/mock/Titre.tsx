@@ -32,6 +32,12 @@ export default function Titre() {
   const rank = (lv: 'monde' | 'pays') => { const r = chartFor(g, lv, g.label.hqCityId, 'singles').find((x) => x.songId === sel.viewSongId); return r ? `n°${r.rank}` : 'hors' }
   const byCity = mine ? Object.entries(mine.stats.lastByCity).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6) : []
   const maxS = Math.max(1, ...byCity.map((x) => x[1]))
+  const hist = mine?.stats.hist ?? []
+  const hmax = Math.max(1, ...hist.map((h) => h.st))
+  const CW = 560, CH = 150
+  const px = (i: number) => hist.length < 2 ? CW / 2 : 10 + (i / (hist.length - 1)) * (CW - 20)
+  const line = hist.map((h, i) => `${i ? 'L' : 'M'}${px(i).toFixed(1)},${(CH - 10 - (h.st / hmax) * (CH - 24)).toFixed(1)}`).join(' ')
+  const rkLine = hist.map((h, i) => `${i ? 'L' : 'M'}${px(i).toFixed(1)},${(10 + (Math.min(h.rk, 50) / 50) * (CH - 24)).toFixed(1)}`).join(' ')
   return (
     <div className="scr">
       <Dock active="classements" />
@@ -61,6 +67,20 @@ export default function Titre() {
               <div><div className="mut" style={{fontSize: 13}}>Rang monde</div><div className="num" style={{fontSize: 34, color: '#FF7DBB'}}>{rank('monde')}</div></div>
               <div><div className="mut" style={{fontSize: 13}}>Rang {cityById(g.label.hqCityId).country}</div><div className="num" style={{fontSize: 34, color: '#35D3F0'}}>{rank('pays')}</div></div>
             </div>
+            {mine && (
+              <div className="pn">
+                <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Trajectoire (écoutes et meilleur rang)</span><span className="sp" /><span className="tag tc">— écoutes</span><span className="tag te" style={{marginLeft: 6}}>-- rang</span></div>
+                {hist.length < 2 ? <p className="mut" style={{fontSize: 14}}>La courbe apparaît après 2 semaines de diffusion.</p> : (
+                  <svg viewBox={`0 0 ${CW} ${CH}`} style={{width: '100%', marginTop: 8}}>
+                    {[0.25, 0.5, 0.75].map((f) => <line key={f} x1={10} x2={CW - 10} y1={CH - 10 - f * (CH - 24)} y2={CH - 10 - f * (CH - 24)} stroke="#3A3270" strokeWidth="1" strokeDasharray="3 4" />)}
+                    <path d={rkLine} fill="none" stroke="#FFC63D" strokeWidth="2" strokeDasharray="5 4" />
+                    <path d={line} fill="none" stroke="#35D3F0" strokeWidth="3" strokeLinejoin="round" />
+                    <text x={10} y={12} fill="#B6B0DD" fontSize="11">pic {compact(hmax)}/sem</text>
+                    <text x={CW - 10} y={CH - 1} fill="#B6B0DD" fontSize="11" textAnchor="end">S{hist[hist.length - 1].w}</text>
+                  </svg>
+                )}
+              </div>
+            )}
             {mine && (
               <div className="pn">
                 <div className="lbl">Écoutes par ville (dernière semaine)</div>

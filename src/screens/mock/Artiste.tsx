@@ -43,6 +43,14 @@ export default function Artiste() {
   const fans = mine ? sum(mine.fans) : Math.round(rival!.popularity * 4_000_000)
   const contract = mine?.contract
   const singles = songs.filter((s) => !s.project)
+  const byRegion: [string, number][] = mine ? Object.entries(Object.entries(mine.fans).reduce<Record<string, number>>((m, [cid, v]) => { const r = cityById(cid).continent; m[r] = (m[r] ?? 0) + v; return m }, {})).sort((a, b) => b[1] - a[1]) : []
+  const topCities: [string, number][] = mine ? Object.entries(mine.fans).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 8) : []
+  const maxCity = Math.max(1, ...topCities.map((x) => x[1]))
+  const gauges: [string, number, string][] = mine ? [
+    ['Moral', mine.morale, '#3DDC97'], ['Énergie', 100 - mine.fatigue, '#35D3F0'],
+    ['Voix', mine.skills.voix, '#FF7DBB'], ['Charisme', mine.skills.charisme * 10, '#8B5CF6'],
+    ['Scène', mine.skills.scene, '#FFC63D'], ['Créativité', mine.skills.creativite * 10, '#F43F9D'],
+  ] : []
 
   return (
     <div className="scr">
@@ -86,6 +94,27 @@ export default function Artiste() {
                 {([['singles', 'Singles'], ['artistes', 'Artistes'], ['eps', 'EP'], ['albums', 'Albums']] as const).map(([k, l]) => <div key={k}><div className="mut" style={{fontSize: 13}}>{l}</div><div className="num" style={{fontSize: 30, color: bestOf(k) === 'hors' ? '#9C90CC' : '#FF7DBB'}}>{bestOf(k)}</div></div>)}
               </div>
             </div>
+            {mine && (
+              <div className="pn">
+                <div className="lbl">Jauges de l’artiste</div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 18px', marginTop: 10}}>
+                  {gauges.map(([l, v, c]) => <div key={l}><div style={{display: 'flex', fontSize: 13}}><span>{l}</span><span className="sp" /><b>{Math.round(Math.min(100, v))}</b></div><div className="mt"><i style={{width: Math.max(2, Math.min(100, v)) + '%', background: c}} /></div></div>)}
+                </div>
+              </div>
+            )}
+            {mine && (
+              <div className="pn">
+                <div className="lbl">Popularité par région</div>
+                {byRegion.length === 0 ? <p className="mut" style={{fontSize: 14}}>Aucun fan pour l’instant : sortez un titre.</p> : (
+                  <>
+                    <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8}}>{byRegion.map(([r, v]) => <span key={r} className="tag tc">{r} · {compact(v)}</span>)}</div>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 18px', marginTop: 12, fontSize: 13}}>
+                      {topCities.map(([cid, v]) => <div key={cid} style={{display: 'grid', gridTemplateColumns: '84px 1fr 48px', gap: 8, alignItems: 'center'}}><span>{cityById(cid).name}</span><div className="mt"><i style={{width: Math.max(3, Math.round((v / maxCity) * 100)) + '%'}} /></div><b>{compact(v)}</b></div>)}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
             <div className="pn">
               <div className="lbl">Contrat</div>
               {mine && !mine.isFounder && contract ? (
