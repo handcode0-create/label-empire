@@ -1,8 +1,8 @@
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { useOpen } from '../../components/useOpen'
-import { CERT_LEVELS, CERT_THRESHOLDS, SNEP_REF, SNEP_SCALE, certOf, levelFor, levelInfo, nextLevel, type CertLevel } from '../../engine/certifications'
-import { projectStreams } from '../../engine/projects'
+import { CERT_LEVELS, CERT_THRESHOLDS, SNEP_REF, SNEP_SCALE, albumEquivalent, certOf, ladder, levelFor, levelInfo, nextLevel, type CertLevel } from '../../engine/certifications'
+import { projectSongs } from '../../engine/projects'
 import { useGame } from '../../store/gameStore'
 import { compact, songName } from '../../lib'
 
@@ -20,7 +20,7 @@ export default function Certifications() {
   const open = useOpen()
   const rows = [
     ...g.songs.filter((s) => s.stage === 'released').map((s) => ({ id: s.id, kind: 'titre' as const, name: songName(s), streams: s.stats.streams, openIt: () => open.song(s.id) })),
-    ...g.projects.filter((p) => p.status === 'sorti').map((p) => ({ id: p.id, kind: 'projet' as const, name: `${p.kind} · ${p.name}`, streams: projectStreams(g, p), openIt: undefined })),
+    ...g.projects.filter((p) => p.status === 'sorti').map((p) => ({ id: p.id, kind: 'projet' as const, name: `${p.kind} · ${p.name}`, streams: Math.round(albumEquivalent(projectSongs(g, p).map((x) => x.stats.streams))), openIt: undefined })),
   ].sort((a, b) => b.streams - a.streams)
   const earned = (g.certs ?? []).length
   return (
@@ -33,8 +33,8 @@ export default function Certifications() {
           {rows.length === 0 && <div className="pn cut mut">Aucun titre sorti pour l’instant. Sortez un titre et accumulez des écoutes : les disques d’or, de platine et de diamant récompensent les gros succès.</div>}
           {rows.map((r) => {
             const lvl = levelFor(r.kind, r.streams)
-            const nx = nextLevel(lvl)
-            const goal = nx ? CERT_THRESHOLDS[r.kind][nx] : null
+            const nx = nextLevel(r.kind, lvl)
+            const goal = nx ? CERT_THRESHOLDS[r.kind][nx]! : null
             const c = certOf(g, r.id)
             return (
               <div key={r.id} className="pn" style={{ display: 'flex', gap: 16, alignItems: 'center', padding: '12px 16px' }}>
@@ -45,7 +45,7 @@ export default function Certifications() {
                     <span className="tag ti">{r.kind === 'titre' ? 'Titre' : 'Projet'}</span>
                     {lvl && <span className="tag" style={{ background: levelInfo(lvl).color + '33', color: levelInfo(lvl).color }}>{levelInfo(lvl).label}{c ? ` · sem. ${c.week}` : ''}</span>}
                   </div>
-                  <div className="mut" style={{ fontSize: 13, marginTop: 2 }}>{compact(r.streams)} écoutes{goal ? ` · prochain palier : ${levelInfo(nx!).label.toLowerCase()} à ${compact(goal)}` : ' · palier maximal atteint'}</div>
+                  <div className="mut" style={{ fontSize: 13, marginTop: 2 }}>{compact(r.streams)} {r.kind === 'titre' ? 'écoutes' : 'écoutes éq. album'}{goal ? ` · prochain palier : ${levelInfo(nx!).label.toLowerCase()} à ${compact(goal)}` : ' · palier maximal atteint'}</div>
                   {goal && <div className="mt" style={{ marginTop: 6 }}><i style={{ width: Math.min(100, Math.round((r.streams / goal) * 100)) + '%' }} /></div>}
                 </div>
               </div>
@@ -64,12 +64,12 @@ export default function Certifications() {
             <div className="lbl">Seuils d’écoutes</div>
             {CERT_LEVELS.map((l) => (
               <div key={l.level} className="row" style={{ gridTemplateColumns: '1fr auto' }}>
-                <div><b>{l.label}</b><div className="mut" style={{ fontSize: 12 }}>Titre {compact(CERT_THRESHOLDS.titre[l.level])} · EP/Album {compact(CERT_THRESHOLDS.projet[l.level])}</div><div className="mut" style={{ fontSize: 11 }}>SNEP : single {compact(SNEP_REF.titre[l.level])} · album {SNEP_REF.projetUnites[l.level].toLocaleString('fr-FR')} unités</div></div>
+                <div><b>{l.label}</b><div className="mut" style={{ fontSize: 12 }}>{CERT_THRESHOLDS.titre[l.level] ? `Titre ${compact(CERT_THRESHOLDS.titre[l.level]!)} · ` : ''}{ladder('projet').includes(l.level) ? `EP/Album ${compact(CERT_THRESHOLDS.projet[l.level]!)}` : ''}</div><div className="mut" style={{ fontSize: 11 }}>SNEP : {SNEP_REF.titre[l.level] ? `single ${compact(SNEP_REF.titre[l.level]!)} · ` : ''}{SNEP_REF.projetUnites[l.level] ? `album ${SNEP_REF.projetUnites[l.level]!.toLocaleString('fr-FR')} unités` : ''}</div></div>
                 <span className="tag te">+${l.cash.toLocaleString('fr-FR')}</span>
               </div>
             ))}
             <div className="mut" style={{ fontSize: 12, marginTop: 8 }}>Chaque certification verse une prime et augmente la réputation du label.</div>
-            <div className="mut" style={{ fontSize: 12, marginTop: 6 }}>Barème SNEP (France) : singles 15 M / 30 M / 50 M d’écoutes ; albums 50 000 / 100 000 / 500 000 unités (1 500 écoutes = 1 unité). Les seuils de Bakoma sont ×{SNEP_SCALE} pour tenir compte de la taille du marché.</div>
+            <div className="mut" style={{ fontSize: 12, marginTop: 6 }}>Barème SNEP (France) : singles 15 M / 30 M / 50 M d’écoutes ; albums 50 000 / 100 000 / 200 000 / 300 000 / 500 000 unités (écoutes de toutes les pistes, la plus écoutée comptée pour moitié, ÷ 1 000). Les seuils de Bakoma sont ×{SNEP_SCALE} pour tenir compte de la taille du marché.</div>
           </div>
         </div>
       </div>

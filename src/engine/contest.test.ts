@@ -25,12 +25,15 @@ describe('continuité des concours', () => {
   })
 })
 
-import { checkCertifications, levelFor } from './certifications'
+import { albumEquivalent, checkCertifications, levelFor } from './certifications'
 describe('certifications', () => {
   it('niveaux selon les écoutes et prime versée une seule fois', () => {
     expect(levelFor('titre', 2_999_999)).toBeNull()
     expect(levelFor('titre', 3_000_000)).toBe('or')
     expect(levelFor('titre', 10_000_000)).toBe('diamant')
+    expect(levelFor('projet', 10_000_000)).toBe('or')
+    expect(levelFor('projet', 40_000_000)).toBe('platine2')
+    expect(albumEquivalent([100, 100, 100])).toBe(250)
     const g = createGame(cfg)
     g.songs.push({ id: 's1', title: 'Hit', artistId: g.artists[0].id, stage: 'released', stats: { streams: 7_000_000, weeks: 5, revenue: 0, lastByCity: {} } } as never)
     const notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[] = []

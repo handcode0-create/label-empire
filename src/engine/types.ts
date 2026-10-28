@@ -181,7 +181,7 @@ export interface GameState {
   awards: Award[] // palmarès des cérémonies
   missions: Mission[] // missions à échéance
   news: NewsItem[] // fil d'actualités
-  certs: { id: string; kind: 'titre' | 'projet'; level: 'or' | 'platine' | 'diamant'; week: number }[] // disques certifiés
+  certs: { id: string; kind: 'titre' | 'projet'; level: 'or' | 'platine' | 'platine2' | 'platine3' | 'diamant'; week: number }[] // disques certifiés
   songs: Song[]
   projects: Project[]
   tours: Tour[]
