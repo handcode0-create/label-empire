@@ -102,5 +102,5 @@ export default function NouvellePartie() {
   )
 }
 
-const FOUNDER_AVATARS = ['story-joueur', 'story-joueur-m', ...['afrique-ouest', 'amerique-nord', 'amerique-latine'].flatMap((r) => ['f1', 'f2', 'm1', 'm2'].map((v) => `${r}-${v}`))]
+const FOUNDER_AVATARS = ['story-joueur', 'story-joueur-m', ...['afrique-ouest', 'europe', 'amerique-nord', 'amerique-latine'].flatMap((r) => ['f1', 'f2', 'm1', 'm2'].map((v) => `${r}-${v}`))]
 const compactUsd = (n: number) => n >= 1e9 ? '$1 Md' : n >= 1e6 ? '$' + n / 1e6 + ' M' : '$' + n / 1000 + ' k'
