@@ -111,7 +111,7 @@ export interface Project {
   releaseWeek?: number
 }
 
-export interface TourStop { cityId: string; venue: string; capacity: number; week: number; price: number; sold?: number; revenue?: number }
+export interface TourStop { cityId: string; venue: string; kind?: string; capacity: number; week: number; price: number; sold?: number; revenue?: number }
 export interface Tour {
   id: string; name: string; artistId: string; stops: TourStop[]; partners: string[]
   status: 'prepared' | 'running' | 'done'

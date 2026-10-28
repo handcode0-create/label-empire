@@ -1,4 +1,4 @@
-import { PARTNERS, venuesFor } from '../data/people'
+import { PARTNERS, venueKind, venuesFor } from '../data/people'
 import { cityById } from '../data/world'
 import type { Artist, GameState, Result, Tour, TourStop } from './types'
 import { clamp, clone, drawRng, fail, fansInCity, money, ok, spend, useAp } from './util'
@@ -14,12 +14,14 @@ export function partnerEffects(ids: string[]) {
 }
 
 /** Billets vendus attendus pour une étape (hors aléa). */
-export function estimateStop(s: GameState, a: Artist, stop: Pick<TourStop, 'cityId' | 'capacity' | 'price'>, partners: string[]) {
+export const suggestedPrice = (cityId: string, kind?: string) => Math.max(3, Math.round(REF_PRICE[cityById(cityId).tier] * venueKind(kind).priceMult))
+
+export function estimateStop(s: GameState, a: Artist, stop: Pick<TourStop, 'cityId' | 'capacity' | 'price' | 'kind'>, partners: string[]) {
   const city = cityById(stop.cityId)
   const fans = fansInCity(s, stop.cityId) + (a.fans[stop.cityId] ?? 0) * 0
   const demandBase = (fans * 0.08 + city.base * 0.0015 * a.potential) * (0.7 + a.skills.scene / 150 + a.skills.charisme / 300)
   const price = Math.max(stop.price, 1)
-  let demand = demandBase * Math.pow(REF_PRICE[city.tier] / price, 1.4)
+  let demand = demandBase * Math.pow(suggestedPrice(stop.cityId, stop.kind) / price, 1.4) * venueKind(stop.kind).ambiance
   const eff = partnerEffects(partners)
   demand *= 1 + eff.sold
   if (a.fatigue > 70) demand *= 0.8
@@ -27,10 +29,10 @@ export function estimateStop(s: GameState, a: Artist, stop: Pick<TourStop, 'city
   return { sold, fill: sold / stop.capacity, gross: sold * price }
 }
 
-export function stopCost(stop: Pick<TourStop, 'capacity' | 'cityId'>, prevCityId: string | null) {
+export function stopCost(stop: Pick<TourStop, 'capacity' | 'cityId' | 'kind'>, prevCityId: string | null) {
   const c = cityById(stop.cityId)
   const dist = prevCityId ? Math.hypot(cityById(prevCityId).x - c.x, cityById(prevCityId).y - c.y) : 0
-  return Math.round(stop.capacity * 3 + 2500 + dist * 14 + (c.visa ? 600 : 0))
+  return Math.round(stop.capacity * 3 + 2500 + (stop.kind ? venueKind(stop.kind).fee : 0) + dist * 14 + (c.visa ? 600 : 0))
 }
 
 export function tourSummary(s: GameState, artist: Artist, stops: TourStop[], partners: string[]) {
@@ -59,6 +61,7 @@ export function planTour(s0: GameState, t: { name: string; artistId: string; sto
     if (st.week < last) return fail(s0, 'Les étapes doivent suivre l’ordre des semaines.')
     if (c.visa && st.week - s.week < 2) return fail(s0, `Un visa est nécessaire pour ${c.name} : prévoyez au moins 2 semaines.`)
     if (st.price <= 0) return fail(s0, 'Prix de billet invalide.')
+    if (st.kind && venueKind(st.kind).minRep > s.reputation) return fail(s0, `${venueKind(st.kind).label} : réputation ${venueKind(st.kind).minRep} requise.`)
     last = st.week
   }
   for (const id of t.partners) {
@@ -112,6 +115,6 @@ export function runTourStops(s: GameState, notes: { tag: string; text: string; t
 export const newStop = (cityId: string, week: number, venueIndex = 1, price?: number): TourStop => {
   const c = cityById(cityId)
   const v = venuesFor(c)[venueIndex] ?? venuesFor(c)[0]
-  return { cityId, venue: v.name, capacity: v.capacity, week, price: price ?? REF_PRICE[c.tier] }
+  return { cityId, venue: v.name, kind: v.kind, capacity: v.capacity, week, price: price ?? suggestedPrice(cityId, v.kind) }
 }
 export type { Tour }

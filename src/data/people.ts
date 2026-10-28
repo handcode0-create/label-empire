@@ -57,14 +57,33 @@ export const TOUR_VENUE_NAMES: Record<string, [string, number][]> = {
   london: [['Jazz Café', 500], ['Roundhouse', 3300], ['Wembley Hall', 12000]],
   berlin: [['Astra Kulturhaus', 1500], ['Columbiahalle', 3500], ['Velodrom', 11000]],
 }
-export function venuesFor(c: City): { name: string; capacity: number }[] {
-  if (TOUR_VENUE_NAMES[c.id]) return TOUR_VENUE_NAMES[c.id].map(([name, capacity]) => ({ name, capacity }))
+export type VenueKind = 'club' | 'theatre' | 'salle' | 'arene' | 'stade'
+export interface VenueKindInfo { id: VenueKind; label: string; cap: number; fee: number; minRep: number; ambiance: number; priceMult: number; desc: string }
+export const VENUE_KINDS: VenueKindInfo[] = [
+  { id: 'club', label: 'Club', cap: 400, fee: 0, minRep: 0, ambiance: 1.12, priceMult: 0.8, desc: 'Intime et électrique : se remplit vite, petites recettes.' },
+  { id: 'theatre', label: 'Théâtre', cap: 1200, fee: 600, minRep: 0, ambiance: 1.06, priceMult: 1, desc: 'Assis, bonne acoustique, public fidèle.' },
+  { id: 'salle', label: 'Salle de concert', cap: 3000, fee: 1800, minRep: 12, ambiance: 1, priceMult: 1.25, desc: 'La référence des tournées : bon équilibre capacité / coût.' },
+  { id: 'arene', label: 'Arène', cap: 9000, fee: 6000, minRep: 30, ambiance: 0.94, priceMult: 1.6, desc: 'Grosse production : il faut des fans pour la remplir.' },
+  { id: 'stade', label: 'Stade', cap: 28000, fee: 18000, minRep: 55, ambiance: 0.88, priceMult: 2.2, desc: 'Événement : énormes recettes, énorme risque.' },
+]
+export const venueKind = (id?: string) => VENUE_KINDS.find((k) => k.id === id) ?? VENUE_KINDS[1]
+export interface Venue { name: string; capacity: number; kind: VenueKind; fee: number; minRep: number; ambiance: number; priceMult: number }
+export function venuesFor(c: City): Venue[] {
   const k = { A: 1, B: 0.7, C: 0.45, D: 0.3 }[c.tier]
-  return [
-    { name: `${c.name} Club`, capacity: Math.round((600 * k) / 50) * 50 },
-    { name: `Palais des Sons de ${c.name}`, capacity: Math.round((2000 * k) / 100) * 100 },
-    { name: `Grande Arène de ${c.name}`, capacity: Math.round((8000 * k) / 500) * 500 },
-  ]
+  const named = TOUR_VENUE_NAMES[c.id]
+  const call = (kind: VenueKindInfo): { name: string; capacity: number } => {
+    const idx = { club: 0, salle: 1, arene: 2 }[kind.id as 'club' | 'salle' | 'arene']
+    if (named && idx !== undefined) return { name: named[idx][0], capacity: named[idx][1] }
+    const cap = Math.max(50, Math.round((kind.cap * k) / 50) * 50)
+    const name = { club: `${c.name} Club`, theatre: `Théâtre de ${c.name}`, salle: `Palais des Sons de ${c.name}`, arene: `Grande Arène de ${c.name}`, stade: `Stade de ${c.name}` }[kind.id]
+    return { name, capacity: cap }
+  }
+  return VENUE_KINDS.map((kind) => {
+    let v = call(kind)
+    if (named && kind.id === 'theatre') v = { name: `Théâtre de ${c.name}`, capacity: Math.round(Math.sqrt(named[0][1] * named[1][1]) / 50) * 50 }
+    if (named && kind.id === 'stade') v = { name: `Stade de ${c.name}`, capacity: Math.round((named[2][1] * 2.5) / 500) * 500 }
+    return { ...v, kind: kind.id, fee: kind.fee, minRep: kind.minRep, ambiance: kind.ambiance, priceMult: kind.priceMult }
+  })
 }
 
 export interface Recruit { id: string; name: string; role: string; cityId: string; level: number; salary: number; skill: 'negociation' | 'reperage' | 'production' | 'marketing' | 'finance' | 'reseau' }

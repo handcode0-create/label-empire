@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
-import { PARTNERS, venuesFor } from '../../data/people'
+import { PARTNERS, venueKind, venuesFor } from '../../data/people'
 import { CITIES, cityById } from '../../data/world'
-import { estimateStop, newStop, planTour, tourSummary } from '../../engine/tour'
+import { estimateStop, newStop, planTour, suggestedPrice, tourSummary } from '../../engine/tour'
 import type { TourStop } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
 import { usd } from '../../lib'
@@ -64,15 +64,21 @@ export default function Tournee() {
           <div style={{display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 330, overflow: 'auto'}}>
             {stops.length === 0 && <div className="pn mut">Aucune étape. Ajoutez une ville : la capacité de la salle et le prix du billet déterminent le remplissage.</div>}
             {stops.map((s, i) => { const c = cityById(s.cityId); const f = fills[i]?.f ?? 0; return (
-              <div key={i} className={'pn' + (i === 1 ? ' sel' : '')} style={{display: 'grid', gridTemplateColumns: '28px 1fr 100px 130px 64px', gap: 12, alignItems: 'center', padding: '10px 16px'}}>
+              <div key={i} className={'pn' + (i === 1 ? ' sel' : '')} style={{display: 'grid', gridTemplateColumns: '28px 1fr 100px 120px 56px', gap: 12, alignItems: 'center', padding: '10px 16px'}}>
                 <b className="disp" style={{fontSize: 22, color: '#FF7DBB'}}>{i + 1}</b>
-                <div><b>{c.name}, {c.country}</b><div className="mut" style={{fontSize: 13}}><span style={link} onClick={() => setOpenVenue(openVenue === i ? null : i)} title="Choisir la salle">{s.venue} · {s.capacity.toLocaleString('fr-FR')} places ▾</span> · <span style={{...link, color: '#FF7DBB'}} onClick={() => setStops(stops.filter((_, j) => j !== i))}>retirer</span></div></div>
+                <div><b>{c.name}, {c.country}</b><div className="mut" style={{fontSize: 13}}><span style={link} onClick={() => setOpenVenue(openVenue === i ? null : i)} title="Choisir le type de salle">{venueKind(s.kind).label} · {s.venue} · {s.capacity.toLocaleString('fr-FR')} places ▾</span> · <span style={{...link, color: '#FF7DBB'}} onClick={() => setStops(stops.filter((_, j) => j !== i))}>retirer</span></div></div>
                 <span className="tag ti"><span style={link} onClick={() => patch(i, { week: Math.max(g.week + 1, s.week - 1) })}>‹</span>&nbsp;Sem. {(s.week - 1) % 52 + 1}&nbsp;<span style={link} onClick={() => patch(i, { week: s.week + 1 })}>›</span></span>
-                <div style={{display: 'flex', alignItems: 'center', gap: 6}}><a href="Tournee.dc.html" className="chip" style={{height: 28, padding: '0 10px'}} onClick={(e) => { e.preventDefault(); patch(i, { price: Math.max(1, s.price - 1) }) }}>−</a><b style={{minWidth: 40, textAlign: 'center', fontSize: 17}}>${s.price}</b><a href="Tournee.dc.html" className="chip on" style={{height: 28, padding: '0 10px'}} onClick={(e) => { e.preventDefault(); patch(i, { price: s.price + 1 }) }}>+</a></div>
+                <div style={{display: 'flex', flexDirection: 'column', gap: 2}}><label className="mut" style={{fontSize: 11}} htmlFor={'pr' + i}>Prix du billet</label><div style={{display: 'flex', alignItems: 'center', gap: 4}}><b>$</b><input id={'pr' + i} type="number" min={1} step={1} className="in" style={{width: 72, height: 34, padding: '0 8px', fontWeight: 700, textAlign: 'right'}} value={s.price} onChange={(e) => patch(i, { price: Math.max(1, Math.round(Number(e.target.value) || 1)) })} /></div></div>
                 <b className={f >= 0.7 ? 'up' : f >= 0.45 ? '' : 'dn'}>{Math.round(f * 100)} %</b>
                 {openVenue === i && (
-                  <div style={{gridColumn: '1 / -1', display: 'flex', gap: 8, flexWrap: 'wrap'}}>
-                    {venuesFor(c).map((v) => <span key={v.name} className={'chip' + (v.name === s.venue ? ' on' : '')} role="button" onClick={() => { patch(i, { venue: v.name, capacity: v.capacity }); setOpenVenue(null) }}>{v.name} · {v.capacity.toLocaleString('fr-FR')}</span>)}
+                  <div style={{gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8}}>
+                    {venuesFor(c).map((v) => { const k = venueKind(v.kind); const locked = k.minRep > g.reputation; const on = v.kind === (s.kind ?? '') || (!s.kind && v.name === s.venue); return (
+                      <div key={v.kind} className={'pn' + (on ? ' sel' : '')} role="button" tabIndex={0} title={k.desc} style={{padding: '8px 10px', cursor: 'pointer', opacity: locked ? 0.5 : 1}} onClick={() => { if (locked) return say(`${k.label} : réputation ${k.minRep} requise.`, 'err'); patch(i, { venue: v.name, kind: v.kind, capacity: v.capacity, price: suggestedPrice(s.cityId, v.kind) }); setOpenVenue(null) }}>
+                        <b style={{fontSize: 14}}>{k.label}</b>
+                        <div className="mut" style={{fontSize: 11}}>{v.name}</div>
+                        <div style={{fontSize: 12, marginTop: 2}}>{v.capacity.toLocaleString('fr-FR')} places</div>
+                        <div className="mut" style={{fontSize: 11}}>{locked ? `🔒 Rép. ${k.minRep}` : `Billet conseillé $${suggestedPrice(s.cityId, v.kind)}`}</div>
+                      </div>) })}
                   </div>
                 )}
               </div>) })}
