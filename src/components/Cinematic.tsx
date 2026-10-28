@@ -19,7 +19,7 @@ const SKY: Record<Bg, string> = {
 function Backdrop({ bg }: { bg: Bg }) {
   const [failed, setFailed] = useState(false)
   useEffect(() => setFailed(false), [bg])
-  if (failed || bg === 'scene') return <Skyline bg={bg} />
+  if (failed) return <Skyline bg={bg} />
   return <img src={`/scenes/${bg}.webp`} alt="" onError={() => setFailed(true)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', animation: 'kenburns 24s ease-in-out infinite alternate' }} />
 }
 
