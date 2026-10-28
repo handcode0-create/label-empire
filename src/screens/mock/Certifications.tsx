@@ -1,7 +1,7 @@
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { useOpen } from '../../components/useOpen'
-import { CERT_LEVELS, CERT_THRESHOLDS, certOf, levelFor, levelInfo, nextLevel, type CertLevel } from '../../engine/certifications'
+import { CERT_LEVELS, CERT_THRESHOLDS, SNEP_REF, SNEP_SCALE, certOf, levelFor, levelInfo, nextLevel, type CertLevel } from '../../engine/certifications'
 import { projectStreams } from '../../engine/projects'
 import { useGame } from '../../store/gameStore'
 import { compact, songName } from '../../lib'
@@ -29,7 +29,7 @@ export default function Certifications() {
       <Hud />
       <div className="main" style={{ display: 'flex', gap: 20 }}>
         <div style={{ width: 900, display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto', maxHeight: 760 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><a href="Hub.dc.html" className="btn s sm">Retour</a><h1 className="h1" style={{ fontSize: 36 }}>Certifications</h1></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><a href="Hub.dc.html" className="btn s sm">Retour</a><h1 className="h1" style={{ fontSize: 36 }}>Chambre des certifications</h1><span className="tag te">Référence SNEP</span></div>
           {rows.length === 0 && <div className="pn cut mut">Aucun titre sorti pour l’instant. Sortez un titre et accumulez des écoutes : les disques d’or, de platine et de diamant récompensent les gros succès.</div>}
           {rows.map((r) => {
             const lvl = levelFor(r.kind, r.streams)
@@ -64,11 +64,12 @@ export default function Certifications() {
             <div className="lbl">Seuils d’écoutes</div>
             {CERT_LEVELS.map((l) => (
               <div key={l.level} className="row" style={{ gridTemplateColumns: '1fr auto' }}>
-                <div><b>{l.label}</b><div className="mut" style={{ fontSize: 12 }}>Titre {compact(CERT_THRESHOLDS.titre[l.level])} · EP/Album {compact(CERT_THRESHOLDS.projet[l.level])}</div></div>
+                <div><b>{l.label}</b><div className="mut" style={{ fontSize: 12 }}>Titre {compact(CERT_THRESHOLDS.titre[l.level])} · EP/Album {compact(CERT_THRESHOLDS.projet[l.level])}</div><div className="mut" style={{ fontSize: 11 }}>SNEP : single {compact(SNEP_REF.titre[l.level])} · album {SNEP_REF.projetUnites[l.level].toLocaleString('fr-FR')} unités</div></div>
                 <span className="tag te">+${l.cash.toLocaleString('fr-FR')}</span>
               </div>
             ))}
             <div className="mut" style={{ fontSize: 12, marginTop: 8 }}>Chaque certification verse une prime et augmente la réputation du label.</div>
+            <div className="mut" style={{ fontSize: 12, marginTop: 6 }}>Barème SNEP (France) : singles 15 M / 30 M / 50 M d’écoutes ; albums 50 000 / 100 000 / 500 000 unités (1 500 écoutes = 1 unité). Les seuils de Bakoma sont ×{SNEP_SCALE} pour tenir compte de la taille du marché.</div>
           </div>
         </div>
       </div>

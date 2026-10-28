@@ -9,10 +9,23 @@ export const CERT_LEVELS: { level: CertLevel; label: string; color: string; rep:
   { level: 'platine', label: 'Disque de platine', color: '#C9D6F2', rep: 0.8, cash: 20_000 },
   { level: 'diamant', label: 'Disque de diamant', color: '#35D3F0', rep: 2, cash: 100_000 },
 ]
-/** Seuils d'écoutes cumulées. Les projets (EP, albums) comptent toutes leurs pistes. */
+/**
+ * Barème de référence SNEP (France, en vigueur depuis juillet 2024 pour les singles) :
+ * singles 15 M / 30 M / 50 M d'écoutes ; albums 50 000 / 100 000 / 500 000 unités.
+ * Équivalence streaming d'un album : 1 500 écoutes = 1 unité.
+ * L'univers de Bakoma est plus petit : tous les seuils sont multipliés par SNEP_SCALE.
+ */
+export const SNEP_SCALE = 0.2
+export const SNEP_REF = {
+  titre: { or: 15_000_000, platine: 30_000_000, diamant: 50_000_000 },
+  projetUnites: { or: 50_000, platine: 100_000, diamant: 500_000 },
+  ecoutesParUnite: 1_500,
+}
+const scaled = (kind: 'titre' | 'projet', l: CertLevel) => Math.round((kind === 'titre' ? SNEP_REF.titre[l] : SNEP_REF.projetUnites[l] * SNEP_REF.ecoutesParUnite) * SNEP_SCALE)
+/** Seuils d'écoutes cumulées dans le jeu. Les projets (EP, albums) comptent toutes leurs pistes. */
 export const CERT_THRESHOLDS: Record<'titre' | 'projet', Record<CertLevel, number>> = {
-  titre: { or: 3_000_000, platine: 10_000_000, diamant: 30_000_000 },
-  projet: { or: 8_000_000, platine: 25_000_000, diamant: 80_000_000 },
+  titre: { or: scaled('titre', 'or'), platine: scaled('titre', 'platine'), diamant: scaled('titre', 'diamant') },
+  projet: { or: scaled('projet', 'or'), platine: scaled('projet', 'platine'), diamant: scaled('projet', 'diamant') },
 }
 const ORDER: CertLevel[] = ['or', 'platine', 'diamant']
 export const levelInfo = (l: CertLevel) => CERT_LEVELS.find((c) => c.level === l)!

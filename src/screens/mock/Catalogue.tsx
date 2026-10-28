@@ -63,6 +63,7 @@ export default function Catalogue() {
           })}
           <a href="Clips.dc.html" className="btn s sm" style={{whiteSpace: 'nowrap'}}>Clips vidéo</a>
           <a href="Plateformes.dc.html" className="btn s sm" style={{whiteSpace: 'nowrap'}}>Plateformes</a>
+          <a href="Certifications.dc.html" className="btn s sm" style={{whiteSpace: 'nowrap'}}>Certifications SNEP · {(g.certs ?? []).length}</a>
           <a href="Sortie.dc.html" className="btn sm" style={{marginTop: 6, whiteSpace: 'nowrap'}}>Programmer un single</a>
         </div>
         <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: 14, overflow: 'auto', maxHeight: 790}}>
