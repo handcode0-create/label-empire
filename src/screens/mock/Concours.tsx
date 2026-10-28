@@ -23,8 +23,14 @@ export default function Concours() {
   const eff = Math.max(budget, f.min)
   const estimate = Math.round(eff / f.per)
   const rival = g.pool.some((a) => a.rivalInterest && a.originCityId === cityId)
-  const shown = g.contests.filter((k) => k.status === 'termine' && k.finalists.length).slice(-1)[0] ?? g.contests.filter((k) => k.status === 'ouvert').slice(-1)[0]
-  const finalists = shown ? shown.finalists.map((id) => g.pool.find((a) => a.id === id)).filter(Boolean) as typeof g.pool : []
+  // Un concours reste consultable d'une semaine à l'autre : en cours d'abord, puis le plus récent terminé.
+  const [viewId, setViewId] = useState<string | null>(null)
+  const ordered = [...g.contests].sort((a, b) => (a.status === b.status ? b.startWeek - a.startWeek : a.status === 'ouvert' ? -1 : 1))
+  const shown = g.contests.find((k) => k.id === viewId) ?? ordered[0]
+  const fate = (id: string) => g.artists.some((a) => a.id === id) ? 'signé' : g.pool.some((a) => a.id === id) ? 'dispo' : 'parti'
+  const finalists = shown ? shown.finalists.map((id) => g.pool.find((a) => a.id === id) ?? g.artists.find((a) => a.id === id)).filter(Boolean) as typeof g.pool : []
+  const total = shown ? Math.max(1, shown.endWeek - shown.startWeek) : 1
+  const elapsed = shown ? Math.min(total, Math.max(0, g.week - shown.startWeek)) : 0
   const changeCity = (id: string) => { setCityId(id); if (name.startsWith('Révélation ')) setName('Révélation ' + cityById(id).name) }
   return (
     <div className="scr">
@@ -64,6 +70,7 @@ export default function Concours() {
             <div style={{position: 'absolute', left: 28, bottom: 20}}><div className="lbl">{shown ? cityById(shown.cityId).name : city.name} · {CONTEST_FORMATS[shown?.format ?? format].label}</div><div className="disp" style={{fontSize: 42, lineHeight: 1}}>{shown?.name ?? name}</div></div>
             <div style={{position: 'absolute', right: 24, bottom: 20, textAlign: 'right'}}><div className="num" style={{color: '#FFC63D'}}>{shown?.candidates ?? estimate}</div><div className="mut" style={{fontSize: 13}}>candidats {shown ? 'auditionnés' : 'estimés'}</div></div>
           </div>
+          {shown?.status === 'ouvert' && <div className="pn" style={{padding: '12px 16px'}}><div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Progression du concours</span><span className="sp" /><span className="mut" style={{fontSize: 13}}>Semaine {elapsed} sur {total} · finale en semaine {shown.endWeek}</span></div><div className="mt" style={{marginTop: 8}}><i style={{width: Math.round((elapsed / total) * 100) + '%'}} /></div><div className="mut" style={{fontSize: 13, marginTop: 6}}>Le concours se poursuit quand vous passez les semaines : les finalistes arriveront automatiquement à la date de la finale.</div></div>}
           <div className="lbl">{finalists.length ? `Les ${finalists.length} finalistes` : 'Finalistes'}</div>
           {finalists.length ? (
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12}}>
@@ -73,13 +80,24 @@ export default function Concours() {
                   <div style={{marginTop: 10}}><b style={{fontSize: 17}}>{a.stageName}</b></div>
                   <div className="mut" style={{fontSize: 13}}>{cityById(a.originCityId).name} · {a.genre}</div>
                   <div className="num" style={{marginTop: 8, color: '#FFC63D'}}>{Math.round(a.demo.quality)}</div><div className="mut" style={{fontSize: 12}}>note du jury</div>
-                  <a href="Profil.dc.html" className={'btn sm' + (i === 0 ? '' : ' s')} style={{marginTop: 10}} onClick={() => select({ candidateId: a.id })}>Voir le profil</a>
+                  {fate(a.id) === 'dispo' ? <a href="Profil.dc.html" className={'btn sm' + (i === 0 ? '' : ' s')} style={{marginTop: 10}} onClick={() => select({ candidateId: a.id })}>Voir le profil</a> : <span className={'tag ' + (fate(a.id) === 'signé' ? 'tg' : 'tr_')} style={{marginTop: 10}}>{fate(a.id) === 'signé' ? 'Signé par vous' : 'Parti'}</span>}
                 </div>
               ))}
             </div>
-          ) : <div className="pn mut">Les finalistes apparaîtront ici à la fin du concours (2 semaines après le lancement).</div>}
+          ) : <div className="pn mut">Les finalistes apparaîtront ici à la finale, même si vous passez les semaines entre-temps.</div>}
           <div className="bub"><span className="tag tc" style={{marginRight: 8}}>Jury</span>{finalists[0] ? `« ${finalists[0].stageName} a une présence rare. Il vous faudra être rapide : un rival pourrait le contacter. »` : '« Plus le budget et le jury sont solides, meilleurs seront les finalistes. »'}</div>
           <div className="mut" style={{fontSize: 13}}>Vous avez l'exclusivité sur les finalistes pendant 2 semaines. Ensuite, ils rejoignent la liste de découverte.</div>
+          {ordered.length > 0 && (
+            <div className="pn cut" style={{padding: '12px 14px'}}>
+              <div className="lbl">Vos concours</div>
+              {ordered.slice(0, 5).map((k) => (
+                <div key={k.id} className="row" style={{gridTemplateColumns: '1fr auto', cursor: 'pointer', outline: k.id === shown?.id ? '2px solid #FF3D9A' : 'none', borderRadius: 8, padding: '6px 8px'}} onClick={() => setViewId(k.id)}>
+                  <div><b>{k.name}</b><div className="mut" style={{fontSize: 12}}>{cityById(k.cityId).name} · {k.status === 'ouvert' ? `semaine ${Math.min(total, Math.max(0, g.week - k.startWeek))}/${Math.max(1, k.endWeek - k.startWeek)}` : 'terminé'}</div></div>
+                  <span className={'tag ' + (k.status === 'ouvert' ? 'te' : 'tg')}>{k.status === 'ouvert' ? 'En cours' : 'Finalistes'}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

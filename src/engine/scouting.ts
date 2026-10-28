@@ -152,7 +152,11 @@ export function startContest(s0: GameState, c: { name: string; cityId: string; f
 
 export function resolveContests(s: GameState, notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]) {
   for (const k of s.contests) {
-    if (k.status !== 'ouvert' || k.endWeek > s.week) continue
+    if (k.status === 'ouvert' && k.endWeek > s.week + 1) {
+      notes.push({ tag: 'Concours', text: `« ${k.name} » se poursuit : finale en semaine ${k.endWeek}.`, tone: 'c' })
+      continue
+    }
+    if (k.status !== 'ouvert') continue
     const rng = drawRng(s)
     const bonus = k.budget / 40000 + k.jury.length * 0.08 + staffSkill(s, 'reperage') * 0.03
     const ids: string[] = []
