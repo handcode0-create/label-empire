@@ -74,16 +74,12 @@ export default function App() {
     setScreen(target)
   }
 
-  // Le décor remplit toute la fenêtre ; la planche 1440×900 est centrée et ses bords se fondent dans le décor.
-  const extraX = vw - W * scale, extraY = vh - H * scale
-  const fade = 'linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent)'
-  const fadeY = 'linear-gradient(180deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)'
-  const dockless = ['Main', 'Menu', 'NouvellePartie', 'NouvellePartie2', 'Fin', 'Battle', 'Rapport'].includes(missing ? 'Menu' : screen)
-  const mask = dockless ? [extraX > 2 ? fade : null, extraY > 2 ? fadeY : null].filter(Boolean).join(',') : ''
+  // La scène occupe toute la fenêtre : mise à l'échelle sur la hauteur/largeur, puis étendue à l'espace restant (pas de bandes, pas de fondu).
+  const sw = Math.max(W, Math.round(vw / scale)), sh = Math.max(H, Math.round(vh / scale))
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', display: 'grid', placeItems: 'center', position: 'relative', background: 'radial-gradient(900px 600px at 82% -8%,rgba(139,92,246,.30),transparent 60%),radial-gradient(700px 520px at 0% 100%,rgba(255,61,154,.15),transparent 60%),#120B24' }}>
-      <div ref={ref} onClick={onClick} style={{ width: W * scale, height: H * scale, WebkitMaskImage: mask || undefined, maskImage: mask || undefined, WebkitMaskComposite: 'source-in', maskComposite: 'intersect' }}>
-        <div style={{ position: 'relative', width: W, height: H, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: 'radial-gradient(900px 600px at 82% -8%,rgba(139,92,246,.30),transparent 60%),radial-gradient(700px 520px at 0% 100%,rgba(255,61,154,.15),transparent 60%),#120B24' }}>
+      <div ref={ref} onClick={onClick} style={{ width: vw, height: vh, overflow: 'hidden' }}>
+        <div style={{ position: 'relative', width: sw, height: sh, transform: `scale(${scale})`, transformOrigin: 'top left', ['--sw' as string]: sw + 'px', ['--sh' as string]: sh + 'px' }}>
           <Screen />
           {error && <div role="alert" style={{ position: 'absolute', left: 0, right: 0, bottom: 110, textAlign: 'center', color: '#FF5470', fontWeight: 700, fontSize: 16 }}>{error}</div>}
         </div>
