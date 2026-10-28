@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CHARS, SCENES, contextFor, fillText, type Bg, type Line } from '../data/story'
 import { useGame } from '../store/gameStore'
 import Avatar from './Avatar'
+import { acceptMeridianOffer } from '../engine/objectives'
 
 const SKY: Record<Bg, string> = {
   ville: 'linear-gradient(180deg,#0B0720 0%,#2A1B4D 55%,#FF7A59 130%)',
@@ -52,6 +53,7 @@ export default function Cinematic() {
   const id = useGame((s) => s.scene)
   const game = useGame((s) => s.game)
   const end = useGame((s) => s.endScene)
+  const run = useGame((s) => s.run)
   const scene = SCENES.find((s) => s.id === id)
   const ctx = useMemo(() => (game ? contextFor(game) : null), [game])
   const [queue, setQueue] = useState<Line[]>([])
@@ -85,7 +87,9 @@ export default function Cinematic() {
     if (i + 1 >= queue.length) end()
     else { setI(i + 1); setPicked(false) }
   }
-  const choose = (reply: Line[]) => { setQueue([...queue.slice(0, i + 1), ...reply, ...queue.slice(i + 1)]); setPicked(true); setI(i + 1); setPicked(false) }
+  const choose = (reply: Line[], effect?: string) => {
+    if (effect === 'accept-meridian') run(acceptMeridianOffer)
+    setQueue([...queue.slice(0, i + 1), ...reply, ...queue.slice(i + 1)]); setPicked(true); setI(i + 1); setPicked(false) }
 
   useEffect(() => {
     if (!scene) return
@@ -151,7 +155,7 @@ export default function Cinematic() {
           </div>
           {done && line.choices && (
             <div className="an-rise" style={{ display: 'flex', gap: 12, marginTop: 12, justifyContent: 'flex-end' }}>
-              {line.choices.map((c) => <button key={c.label} className="btn sm" onClick={(e) => { e.stopPropagation(); choose(c.reply) }}>{c.label}</button>)}
+              {line.choices.map((c) => <button key={c.label} className="btn sm" onClick={(e) => { e.stopPropagation(); choose(c.reply, c.effect) }}>{c.label}</button>)}
             </div>
           )}
         </div>

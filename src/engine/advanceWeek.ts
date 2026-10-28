@@ -1,4 +1,5 @@
 import { CITIES, cityById, palierFor } from '../data/world'
+import { OBJECTIVES, applyBailout, applyDealLevy, checkObjectives } from './objectives'
 import { createRng } from './rng'
 import { STREAM_VALUE, rankInCity, royaltyShare, weeklyStreams } from './market'
 import { makeEvent, resolveEvent, weeklyFixedCosts } from './economy'
@@ -118,6 +119,7 @@ export function advanceWeek(s0: GameState): GameState {
   for (const m of s.staff) m.morale = clamp(m.morale + r2.int(-3, 2), 0, 100)
   for (const o of s.offices) if (o.since === W) notes.push({ tag: 'Bureau', text: `Le bureau de ${cityById(o.cityId).name} est opérationnel.`, tone: 'c' })
   if (!s.songs.some((x) => x.release && W - x.release.week < 12)) s.reputation = Math.max(0, s.reputation - 0.15)
+  receipts = applyDealLevy(s, receipts, (t) => notes.push({ tag: 'Meridian', text: t, tone: 'r' }))
   s.stats.totalRevenue += receipts
 
   // 7. réputation, paliers, fin de partie
@@ -126,9 +128,13 @@ export function advanceWeek(s0: GameState): GameState {
   const after = palierFor(s.reputation)
   if (after.n > before.n) notes.push({ tag: 'Palier', text: `Nouveau palier : ${after.name} !`, tone: 'g' })
   s.negWeeks = s.cash < 0 ? s.negWeeks + 1 : 0
-  if (s.negWeeks >= 4 && !s.freeMode) s.outcome = 'defaite'
-  if (s.reputation >= 100 && !s.freeMode && !s.outcome) s.outcome = 'victoire'
-  if (s.cash < 0) notes.push({ tag: 'Alerte', text: `Trésorerie négative depuis ${s.negWeeks} semaine(s) : 4 semaines mènent à la faillite.`, tone: 'r' })
+  if (s.negWeeks >= 4 && !s.freeMode) {
+    if ((s.bailouts ?? 0) < 1) { applyBailout(s); notes.push({ tag: 'Meridian', text: 'Meridian Group rachète vos dettes : +$250 000, mais 30 % de vos recettes pendant 2 ans et −8 de réputation.', tone: 'r' }) }
+    else if (s.negWeeks >= 6) s.outcome = 'defaite'
+  }
+  for (const o of checkObjectives(s)) notes.push({ tag: 'Objectif', text: `Objectif accompli : ${o.title}${o.reward.cash ? ` (+$${o.reward.cash.toLocaleString('fr-FR')})` : ''}`, tone: 'g' })
+  if (OBJECTIVES.every((o) => s.objectives.includes(o.id)) && !s.freeMode && !s.outcome) s.outcome = 'victoire'
+  if (s.cash < 0) notes.push({ tag: 'Alerte', text: `Trésorerie négative depuis ${s.negWeeks} semaine(s)${(s.bailouts ?? 0) < 1 ? ' : à 4 semaines, Meridian proposera un sauvetage à vos dépens.' : ' : à 6 semaines, c’est la faillite.'}`, tone: 'r' })
   for (const a of s.artists) if (!a.isFounder && a.morale < 35) notes.push({ tag: 'Moral', text: `Le moral de ${a.stageName} est bas (${Math.round(a.morale)}).`, tone: 'r' })
 
   // 8. semaine suivante

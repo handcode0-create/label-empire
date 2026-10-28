@@ -14,7 +14,7 @@ export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
   joueur: { name: 'Vous', role: 'Fondateur', gradient: '#FFC63D,#FF3D9A', side: 'right', portrait: 'story-joueur' },
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
-export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[] }[] }
+export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' }[] }
 export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport'
 export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean }
 
@@ -38,7 +38,7 @@ const T = (text: string, mood?: Mood): Line => ({ who: 'tomas', text, mood })
 const P = (text: string, mood?: Mood): Line => ({ who: 'joueur', text, mood })
 
 /** Le fil rouge : battre Meridian Group en atteignant 100 de réputation (label mondial) avant d'être racheté. */
-export const STORY_GOAL = 'Devenir le premier label mondial (réputation 100) avant que Meridian Group ne vous rachète.'
+export const STORY_GOAL = 'Accomplir tous les objectifs et devenir le premier label mondial face à Meridian Group.'
 export interface Goal { step: string; title: string; text: string }
 /** Objectif courant de l'histoire, déduit de l'état de la partie (affiché au Monde et à la fin de chaque scène). */
 export function goalFor(g: GameState): Goal {
@@ -161,6 +161,7 @@ export const SCENES: Scene[] = [
       N('Un nom commence à circuler dans les couloirs de l’industrie : {label}. Quelqu’un a décidé de venir voir de plus près.'),
       T('Ainsi, c’est vous, {founder}. Meridian Group suit vos chiffres depuis un mois.', 'confiance'),
       { who: 'tomas', text: 'Je suis venu vous refaire l’offre. Plus généreuse que la première.', mood: 'confiance', choices: [
+        { label: 'Accepter l’accord (+750 000 $, mais −20 % de recettes pendant 2 ans, −5 de réputation)', effect: 'accept-meridian', reply: [P('Vos conditions, Tomás. J’ai besoin de cet argent pour tenir.', 'neutre'), T('Sage décision. Meridian prélèvera sa part sur chaque dollar que vous gagnerez. Vous pourrez racheter votre liberté plus tard.', 'confiance'), I('Patron… vous venez de leur donner une laisse. Rachetez-vous dès que vous le pouvez.', 'tension')] },
         { label: 'Combien ?', reply: [T('Assez pour que vous cessiez de rêver et que vos artistes aient un vrai contrat. Réfléchissez-y.'), P('J’ai réfléchi. La réponse reste non.', 'tension')] },
         { label: 'Non.', reply: [P('La réponse n’a pas changé, Tomás.', 'tension')] },
       ] },

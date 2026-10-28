@@ -168,6 +168,9 @@ export interface GameState {
   contests: Contest[]
   tournament: Tournament | null
   seenScenes: string[]
+  objectives: string[] // objectifs accomplis
+  deal: { kind: 'offre' | 'sauvetage'; weeksLeft: number; levy: number } | null // accord avec Meridian Group
+  bailouts: number
   songs: Song[]
   projects: Project[]
   tours: Tour[]

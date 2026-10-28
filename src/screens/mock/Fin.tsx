@@ -7,7 +7,7 @@ import { EPILOGUE_LOSE, EPILOGUE_WIN } from '../../data/story'
 export default function Fin() {
   const g = useGame((s) => s.game)
   const { freeMode, quit } = useGame()
-  if (!g || !g.outcome) return <div className="scr"><div className="pn cut" style={{margin: 80, maxWidth: 560}}><div className="h2">Partie en cours</div><p className="mut">La fin de partie apparaît quand vous atteignez la réputation 100 (victoire) ou après 4 semaines de trésorerie négative (défaite).</p><a href="Hub.dc.html" className="btn">Retour au jeu</a></div></div>
+  if (!g || !g.outcome) return <div className="scr"><div className="pn cut" style={{margin: 80, maxWidth: 560}}><div className="h2">Partie en cours</div><p className="mut">La partie ne se termine que lorsque tous les objectifs sont accomplis (victoire), ou si la faillite survient malgré le sauvetage de Meridian (défaite).</p><a href="Hub.dc.html" className="btn">Retour au jeu</a></div></div>
   const win = g.outcome === 'victoire'
   const years = Math.floor((g.week - 1) / 52)
   const fans = totalFans(g)
@@ -23,7 +23,7 @@ export default function Fin() {
       <div style={{position: 'absolute', left: 0, right: 0, top: 70, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8}}>
         <span className={'tag ' + (win ? 'te' : 'tr_')} style={{height: 30, fontSize: 14}}>Palier {palierFor(g.reputation).n} · {palierFor(g.reputation).name}</span>
         <div className="disp" style={{fontSize: 120, lineHeight: 1, letterSpacing: '0.08em', color: accent, textShadow: `0 0 40px ${win ? 'rgba(255,198,61,0.5)' : 'rgba(255,84,112,0.5)'}`}}>{win ? 'VICTOIRE' : 'DÉFAITE'}</div>
-        <div className="lbl" style={{fontSize: 16, letterSpacing: '0.28em', color: '#B3A6D9'}}>{win ? `${g.label.name} règne sur la scène mondiale` : `${g.label.name} ferme ses portes : quatre semaines de trésorerie négative`}</div>
+        <div className="lbl" style={{fontSize: 16, letterSpacing: '0.28em', color: '#B3A6D9'}}>{win ? `${g.label.name} règne sur la scène mondiale` : `${g.label.name} ferme ses portes : faillite malgré le sauvetage de Meridian`}</div>
       </div>
       <div className="mut" style={{position: 'absolute', left: 290, right: 290, top: 330, textAlign: 'center', fontSize: 16, lineHeight: 1.5, color: '#D8D0F5'}}>{(win ? EPILOGUE_WIN : EPILOGUE_LOSE).replace('{label}', g.label.name)}</div>
       <div style={{position: 'absolute', left: 150, right: 150, top: 440, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14}}>

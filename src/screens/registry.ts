@@ -16,6 +16,7 @@ import Menu from './mock/Menu'
 import Mixage from './mock/Mixage'
 import NouvellePartie from './mock/NouvellePartie'
 import NouvellePartie2 from './mock/NouvellePartie2'
+import Objectifs from './mock/Objectifs'
 import Pays from './mock/Pays'
 import Profil from './mock/Profil'
 import Projets from './mock/Projets'
@@ -27,6 +28,7 @@ import Titre from './mock/Titre'
 import Tournoi from './mock/Tournoi'
 
 export const SCREENS: Record<string, () => React.JSX.Element> = {
+  Objectifs,
   Artiste,
   Artistes,
   Battle,

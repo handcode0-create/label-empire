@@ -94,10 +94,11 @@ describe('parcours complet', () => {
     while (g.week < 7) g = advanceWeek(g)
     expect(g.tours[0].status).toBe('done')
   })
-  it("la faillite arrive après 4 semaines de trésorerie négative", () => {
+  it("4 semaines de trésorerie négative déclenchent le sauvetage Meridian, pas la défaite", () => {
     let g = createGame(cfg)
     g.cash = -50000
     for (let i = 0; i < 5; i++) g = advanceWeek(g)
-    expect(g.outcome).toBe('defaite')
+    expect(g.outcome).toBeFalsy()
+    expect(g.bailouts).toBe(1)
   })
 })
