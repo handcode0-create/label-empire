@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
+import Slider from '../../components/Slider'
+import { CITIES } from '../../data/world'
 import { PROJECT_RULES, assignSong, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong } from '../../engine/projects'
 import type { ProjectKind } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
@@ -15,6 +17,9 @@ export default function Projets() {
   const [name, setName] = useState('')
   const [kind, setKind] = useState<ProjectKind>('EP')
   const [artistId, setArtistId] = useState(g.artists[0]?.id ?? '')
+  const unlocked = CITIES.filter((c) => c.minRep <= g.reputation)
+  const [cityIds, setCityIds] = useState<string[]>([])
+  const [promo, setPromo] = useState(0)
   const sel = g.projects.find((p) => p.id === selId) ?? null
   const rule = sel ? PROJECT_RULES[sel.kind] : null
   const artist = (id: string) => g.artists.find((a) => a.id === id)
@@ -65,9 +70,19 @@ export default function Projets() {
                     ))}
                     {sel.songIds.length === 0 && <p className="mut" style={{fontSize: 14}}>Aucun titre assigné.</p>}
                   </div>
+                  {sel.status === 'brouillon' && projectSongs(g, sel).some((s) => s.stage === 'mixed') && (
+                    <div style={{marginTop: 14, borderTop: '1px solid var(--ln)', paddingTop: 12}}>
+                      <div className="lbl">Sortie des titres en standby (max. 6 territoires)</div>
+                      <div style={{display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8}}>
+                        {unlocked.map((c) => { const on = cityIds.includes(c.id); return <span key={c.id} className={'chip' + (on ? ' on' : '')} role="button" onClick={() => setCityIds(on ? cityIds.filter((x) => x !== c.id) : cityIds.length >= 6 ? cityIds : [...cityIds, c.id])}>{c.name}</span> })}
+                      </div>
+                      <div style={{display: 'grid', gridTemplateColumns: '1fr 100px', gap: 16, alignItems: 'center', marginTop: 12}}><Slider min={0} max={30000} step={500} value={promo} onChange={setPromo} /><b style={{textAlign: 'right', color: '#FFC63D'}}>{usd(promo)}</b></div>
+                      <div className="mut" style={{fontSize: 12, marginTop: 6}}>{cityIds.length ? `${cityIds.length} territoire(s) choisi(s)` : 'Aucun choix : les 6 premiers territoires débloqués'} · promotion répartie sur les titres en standby.</div>
+                    </div>
+                  )}
                   {sel.status === 'brouillon' && (
                     <div style={{display: 'flex', gap: 10, marginTop: 14}}>
-                      <button type="button" className="btn" style={{flex: 1}} onClick={() => run((st) => releaseProject(st, sel.id))}>Publier le {sel.kind}</button>
+                      <button type="button" className="btn" style={{flex: 1}} onClick={() => run((st) => releaseProject(st, sel.id, { cityIds, promo }))}>Publier le {sel.kind}</button>
                       <button type="button" className="btn s" onClick={() => { run((st) => deleteProject(st, sel.id)); setSelId(null) }}>Supprimer</button>
                     </div>
                   )}
