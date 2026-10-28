@@ -1,4 +1,5 @@
 import { songName } from '../lib'
+import { expressCost, expressProduce } from './production'
 import { CITIES } from '../data/world'
 import type { GameState, Project, ProjectKind, Result, Song, SongRelease } from './types'
 import { clone, fail, ok, spend, useAp } from './util'
@@ -89,7 +90,10 @@ export function releaseProject(s0: GameState, projectId: string, plan?: { cityId
   const songs = projectSongs(s, p)
   const ready = (x: Song) => x.stage === 'released' || (x.stage === 'mixed' && x.readyWeek <= s.week)
   const pending = songs.filter((x) => !ready(x))
-  if (pending.length) return fail(s0, `Ces titres ne sont pas prêts (il faut qu’ils soient mixés ou sortis) : ${pending.map((x) => x.title).join(', ')}.`)
+  if (pending.some((x) => x.stage === 'scheduled')) return fail(s0, 'Un titre est déjà programmé en single : retirez-le du projet ou attendez sa sortie.')
+  const express = pending.reduce((t, x) => t + expressCost(s, x), 0)
+  if (express) { const ee = spend(s, express, `Production express (${pending.length} titre${pending.length > 1 ? 's' : ''})`); if (ee) return fail(s0, ee) }
+  for (const x of pending) expressProduce(s, x)
   const toRelease = songs.filter((x) => x.stage === 'mixed')
   const unlocked = CITIES.filter((c) => c.minRep <= s.reputation)
   const cityIds = (plan?.cityIds?.length ? plan.cityIds : unlocked.slice(0, 6).map((c) => c.id)).slice(0, 6)
@@ -104,5 +108,5 @@ export function releaseProject(s0: GameState, projectId: string, plan?: { cityId
   p.status = 'sorti'; p.releaseWeek = toRelease.length ? when : s.week
   for (const x of songs) x.hype += rule.hype
   s.reputation += p.kind === 'Album' ? 1 : 0.5
-  return ok(s, `${p.kind} « ${p.name} » ${toRelease.length ? `sortira en semaine ${when} avec ${toRelease.length} inédit(s)` : 'est sorti'} : +${Math.round(rule.hype * 100)} % de buzz.`)
+  return ok(s, `${p.kind} « ${p.name} » ${toRelease.length ? `sortira en semaine ${when} avec ${toRelease.length} inédit(s)` : 'est sorti'}${express ? ` (production express : $${express.toLocaleString('fr-FR')})` : ''} : +${Math.round(rule.hype * 100)} % de buzz.`)
 }

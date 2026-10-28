@@ -66,6 +66,7 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 ## Pochettes, inédits et scènes de tournée
 - **Pochettes** : chaque single, EP et album a une pochette SVG générée (8 styles × 8 palettes), modifiable via « Pochette » dans Sorties › Catalogue ; visible aussi sur la fiche titre et l'écran de programmation.
 - **Inédits** : les titres écrits, enregistrés ou mixés peuvent être mis en standby puis ajoutés à un EP/album ; à la sortie du projet ils sont marqués « Inédit » (+ léger buzz).
+- **Production express** : publier un EP/album avec des inédits inachevés (écrits ou enregistrés) les enregistre et les mixe automatiquement (studio local, +25 %), coût affiché dans le Catalogue.
 - **Défilement** : barres de défilement masquées partout (le scroll reste actif).
 - **Brouillons** : les paroles sont sauvegardées automatiquement et survivent au passage de semaine ; liste « Sons en cours » pour reprendre à n’importe quelle étape ; rappels dans l’agenda.
 - **15 genres** : Afro-pop, Coupé-décalé, Hip-hop, R&B, Amapiano, Pop, Électro, Rock, Mbalax, Kuduro, Dancehall, Drill, Rumba, Zouk, Gospel (affinités par ville, studios et médias).

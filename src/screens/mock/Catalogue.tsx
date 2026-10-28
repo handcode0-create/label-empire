@@ -6,6 +6,7 @@ import Cover, { CoverPicker, defaultCover } from '../../components/Cover'
 import { generateProjectName } from '../../data/titles'
 import { createRng } from '../../engine/rng'
 import { rivalProjectNames } from '../../engine/rivals'
+import { expressCost } from '../../engine/production'
 import { PROJECT_RULES, assignSong, setCover, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong, setStandby } from '../../engine/projects'
 import type { Project, ProjectKind } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
@@ -85,7 +86,7 @@ export default function Catalogue() {
                 <div key={p.id} className="pn cut" style={{display: 'flex', flexDirection: 'column', gap: 8}}>
                   {cover(p)}
                   {editing === p.id && <CoverPicker title={p.name} artist={a.stageName} kind={p.kind} value={p.cover ?? defaultCover(p.name + a.stageName)} onChange={(c) => run((st) => setCover(st, 'project', p.id, c))} />}
-                  <div className="mut" style={{fontSize: 12}}>{p.songIds.length}/{rule.min} titres min · qualité {projectQuality(g, p)}{p.status === 'sorti' ? ` · ${compact(projectStreams(g, p))} écoutes` : ` · publication ${usd(rule.cost)}`}</div>
+                  <div className="mut" style={{fontSize: 12}}>{p.songIds.length}/{rule.min} titres min · qualité {projectQuality(g, p)}{p.status === 'sorti' ? ` · ${compact(projectStreams(g, p))} écoutes` : ` · publication ${usd(rule.cost)}`}{p.status !== 'sorti' && projectSongs(g, p).reduce((t, x) => t + (x.stage === 'released' ? 0 : expressCost(g, x)), 0) > 0 ? ` · production express des titres inachevés ${usd(projectSongs(g, p).reduce((t, x) => t + (x.stage === 'released' ? 0 : expressCost(g, x)), 0))}` : ''}</div>
                   <div>
                     {projectSongs(g, p).map((s, i) => (
                       <div key={s.id} className="row" style={{gridTemplateColumns: '22px 1fr auto auto', gap: 8, padding: '6px 0'}}>

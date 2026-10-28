@@ -109,6 +109,29 @@ export function bookStudio(s0: GameState, songId: string, studioId: string, days
   return ok(s, `Enregistrement réservé chez ${st.name} (${money(total)}).`)
 }
 
+/** Production express d'un titre inédit non terminé (enregistrement + mixage en studio local, majoré de 25 %). */
+export function expressCost(s: GameState, song: Song): number {
+  if (song.stage === 'mixed') return song.readyWeek > s.week ? 1500 : 0
+  const a = s.artists.find((x) => x.id === song.artistId)
+  const local = STUDIOS.filter((x) => a && x.cityId === a.originCityId).sort((x, y) => x.pricePerDay - y.pricePerDay)[0] ?? STUDIOS[0]
+  const rec = song.stage === 'written' ? Math.round((local.pricePerDay * 4) * 1.25) : 0
+  return rec + Math.round(MIX_OPTIONS[0].cost * 1.25) + (song.stage === 'recorded' ? 400 : 0)
+}
+/** Termine d'un coup l'enregistrement et le mixage (appelé à la sortie d'un EP / album). */
+export function expressProduce(s: GameState, song: Song) {
+  if (song.stage === 'mixed') { song.readyWeek = s.week; return }
+  const a = s.artists.find((x) => x.id === song.artistId)!
+  if (song.stage === 'written') {
+    const local = STUDIOS.filter((x) => x.cityId === a.originCityId).sort((x, y) => x.pricePerDay - y.pricePerDay)[0] ?? STUDIOS[0]
+    const est = recordingEstimate(s, song, local, 4)
+    song.studioId = local.id; song.sessionDays = 4; song.recQ = clamp(est.q, 10, 98)
+  }
+  const mix = MIX_OPTIONS[0]
+  song.mixId = mix.id; song.mastering = false; song.mixQ = mix.bonus
+  song.quality = clamp(qualityPreview(s, song, song.mixQ), 5, 100)
+  song.stage = 'mixed'; song.readyWeek = s.week
+}
+
 export function qualityPreview(s: GameState, song: Song, mixBonus: number) {
   const a = s.artists.find((x) => x.id === song.artistId)!
   const st = song.studioId ? studioById(song.studioId) : STUDIOS[0]

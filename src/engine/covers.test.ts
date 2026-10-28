@@ -39,3 +39,19 @@ describe('pochettes, inédits, soin de tournée', () => {
     expect(careForTourArtist(g, 'repos').error).toBeTruthy()
   })
 })
+
+describe('sortie d’un projet avec titres inachevés', () => {
+  it('production express puis sortie', () => {
+    let g: GameState = createGame(cfg)
+    const a = g.artists[0].id
+    const w = (id: string): Song => ({ ...song(id, a), stage: 'written' })
+    g.songs.push(w('a'), w('b'), w('c'))
+    g = createProject(g, 'EP', 'EP', a).state
+    for (const id of ['a', 'b', 'c']) g = assignSong(g, g.projects[0].id, id).state
+    const cash = g.cash
+    const r = releaseProject(g, g.projects[0].id)
+    expect(r.error).toBeUndefined()
+    expect(r.state.cash).toBeLessThan(cash)
+    expect(r.state.songs.every((s) => s.stage === 'scheduled' && s.exclusive && (s.quality ?? 0) > 0)).toBe(true)
+  })
+})
