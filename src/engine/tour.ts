@@ -1,7 +1,7 @@
 import { PARTNERS, venueKind, venuesFor } from '../data/people'
 import { cityById } from '../data/world'
 import type { Artist, GameState, Result, Tour, TourStop } from './types'
-import { clamp, clone, drawRng, fail, fansInCity, money, ok, spend, useAp } from './util'
+import { addRep, clamp, clone, drawRng, fail, fansInCity, money, ok, spend, useAp } from './util'
 
 const REF_PRICE = { A: 40, B: 28, C: 18, D: 12 }
 
@@ -103,7 +103,7 @@ export function runTourStops(s: GameState, notes: { tag: string; text: string; t
       a.fans[st.cityId] = (a.fans[st.cityId] ?? 0) + Math.round(sold * 0.3)
       a.fatigue = clamp(a.fatigue + 8 - eff.fatigue, 0, 100)
       a.morale = clamp(a.morale + (sold / st.capacity > 0.7 ? 4 : -3), 0, 100)
-      s.reputation += sold / st.capacity > 0.85 ? 0.3 : 0.1
+      addRep(s, sold / st.capacity > 0.85 ? 0.3 : 0.1)
       notes.push({ tag: 'Concert', text: `${a.stageName} à ${cityById(st.cityId).name} : ${sold.toLocaleString('fr-FR')} / ${st.capacity.toLocaleString('fr-FR')} billets (${Math.round((sold / st.capacity) * 100)} %).`, tone: sold / st.capacity > 0.7 ? 'g' : 'e' })
     }
     t.status = t.stops.every((x) => x.sold !== undefined) ? 'done' : 'running'

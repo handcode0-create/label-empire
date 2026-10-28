@@ -2,7 +2,7 @@ import { songName, wk } from '../lib'
 import { expressCost, expressProduce } from './production'
 import { CITIES } from '../data/world'
 import type { GameState, Project, ProjectKind, Result, Song, SongRelease } from './types'
-import { clone, fail, ok, spend, useAp } from './util'
+import { addRep, clone, fail, ok, spend, useAp } from './util'
 
 export const PROJECT_RULES: Record<ProjectKind, { min: number; max: number; cost: number; hype: number; label: string }> = {
   EP: { min: 3, max: 6, cost: 3000, hype: 0.15, label: 'EP' },
@@ -107,6 +107,6 @@ export function releaseProject(s0: GameState, projectId: string, plan?: { cityId
   }
   p.status = 'sorti'; p.releaseWeek = toRelease.length ? when : s.week
   for (const x of songs) x.hype += rule.hype
-  s.reputation += p.kind === 'Album' ? 1 : 0.5
+  addRep(s, p.kind === 'Album' ? 1 : 0.5)
   return ok(s, `${p.kind} « ${p.name} » ${toRelease.length ? `sortira en ${wk(when)} avec ${toRelease.length} inédit(s)` : 'est sorti'}${express ? ` (production express : $${express.toLocaleString('fr-FR')})` : ''} : +${Math.round(rule.hype * 100)} % de buzz.`)
 }

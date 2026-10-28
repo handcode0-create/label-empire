@@ -1,3 +1,4 @@
+import { addRep } from './util'
 import type { GameState, Song } from './types'
 import { projectSongs } from './projects'
 
@@ -61,7 +62,7 @@ export function checkCertifications(s: GameState, notes: { tag: string; text: st
     const info = levelInfo(lvl)
     if (cur) { cur.level = lvl; cur.week = s.week } else s.certs.push({ id, kind, level: lvl, week: s.week })
     s.cash += info.cash
-    s.reputation = Math.min(100, s.reputation + info.rep)
+    addRep(s, info.rep)
     notes.push({ tag: 'Certification', text: `${info.label} pour « ${name} » (+$${info.cash.toLocaleString('fr-FR')}, +${info.rep} de réputation).`, tone: 'g' })
   }
   for (const song of s.songs as Song[]) if (song.stage === 'released') grant(song.id, 'titre', song.title, song.stats.streams)

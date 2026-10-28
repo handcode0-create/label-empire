@@ -2,7 +2,7 @@ import { CITIES, affinity, cityById } from '../data/world'
 import type { Rng } from './rng'
 import { generateCandidate } from './scouting'
 import type { Artist, Duel, GameState, Result, Tournament, TournamentRound } from './types'
-import { clamp, clone, drawRng, fail, money, ok, spend, staffSkill, useAp } from './util'
+import { addRep, clamp, clone, drawRng, fail, money, ok, spend, staffSkill, useAp } from './util'
 
 export const TOURNAMENT = { openCost: 12_000, maxEntrants: 10, minEntrants: 4, maxPerCountry: 2 } as const
 const TIER_COST = { A: 2800, B: 2200, C: 1800, D: 1500 } as const
@@ -174,7 +174,7 @@ export function chooseWinner(s0: GameState, artistId: string): Result {
     a.contestId = t.id
     s.pool.unshift(a)
   }
-  s.reputation += favorite ? 0.5 : 0.2
+  addRep(s, favorite ? 0.5 : 0.2)
   s.log.push(`Tournoi ${t.name} : ${entrantOf(t, artistId).stageName} couronné${favorite ? '' : ' contre le vote du public'}`)
   void rng; void money
   return ok(s, `${entrantOf(t, artistId).stageName} remporte « ${t.name} ». Vous avez l’exclusivité pendant 4 semaines.`)

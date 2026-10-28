@@ -4,7 +4,7 @@ import { CITIES, GENRES, cityById, type City } from '../data/world'
 import type { Rng } from './rng'
 import type { Artist, Contest, GameState, Result } from './types'
 import { ARTIST_SKILLS } from './types'
-import { artistSlots, signedCount, clamp, clone, drawRng, fail, money, ok, spend, staffSkill, sum, useAp } from './util'
+import { addRep, artistSlots, signedCount, clamp, clone, drawRng, fail, money, ok, spend, staffSkill, sum, useAp } from './util'
 
 const slugify = (t: string) => t.normalize('NFKD').replace(/[^\w\s-]/g, '').toLowerCase().replace(/\s+/g, '-')
 
@@ -110,7 +110,7 @@ export function signArtist(s0: GameState, id: string, o: Offer): Result {
   void [_a, _s, _c, _e, _r]
   s.artists.push({ ...rest, contract: { royalty: o.royalty, advance: o.advance, weeks: o.weeks, signedWeek: s.week, scope: o.scope }, morale: 75 })
   s.pool.splice(i, 1)
-  s.reputation += 0.2
+  addRep(s, 0.2)
   s.log.push(`Signature : ${c.stageName}`)
   return ok(s, `${c.stageName} rejoint le label.`)
 }

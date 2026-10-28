@@ -1,7 +1,7 @@
 import { cityById } from '../data/world'
 import { bestRank } from './market'
 import type { GameState } from './types'
-import { clone, fail, ok, totalFans } from './util'
+import { addRep, clone, fail, ok, totalFans } from './util'
 
 export interface Objective {
   id: string; act: 1 | 2 | 3 | 4; title: string; desc: string
@@ -62,7 +62,7 @@ export function checkObjectives(s: GameState): Objective[] {
     if (s.objectives.includes(o.id) || !o.done(s)) continue
     s.objectives.push(o.id)
     s.cash += o.reward.cash ?? 0
-    s.reputation = Math.min(100, s.reputation + (o.reward.rep ?? 0))
+    addRep(s, o.reward.rep ?? 0)
     gained.push(o)
   }
   return gained

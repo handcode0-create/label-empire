@@ -1,6 +1,6 @@
 import { CITIES, cityById } from '../data/world'
 import { bestRank, chartFor } from './market'
-import { totalFans, drawRng } from './util'
+import { addRep, totalFans, drawRng } from './util'
 import type { GameState, Mission, NewsItem } from './types'
 
 type Notes = { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]
@@ -66,7 +66,7 @@ export function updateMissions(s: GameState, notes: Notes) {
     const p = missionProgress(s, m)
     if (p.done) {
       m.status = 'reussi'; m.endWeek = s.week
-      s.cash += m.reward.cash; s.reputation = Math.min(100, s.reputation + m.reward.rep)
+      s.cash += m.reward.cash; addRep(s, m.reward.rep)
       notes.push({ tag: 'Mission', text: `Mission réussie : ${m.title} (+$${fmt(m.reward.cash)}, +${m.reward.rep} de réputation).`, tone: 'g' })
     } else if (s.week > m.deadline) {
       m.status = 'echoue'; m.endWeek = s.week

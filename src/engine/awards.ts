@@ -1,3 +1,4 @@
+import { addRep } from './util'
 import { chartFor } from './market'
 import type { GameState } from './types'
 
@@ -22,7 +23,7 @@ export function runAwards(s: GameState, notes: Notes) {
     s.awards.push({ year, week: s.week, category, winner, artistId: top.artistId, mine, nominated })
     const label = category === 'titre' ? 'Titre de l’année' : 'Artiste de l’année'
     if (mine) {
-      s.cash += AWARD_PRIZE.cash; s.reputation = Math.min(100, s.reputation + AWARD_PRIZE.rep)
+      s.cash += AWARD_PRIZE.cash; addRep(s, AWARD_PRIZE.rep)
       notes.push({ tag: 'Palier', text: `Cérémonie An ${year} · ${label} : ${winner} est à vous ! (+$${AWARD_PRIZE.cash.toLocaleString('fr-FR')}, +${AWARD_PRIZE.rep} de réputation)`, tone: 'g' })
     } else notes.push({ tag: 'Palier', text: `Cérémonie An ${year} · ${label} : ${winner}${nominated ? ' (vous étiez parmi les nominés)' : ''}.`, tone: nominated ? 'e' : 'i' })
   }

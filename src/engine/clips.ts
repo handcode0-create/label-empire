@@ -1,6 +1,6 @@
 import { wk } from '../lib'
 import type { Clip, GameState, Result } from './types'
-import { clamp, clone, drawRng, fail, ok, spend, useAp } from './util'
+import { addRep, clamp, clone, drawRng, fail, ok, spend, useAp } from './util'
 
 type Notes = { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]
 export const CLIP_TIERS: Record<Clip['tier'], { label: string; desc: string; cost: number; weeks: number; q: [number, number]; rep: number }> = {
@@ -35,7 +35,7 @@ export function updateClips(s: GameState, W: number, weekStreams: Record<string,
     if (c.status === 'tournage' && c.readyWeek <= W) {
       c.status = 'sorti'
       song.hype += (c.quality / 100) * 0.4
-      s.reputation = Math.min(100, s.reputation + CLIP_TIERS[c.tier].rep)
+      addRep(s, CLIP_TIERS[c.tier].rep)
       notes.push({ tag: 'Clip', text: `Le clip de « ${song.title} » est en ligne (qualité ${c.quality}).`, tone: 'g' })
     } else if (c.status === 'sorti' && song.stage === 'released') {
       const v = Math.round((weekStreams[song.id] ?? 0) * (0.1 + c.quality / 250))

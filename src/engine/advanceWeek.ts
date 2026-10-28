@@ -11,7 +11,7 @@ import { rivalsAndRefresh, resolveContests } from './scouting'
 import { runTourStops } from './tour'
 import { worldTick } from './dynamics'
 import type { GameState, Report } from './types'
-import { clamp, clone, drawRng, money, totalFans } from './util'
+import { addRep, clamp, clone, drawRng, money, totalFans } from './util'
 
 type Note = Report['notes'][number]
 
@@ -34,7 +34,7 @@ export function advanceWeek(s0: GameState): GameState {
   for (const song of s.songs) {
     if (song.stage === 'scheduled' && song.release && song.release.week <= W) {
       song.stage = 'released'
-      s.reputation += 0.1
+      addRep(s, 0.1)
       for (const id of song.release.cityIds) if (!s.stats.countriesReached.includes(id)) s.stats.countriesReached.push(id)
       notes.push({ tag: 'Sortie', text: `« ${song.title} » est disponible dans ${song.release.cityIds.length} territoire(s).`, tone: 'g' })
     }
@@ -87,7 +87,7 @@ export function advanceWeek(s0: GameState): GameState {
     song.stats.hist = [...(song.stats.hist ?? []), { w: W, st: weekSt, rk: weekRk }].slice(-52)
     song.hype = song.hype < 0.05 ? 0 : song.hype * 0.55
   }
-  s.reputation += Math.min(0.5, repGain)
+  addRep(s, Math.min(0.5, repGain))
   receipts += updateClips(s, W, weekStreams, notes)
 
   // 3. tournées, concours, rivaux

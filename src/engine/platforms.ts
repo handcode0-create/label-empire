@@ -1,6 +1,6 @@
 import { CITIES, type Continent } from '../data/world'
 import type { GameState, Result } from './types'
-import { clone, drawRng, fail, ok, spend, useAp } from './util'
+import { addRep, clone, drawRng, fail, ok, spend, useAp } from './util'
 
 export interface Platform {
   id: string; name: string; kind: 'streaming' | 'video'; desc: string; rate: number; minRep: number; pitchCost: number; hype: number
@@ -53,6 +53,6 @@ export function pitchPlaylist(s0: GameState, songId: string, platformId: string)
   const e2 = spend(s, p.pitchCost, `Démarchage ${p.name}`); if (e2) return fail(s0, e2)
   const accepted = drawRng(s).chance(pitchChance(s, songId, platformId))
   s.pitches.push({ songId, platformId, week: s.week, accepted })
-  if (accepted) { song.hype += p.hype; s.reputation = Math.min(100, s.reputation + 0.15) }
+  if (accepted) { song.hype += p.hype; addRep(s, 0.15) }
   return ok(s, accepted ? `${p.name} place « ${song.title} » en playlist : +${Math.round(p.hype * 100)} % de buzz.` : `${p.name} décline « ${song.title} » pour cette fois.`)
 }

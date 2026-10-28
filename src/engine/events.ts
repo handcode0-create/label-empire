@@ -2,7 +2,7 @@ import { CITIES, GENRES, cityById } from '../data/world'
 import { addBoost, addTrend, loyaltyOf, relKey } from './dynamics'
 import { rivalWorld } from './rivals'
 import type { Artist, EventChoice, Fx, GameEvent, GameState, Result, Song } from './types'
-import { clamp, clone, drawRng, fail, ok, spend } from './util'
+import { addRep, clamp, clone, drawRng, fail, ok, spend } from './util'
 import type { Rng } from './rng'
 
 const usd = (n: number) => '$' + Math.round(n).toLocaleString('fr-FR')
@@ -250,7 +250,7 @@ function targets(s: GameState, ev: GameEvent, a?: string): Artist[] {
 function applyFx(s: GameState, ev: GameEvent, fx: Fx, rng: Rng, out: string[]) {
   switch (fx.t) {
     case 'cash': s.cash = Math.max(0, s.cash + fx.v); if (fx.v < 0) s.spent += -fx.v; else s.stats.totalRevenue += fx.v; out.push(`${fx.v >= 0 ? '+' : '−'}${usd(Math.abs(fx.v))}`); break
-    case 'rep': s.reputation = clamp(s.reputation + fx.v, 0, 100); out.push(`réputation ${fx.v >= 0 ? '+' : '−'}${Math.abs(fx.v)}`); break
+    case 'rep': addRep(s, fx.v); out.push(`réputation ${fx.v >= 0 ? '+' : '−'}${Math.abs(fx.v)}`); break
     case 'morale': for (const a of targets(s, ev, fx.a)) a.morale = clamp(a.morale + fx.v, 0, 100); break
     case 'loyalty': for (const a of targets(s, ev, fx.a)) a.loyalty = clamp(loyaltyOf(a) + fx.v, 0, 100); break
     case 'fatigue': for (const a of targets(s, ev, fx.a)) a.fatigue = clamp(a.fatigue + fx.v, 0, 100); break
