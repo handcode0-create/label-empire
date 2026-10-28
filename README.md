@@ -79,3 +79,12 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 - **Rivaux** : sorties rivales actives qui réduisent vos écoutes dans les villes ciblées (plus fort si même genre) ; contre-campagne possible en événement.
 - **Meridian** : offensives de 6 à 9 semaines sur une région (−10 % d’écoutes), rachat d’artiste, partenariat si la négociation réussit.
 - **Artistes** : fidélité (moral, sorties, hits, ego), relations entre artistes (feats, médiations, conflits), départ possible ; jauges sur la fiche artiste.
+
+## Monde 100 % dynamique (v2)
+- **Rivaux vivants** (`rivalLife.ts`) : popularité, sorties annoncées, nouveaux EP et albums, transferts, brouilles de labels, signatures du vivier, artistes débauchés qui rejoignent un concurrent ; classements stockés dans `rivals.chart` (semaine en cours) et `rivals.prev`.
+- **Suites des décisions** (`events.ts`) : un choix programme des effets ou un nouvel événement quelques semaines plus tard (`echoes`) ; historique dans `history`, suites visibles dans Actualités.
+- **Artistes** (`artistLife.ts`) : progression des compétences (plafond = potentiel), ego qui grandit avec le succès, offres concurrentes, relations (sessions improvisées, accrochages), humeur déduite de l'état réel, âge qui avance.
+- **Fans** (`fans.ts`) : ferveur du public, déception si le titre est raté, saturation par ville, migration vers les villes voisines.
+- **Économie** (`prices.ts`) : prix des studios, médias, démarchages et loyers (saison, inflation, réputation), taux de change par devise (`fx`), clips, mixages et tournées indexés sur l'inflation ; marchés vivants (`markets` : taille, taxes et piratage par ville évoluent, `payout` : rémunération des plateformes).
+- **Presse et rumeurs** (`rumors.ts`) : rumeurs sur des faits réels, confirmées ou démenties ; actualités dérivées de l'état du monde ; saisons décalées dans l'hémisphère sud ; calendrier de sorties avec les vraies sorties rivales annoncées.
+- **Calibrage** : `VITE_SIM_LOG=1 npx vitest run src/engine/sim.test.ts` joue 260 semaines avec un joueur automatique ; réputation 100 entre les semaines 214 et 231 (cible 208 à 260).

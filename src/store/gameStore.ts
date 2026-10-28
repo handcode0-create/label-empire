@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { advanceWeek } from '../engine/advanceWeek'
+import { makeRivals } from '../engine/rivalLife'
 import { createGame, startingCash, validateConfig } from '../engine/newGame'
 import type { GameState, NewGameConfig, Result } from '../engine/types'
 
@@ -102,7 +103,7 @@ export const useGame = create<Store>((set, get) => ({
   load: () => {
     const g = readSave()
     if (!g) { get().say('Aucune sauvegarde trouvée.', 'err'); return false }
-    set({ game: { ...g, tournament: g.tournament ?? null, seenScenes: g.seenScenes ?? [], projects: g.projects ?? [], objectives: g.objectives ?? [], deal: g.deal ?? null, bailouts: g.bailouts ?? 0, certs: g.certs ?? [], pitches: g.pitches ?? [], awards: g.awards ?? [], missions: g.missions ?? [], drafts: g.drafts ?? [], trends: g.trends ?? [], boosts: g.boosts ?? [], rivalMoves: g.rivalMoves ?? [], meridian: g.meridian ?? { phase: 'calme', until: 0, since: 0 }, relations: g.relations ?? {}, eventSeen: g.eventSeen ?? {}, news: g.news ?? [] } })
+    set({ game: { ...g, tournament: g.tournament ?? null, seenScenes: g.seenScenes ?? [], projects: g.projects ?? [], objectives: g.objectives ?? [], deal: g.deal ?? null, bailouts: g.bailouts ?? 0, certs: g.certs ?? [], pitches: g.pitches ?? [], awards: g.awards ?? [], missions: g.missions ?? [], drafts: g.drafts ?? [], trends: g.trends ?? [], boosts: g.boosts ?? [], rivalMoves: g.rivalMoves ?? [], meridian: g.meridian ?? { phase: 'calme', until: 0, since: 0 }, relations: g.relations ?? {}, eventSeen: g.eventSeen ?? {}, news: g.news ?? [], markets: g.markets ?? {}, payout: g.payout ?? 1, rumors: g.rumors ?? [], fx: g.fx ?? {}, echoes: g.echoes ?? [], history: g.history ?? [], rivals: g.rivals ?? makeRivals({ ...g, trends: g.trends ?? [] } as GameState) } })
     return true
   },
   quit: () => { set({ game: null }) },

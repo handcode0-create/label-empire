@@ -1,6 +1,7 @@
 import { cityById } from '../data/world'
 import { RECRUITS, STARTERS } from '../data/people'
 import { generateCandidate, signatureCandidates } from './scouting'
+import { makeRivals } from './rivalLife'
 import { createRng } from './rng'
 import { ARTIST_SKILLS, STAFF_SKILLS, type Artist, type GameState, type NewGameConfig, type Skills } from './types'
 import { sum } from './util'
@@ -51,12 +52,13 @@ export function createGame(c: NewGameConfig): GameState {
     reputation: c.capital ? startingReputation(c.capital) : c.startReputation,
     label: { name: c.labelName, logoId: c.logoId, photo: c.founderPhoto, founderLook: c.founderLook ?? 'f', founderAvatar: c.founderAvatar, hqCityId: c.hqCityId, currency: c.currency, difficulty: c.difficulty, founder: c.founderName, nationality: c.nationality, mainGenre: c.mainGenre },
     staffSkills: full(STAFF_SKILLS, c.staffSkills),
-    artists, pool: [], contests: [], tournament: null, seenScenes: [], objectives: [], deal: null, bailouts: 0, certs: [], pitches: [], awards: [], missions: [], trends: [], boosts: [], rivalMoves: [], meridian: { phase: 'calme', until: 0, since: 0 }, relations: {}, eventSeen: {}, drafts: [], news: [], songs: [], projects: [], tours: [], staff,
+    artists, pool: [], contests: [], tournament: null, seenScenes: [], objectives: [], deal: null, bailouts: 0, certs: [], pitches: [], awards: [], missions: [], trends: [], boosts: [], rivalMoves: [], meridian: { phase: 'calme', until: 0, since: 0 }, markets: {}, payout: 1, rumors: [], fx: {}, echoes: [], history: [], rivals: undefined as never, relations: {}, eventSeen: {}, drafts: [], news: [], songs: [], projects: [], tours: [], staff,
     offices: [{ cityId: c.hqCityId, kind: 'siege', since: 1 }],
     pending: [], loan: null, event: null, report: null, cashHistory: [startingCash(c.startReputation, c.difficulty, c.capital)], negWeeks: 0,
     outcome: null, freeMode: false, rngState: c.seed >>> 0, spent: 0, log: [],
     stats: { totalRevenue: 0, totalFans: 0, countriesReached: [c.hqCityId] },
   }
+  state.rivals = makeRivals(state)
   state.pool = [...signatureCandidates(rng), ...Array.from({ length: 22 }, () => generateCandidate(rng, state))]
   return state
 }

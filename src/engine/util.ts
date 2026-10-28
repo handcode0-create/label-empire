@@ -44,11 +44,11 @@ export function useAp(s: GameState, n = 1): string | null {
 }
 
 /** Places d'artistes sous contrat : 3 au départ, +1 par bureau ou partenaire, +1 par palier atteint. */
-/** Réputation : les gains sont freinés (échelle globale) et de plus en plus difficiles à mesure qu'on monte. */
-export const REP_SCALE = 1.1
+/** Réputation : les gains sont freinés (échelle globale) et de plus en plus difficiles à mesure qu'on monte (calibré par sim.test.ts : réputation 100 vers la semaine 220 pour un joueur actif). */
+export const REP_SCALE = 0.45
 export function addRep(s: { reputation: number }, v: number) {
   if (v <= 0) { s.reputation = Math.max(0, s.reputation + v); return }
-  const f = REP_SCALE * Math.max(0.45, 1 - s.reputation / 250)
+  const f = REP_SCALE * Math.max(0.1, 1 - s.reputation / 110)
   s.reputation = Math.min(100, s.reputation + v * f)
 }
 export const artistSlots = (s: GameState) => 3 + s.offices.length - 1 + Math.floor(s.reputation / 25)

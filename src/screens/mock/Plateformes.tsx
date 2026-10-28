@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { pitchCost } from '../../engine/prices'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { CONTINENTS } from '../../data/world'
@@ -51,7 +52,7 @@ export default function Plateformes() {
                 <div className="mut" style={{fontSize: 12}}>Part de marché : {CONTINENTS.filter((c) => p.share[c] >= 0.15).map((c) => `${c} ${Math.round(p.share[c] * 100)} %`).join(' · ') || '—'}</div>
                 {locked ? <span className="tag tr_">Réputation {p.minRep} requise</span> : (
                   <button type="button" className="btn sm" disabled={!song || wait > 0} onClick={() => song && run((st) => pitchPlaylist(st, song.id, p.id))}>
-                    {wait > 0 ? `Réessayer dans ${wait} sem.` : `Proposer en playlist · ${usd(p.pitchCost)}`}
+                    {wait > 0 ? `Réessayer dans ${wait} sem.` : `Proposer en playlist · ${usd(pitchCost(g, p))}`}
                   </button>
                 )}
                 {song && !locked && <div className="mut" style={{fontSize: 12}}>Chances estimées : {Math.round(pitchChance(g, song.id, p.id) * 100)} % · {pr ? (pr.accepted ? 'dernier démarchage accepté' : 'dernier démarchage refusé') : 'jamais démarchée'}</div>}

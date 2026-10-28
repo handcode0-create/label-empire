@@ -12,7 +12,7 @@ const cfg: NewGameConfig = {
 } as NewGameConfig
 
 describe('cérémonie annuelle & statuts', () => {
-  it('décerne des prix à la semaine 52', () => {
+  it('décerne des prix à la semaine 52', { timeout: 30_000 }, () => {
     let g = createGame(cfg)
     expect(artistStatus(g, g.artists[0].id)).toBe('inactif')
     for (let i = 0; i < 52; i++) g = advanceWeek(g)

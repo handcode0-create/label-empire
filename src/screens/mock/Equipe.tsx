@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { rentFor } from '../../engine/prices'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { RECRUITS } from '../../data/people'
@@ -20,7 +21,7 @@ export default function Equipe() {
   const [target, setTarget] = useState(candidates.find((c) => c.minRep <= g.reputation + 10)?.id ?? candidates[0].id)
   const [kind, setKind] = useState<'bureau' | 'partenaire'>('partenaire')
   const tc = cityById(target)
-  const req = officeRequirement(target, kind)
+  const req = officeRequirement(g, target, kind)
   const fans = fansInCity(g, target)
   const missing = Math.max(0, req.fans - fans)
   const rows = [...g.offices.map((o) => ({ id: o.cityId, o })), ...candidates.filter((c) => c.minRep <= g.reputation + 10).slice(0, 4).map((c) => ({ id: c.id, o: null }))]
@@ -50,7 +51,7 @@ export default function Equipe() {
           <div className="pn" style={{padding: '12px 18px'}}>
             {rows.map(({ id, o }) => { const c = cityById(id); const locked = !o && c.minRep > g.reputation; return (
               <div key={id} className="row" role="button" tabIndex={0} onClick={() => setTarget(id)} style={{gridTemplateColumns: '1fr 150px', cursor: 'pointer', ...(id === target && !o ? {boxShadow: 'inset 0 0 0 1px var(--mag)', borderRadius: 8} : {})}}>
-                <div><b>{c.name}</b><div className="mut" style={{fontSize: 13}}>{o ? (o.kind === 'siege' ? `Siège · loyer ${usd(c.rent)} / mois` : o.kind === 'bureau' ? `${usd(c.rent)} / mois` : 'Revenus locaux +5 %') : 'Aucune présence'}{o && o.since > g.week ? ` · prêt en S${o.since}` : ''}</div></div>
+                <div><b>{c.name}</b><div className="mut" style={{fontSize: 13}}>{o ? (o.kind === 'siege' ? `Siège · loyer ${usd(rentFor(g, c.id))} / mois` : o.kind === 'bureau' ? `${usd(c.rent)} / mois` : 'Revenus locaux +5 %') : 'Aucune présence'}{o && o.since > g.week ? ` · prêt en S${o.since}` : ''}</div></div>
                 <span className={'tag ' + (o ? (o.kind === 'partenaire' ? 'tc' : 'tg') : locked ? 'tr_' : 'te')}>{o ? (o.kind === 'siege' ? 'Bureau complet' : o.kind === 'bureau' ? 'Bureau' : 'Partenaire distribution') : locked ? `Rép. ${c.minRep}` : 'Disponible'}</span></div>) })}
           </div>
           <div className="pn cut sel">

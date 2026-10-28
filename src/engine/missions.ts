@@ -1,5 +1,6 @@
 import { CITIES, cityById } from '../data/world'
 import { bestRank, chartFor } from './market'
+import { pressItems } from './rumors'
 import { addRep, totalFans, drawRng } from './util'
 import type { GameState, Mission, NewsItem } from './types'
 
@@ -84,22 +85,15 @@ export function updateMissions(s: GameState, notes: Notes) {
 const INDUSTRY = [
   (r: { title: string; artist: string; label: string; streams: number }) => `« ${r.title} » de ${r.artist} (${r.label}) domine le classement mondial avec ${fmt(r.streams / 1000)} k écoutes.`,
   (r: { title: string; artist: string; label: string }) => `${r.label} fête le succès de ${r.artist} : « ${r.title} » ne quitte plus le top 10.`,
-  (r: { artist: string; label: string }) => `Rumeur : ${r.artist} préparerait une tournée mondiale avec ${r.label}.`,
+  (r: { artist: string; label: string }) => `Les plateformes mettent ${r.artist} (${r.label}) en avant cette semaine.`,
   (r: { artist: string }) => `Les fans réclament un featuring avec ${r.artist} : le titre est en tête des recherches.`,
 ]
-const MERIDIAN = [
-  'Meridian Group rachète un label indépendant à Londres. Tomás Reyes : « Nous construisons un seul son pour le monde. »',
-  'Le « plan Horizon » de Meridian intrigue les analystes : plusieurs catalogues auraient changé de mains cette semaine.',
-  'Meridian Group promet des cachets records aux artistes qui rejoindront son label.',
-  'Tomás Reyes sur les indépendants : « Ils finiront tous par vendre. » Le milieu s’indigne.',
-]
-
 /** Fil d'actualités : événements du label (depuis le rapport) et vie de l'industrie. */
 export function updateNews(s: GameState, notes: Notes) {
   s.news ??= []
   const rng = drawRng(s)
   const add = (tag: string, text: string, tone: NewsItem['tone']) => s.news.unshift({ id: `n-${s.week}-${s.news.length}-${rng.int(0, 9999)}`, week: s.week, tag, text, tone })
-  const mine = new Set(['Sortie', 'Classement', 'Certification', 'Objectif', 'Palier', 'Concours', 'Mission', 'Meridian', 'Clip', 'Plateforme', 'Bureau', 'Tournée', 'Contrat', 'Tendance', 'Rival', 'Artiste', 'Événement'])
+  const mine = new Set(['Sortie', 'Classement', 'Certification', 'Objectif', 'Palier', 'Concours', 'Mission', 'Meridian', 'Clip', 'Plateforme', 'Bureau', 'Tournée', 'Contrat', 'Tendance', 'Rival', 'Industrie', 'Public', 'Change', 'Rumeur', 'Projet', 'Artiste', 'Événement'])
   for (const n of notes) if (mine.has(n.tag)) add(n.tag, n.text, n.tone)
   const rows = chartFor(s, 'monde', s.label.hqCityId).filter((r) => !r.mine).slice(0, 8)
   if (rows.length) {
@@ -107,6 +101,6 @@ export function updateNews(s: GameState, notes: Notes) {
     add('Industrie', rng.pick(INDUSTRY)(r), 'i')
     if (rng.chance(0.4)) { const r2 = rng.pick(rows); add('Industrie', rng.pick(INDUSTRY.slice(1))(r2), 'i') }
   }
-  if (s.week % 5 === 0) add('Meridian', rng.pick(MERIDIAN), 'r')
+  for (const p of pressItems(s, rng).slice(0, 2)) add(p.tag, p.text, p.tone)
   s.news = s.news.slice(0, 80)
 }

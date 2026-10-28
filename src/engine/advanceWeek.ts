@@ -8,6 +8,12 @@ import { OBJECTIVES, applyBailout, applyDealLevy, checkObjectives } from './obje
 import { createRng } from './rng'
 import { STREAM_VALUE, rankInCity, royaltyShare, weeklyStreams } from './market'
 import { makeEvent, resolveEvent, weeklyFixedCosts } from './economy'
+import { dueEchoEvent, echoesTick } from './events'
+import { fanTick, releaseReaction, saturation } from './fans'
+import { fxRate, fxTick, liveCity, marketTick, streamValueMult } from './prices'
+import { rumorsTick } from './rumors'
+import { lifeTick } from './artistLife'
+import { rivalsTick } from './rivalLife'
 import { rivalsAndRefresh, resolveContests } from './scouting'
 import { runTourStops } from './tour'
 import { worldTick } from './dynamics'
@@ -38,8 +44,12 @@ export function advanceWeek(s0: GameState): GameState {
       addRep(s, 0.1)
       for (const id of song.release.cityIds) if (!s.stats.countriesReached.includes(id)) s.stats.countriesReached.push(id)
       notes.push({ tag: 'Sortie', text: `« ${song.title} » est disponible dans ${song.release.cityIds.length} territoire(s).`, tone: 'g' })
+      releaseReaction(s, song, notes)
     }
   }
+
+  // 1b. monde rival : sorties, transferts, brouilles et classements de la semaine
+  rivalsTick(s, notes)
 
   // 2. écoutes, revenus, fans
   const rng = drawRng(s)
@@ -55,8 +65,9 @@ export function advanceWeek(s0: GameState): GameState {
     let counted = false
     let weekSt = 0
     let weekRk = 99
-    for (const c of CITIES) {
-      const st = Math.round(weeklyStreams(s, song, c, W) * (0.93 + rng.next() * 0.14))
+    for (const c0 of CITIES) {
+      const c = liveCity(s, c0)
+      const st = Math.round(weeklyStreams(s, song, c0, W) * (0.93 + rng.next() * 0.14))
       song.stats.prevByCity[c.id] = song.stats.lastByCity[c.id] ?? 0
       song.stats.lastByCity[c.id] = st
       if (st <= 0) continue
@@ -65,18 +76,18 @@ export function advanceWeek(s0: GameState): GameState {
       song.stats.streams += st
       weekSt += st
       streams += st
-      const gross = st * STREAM_VALUE * (1 - c.piracy) * (1 - c.tax) * share
+      const gross = st * STREAM_VALUE * (s.payout ?? 1) * streamValueMult(W) * fxRate(s, c.currency) * (1 - c.piracy) * (1 - c.tax) * share
       const office = s.offices.find((o) => o.cityId === c.id && o.since <= W)
       const delay = Math.max(1, c.delay - (office?.kind === 'bureau' ? 1 : 0))
       s.pending.push({ week: W + delay, amount: gross, cityId: c.id })
       song.stats.revenue += gross
       byContinent[c.continent] = (byContinent[c.continent] ?? 0) + gross
       if (artist) {
-        const nf = Math.round(st * FAN_RATE * (0.7 + artist.skills.charisme / 150))
+        const nf = Math.round(st * FAN_RATE * (0.7 + artist.skills.charisme / 150) * saturation(s, c.id))
         artist.fans[c.id] = (artist.fans[c.id] ?? 0) + nf
         song.stats.fans += nf
       }
-      const rank = rankInCity(c.id, W, st)
+      const rank = rankInCity(s, c.id, st)
       const w = { A: 1.2, B: 1, C: 0.8, D: 0.6 }[c.tier]
       repGain += (rank <= 3 ? 0.12 : rank <= 10 ? 0.045 : rank <= 30 ? 0.01 : 0) * w
       if (rank <= 3 && (song.stats.peak[c.id] ?? 99) > 3) notes.push({ tag: 'Classement', text: `« ${song.title} » entre dans le top 3 à ${c.name}.`, tone: 'c' })
@@ -96,6 +107,11 @@ export function advanceWeek(s0: GameState): GameState {
   resolveContests(s, notes)
   rivalsAndRefresh(s, notes)
   worldTick(s, notes)
+  echoesTick(s, notes)
+  lifeTick(s, notes)
+  fxTick(s, notes)
+  marketTick(s, notes)
+  rumorsTick(s, notes)
 
   // 4. paiements reçus
   const due = s.pending.filter((p) => p.week <= W)
@@ -134,13 +150,8 @@ export function advanceWeek(s0: GameState): GameState {
   for (const m of s.staff) m.morale = clamp(m.morale + r2.int(-3, 2), 0, 100)
   for (const o of s.offices) if (o.since === W) notes.push({ tag: 'Bureau', text: `Le bureau de ${cityById(o.cityId).name} est opérationnel.`, tone: 'c' })
   if (!s.songs.some((x) => x.release && W - x.release.week < 12)) s.reputation = Math.max(0, s.reputation - 0.15)
-  // érosion des fans : sans sortie récente, le public se disperse (plus vite si l'artiste est inactif depuis longtemps)
-  for (const a of s.artists) {
-    const last = Math.max(-99, ...s.songs.filter((x) => x.artistId === a.id && x.release && x.release.week <= W).map((x) => x.release!.week))
-    const idle = W - last
-    const churn = idle < 6 ? 0.001 : idle < 12 ? 0.006 : 0.015
-    for (const k of Object.keys(a.fans)) a.fans[k] = Math.floor(a.fans[k] * (1 - churn))
-  }
+  // érosion et migration des fans, selon la ferveur du public
+  fanTick(s, notes)
   receipts = applyDealLevy(s, receipts, (t) => notes.push({ tag: 'Meridian', text: t, tone: 'r' }))
   s.stats.totalRevenue += receipts
 
@@ -164,7 +175,7 @@ export function advanceWeek(s0: GameState): GameState {
   const next: string[] = []
   for (const song of s.songs) if (song.release?.week === W + 1 && song.stage === 'scheduled') next.push(`sortie « ${song.title} »`)
   for (const t of s.tours) for (const st of t.stops) if (st.week === W + 1 && st.sold === undefined) next.push(`concert à ${cityById(st.cityId).name}`)
-  s.event = s.outcome ? null : makeEvent({ ...s, week: W + 1 })
+  s.event = s.outcome ? null : (dueEchoEvent(s, W + 1) ?? makeEvent({ ...s, week: W + 1 }))
   const revenue = Math.round(receipts)
   const expenses = Math.round(fixed.total + s.spent)
   s.report = {

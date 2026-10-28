@@ -5,7 +5,8 @@ import { LabelLogo } from '../../components/Logo'
 import { gradientFor, useOpen } from '../../components/useOpen'
 import { cityById } from '../../data/world'
 import { chartFor } from '../../engine/market'
-import { rivalLabel, rivalArtist, rivalTotalPlays } from '../../engine/rivals'
+import { rivalTotalPlays } from '../../engine/rivals'
+import { rivalArtistIn, rivalLabelIn } from '../../engine/rivalLife'
 import { sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
 import { compact, songName } from '../../lib'
@@ -16,17 +17,17 @@ export default function Label() {
   const open = useOpen()
   const name = sel.labelName ?? g.label.name
   const isMine = name === g.label.name
-  const rl = !isMine ? rivalLabel(name) : undefined
+  const rl = !isMine ? rivalLabelIn(g, name) : undefined
   if (!isMine && !rl) return (
     <div className="scr"><Dock active="classements" /><Hud /><div className="main"><div className="pn cut" style={{maxWidth: 600}}><div className="h2">Label introuvable</div><a href="Classements.dc.html" className="btn">Classements</a></div></div></div>
   )
   const hq = isMine ? cityById(g.label.hqCityId) : cityById(rl!.hqCityId)
   const roster = isMine
     ? g.artists.map((a) => ({ id: a.id, stage: a.stageName, genre: a.genre, plays: g.songs.filter((s) => s.artistId === a.id).reduce((t, s) => t + s.stats.streams, 0), avatar: a }))
-    : rl!.artistIds.map((id) => { const a = rivalArtist(id)!; return { id, stage: a.stageName, genre: a.genre, plays: rivalTotalPlays(a), avatar: { id, stageName: a.stageName, realName: a.realName, originCityId: a.originCityId, gradient: gradientFor(id) } } })
+    : rl!.artistIds.map((id) => { const a = rivalArtistIn(g, id)!; return { id, stage: a.stageName, genre: a.genre, plays: rivalTotalPlays(a), avatar: { id, stageName: a.stageName, realName: a.realName, originCityId: a.originCityId, gradient: gradientFor(id) } } })
   const catalog = isMine
     ? g.songs.filter((s) => s.stage === 'released').map((s) => ({ id: s.id, title: songName(s), artist: g.artists.find((a) => a.id === s.artistId)?.stageName ?? '', plays: s.stats.streams }))
-    : rl!.artistIds.flatMap((id) => { const a = rivalArtist(id)!; return a.songs.map((s) => ({ id: s.id, title: s.title, artist: a.stageName, plays: s.plays })) })
+    : rl!.artistIds.flatMap((id) => { const a = rivalArtistIn(g, id)!; return a.songs.map((s) => ({ id: s.id, title: s.title, artist: a.stageName, plays: s.plays })) })
   catalog.sort((a, b) => b.plays - a.plays)
   const inChart = chartFor(g, 'monde', g.label.hqCityId, 'singles').filter((r) => r.label === name).length
   const total = roster.reduce((t, r) => t + r.plays, 0)

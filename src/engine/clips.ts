@@ -1,5 +1,6 @@
 import { wk } from '../lib'
 import type { Clip, GameState, Result } from './types'
+import { opCost } from './prices'
 import { addRep, clamp, clone, drawRng, fail, ok, spend, useAp } from './util'
 
 type Notes = { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]
@@ -18,11 +19,12 @@ export function commissionClip(s0: GameState, songId: string, tier: Clip['tier']
   if (!['mixed', 'scheduled', 'released'].includes(song.stage)) return fail(s0, 'Le titre doit être mixé avant de tourner un clip.')
   const t = CLIP_TIERS[tier]
   const e = useAp(s); if (e) return fail(s0, e)
-  const e2 = spend(s, t.cost, `${t.label} « ${song.title} »`); if (e2) return fail(s0, e2)
+  const cost = opCost(s, t.cost)
+  const e2 = spend(s, cost, `${t.label} « ${song.title} »`); if (e2) return fail(s0, e2)
   const rng = drawRng(s)
   const prod = Math.max(0, ...[s.staffSkills.production ?? 0]) // le savoir-faire de production aide un peu
   const quality = clamp(rng.int(t.q[0], t.q[1]) + Math.round(prod / 20), 10, 100)
-  song.clip = { tier, cost: t.cost, quality, startWeek: s.week, readyWeek: s.week + t.weeks, status: 'tournage', views: 0, revenue: 0 }
+  song.clip = { tier, cost, quality, startWeek: s.week, readyWeek: s.week + t.weeks, status: 'tournage', views: 0, revenue: 0 }
   return ok(s, `${t.label} lancé pour « ${song.title} » : prêt en ${wk(s.week + t.weeks)}.`)
 }
 

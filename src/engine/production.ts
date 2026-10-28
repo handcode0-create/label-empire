@@ -3,6 +3,10 @@ import { mediaById } from '../data/media'
 import { LOC_OPTIONS, MASTERING, MIX_OPTIONS, SESSION_OPTIONS, studioById, STUDIOS, type Studio } from '../data/people'
 import { CITIES, cityById } from '../data/world'
 import { hash } from './rng'
+import { seasonOf } from './dynamics'
+import { plannedReleases } from './rivalLife'
+import { mediaCost, opCost, studioPrice } from './prices'
+import { train } from './artistLife'
 import { songQuality } from './quality'
 import type { Artist, Feat, GameState, Result, Song, SongRelease } from './types'
 import { clamp, clone, drawRng, fail, money, ok, spend, staffSkill, useAp } from './util'
@@ -59,6 +63,7 @@ export function writeSong(s0: GameState, d: SongDraft): Result {
     lyricsQ: clamp(est.ecriture + rng.int(-4, 4) + (feat?.bonus ?? 0), 10, 98), mastering: false, stage: 'written', readyWeek: s.week + 1, hype: 0, feat,
     stats: { streams: 0, revenue: 0, fans: 0, weeks: 0, byCity: {}, lastByCity: {}, prevByCity: {}, peak: {} },
   }
+  train(a, 'ecriture', 0.6); train(a, 'creativite', 0.3)
   s.songs.push(song)
   return { state: s, info: `« ${song.title} » est écrit${feat ? ` en feat avec ${feat.name}` : ''}.` }
 }
@@ -96,7 +101,7 @@ export function bookStudio(s0: GameState, songId: string, studioId: string, days
   if (!av.open) return fail(s0, `${st.name} est complet cette semaine.`)
   const a = s.artists.find((x) => x.id === song.artistId)!
   const t = travelCost(a.originCityId, st)
-  const total = st.pricePerDay * days + t.travel + t.visa
+  const total = studioPrice(s, st) * days + t.travel + t.visa
   const e = useAp(s)
   if (e) return fail(s0, e)
   const e2 = spend(s, total, `Studio ${st.name}`)
@@ -108,6 +113,7 @@ export function bookStudio(s0: GameState, songId: string, studioId: string, days
   song.stage = 'recorded'
   song.readyWeek = Math.max(song.readyWeek, s.week) + av.wait + est.weeks
   a.fatigue = clamp(a.fatigue + est.fatigue + 5, 0, 100)
+  train(a, 'voix', days * 0.25 + st.quality / 200)
   return ok(s, `Enregistrement réservé chez ${st.name} (${money(total)}).`)
 }
 
@@ -116,7 +122,7 @@ export function expressCost(s: GameState, song: Song): number {
   if (song.stage === 'mixed') return song.readyWeek > s.week ? 1500 : 0
   const a = s.artists.find((x) => x.id === song.artistId)
   const local = STUDIOS.filter((x) => a && x.cityId === a.originCityId).sort((x, y) => x.pricePerDay - y.pricePerDay)[0] ?? STUDIOS[0]
-  const rec = song.stage === 'written' ? Math.round((local.pricePerDay * 4) * 1.25) : 0
+  const rec = song.stage === 'written' ? Math.round((studioPrice(s, local) * 4) * 1.25) : 0
   return rec + Math.round(MIX_OPTIONS[0].cost * 1.25) + (song.stage === 'recorded' ? 400 : 0)
 }
 /** Termine d'un coup l'enregistrement et le mixage (appelé à la sortie d'un EP / album). */
@@ -147,7 +153,7 @@ export function chooseMix(s0: GameState, songId: string, mixId: string, masterin
   if (!song) return fail(s0, 'Aucune chanson à mixer.')
   if (song.stage !== 'recorded') return fail(s0, 'La chanson doit d’abord être enregistrée.')
   const mix = MIX_OPTIONS.find((m) => m.id === mixId)!
-  const cost = mix.cost + (mastering ? MASTERING.cost : 0)
+  const cost = opCost(s, mix.cost + (mastering ? MASTERING.cost : 0))
   const e = useAp(s)
   if (e) return fail(s0, e)
   if (cost > 0) { const e2 = spend(s, cost, `Mixage ${mix.name}`); if (e2) return fail(s0, e2) }
@@ -169,8 +175,8 @@ export const STRATEGIES = {
   crossover: { label: 'Crossover', desc: 'Duo avec un autre pays', risk: 'Incertain', maxCities: 3 },
 } as const
 
-export function releaseCost(r: Pick<SongRelease, 'promo' | 'loc' | 'media'>) {
-  return r.promo + r.loc.reduce((t, id) => t + (LOC_OPTIONS.find((l) => l.id === id)?.cost ?? 0), 0) + (r.media ?? []).reduce((t, id) => t + (mediaById(id)?.cost ?? 0), 0)
+export function releaseCost(r: Pick<SongRelease, 'promo' | 'loc' | 'media'>, s?: GameState) {
+  return r.promo + r.loc.reduce((t, id) => t + (LOC_OPTIONS.find((l) => l.id === id)?.cost ?? 0), 0) + (r.media ?? []).reduce((t, id) => { const m = mediaById(id); return t + (m ? (s ? mediaCost(s, m) : m.cost) : 0) }, 0)
 }
 
 export function scheduleRelease(s0: GameState, songId: string, r: SongRelease): Result {
@@ -190,7 +196,7 @@ export function scheduleRelease(s0: GameState, songId: string, r: SongRelease): 
   if (r.week - s.week < locWeeks) return fail(s0, `Les adaptations demandent ${locWeeks} semaine(s) : choisissez une date plus tardive.`)
   const e = useAp(s)
   if (e) return fail(s0, e)
-  const cost = releaseCost(r)
+  const cost = releaseCost(r, s)
   if (cost > 0) { const e2 = spend(s, cost, `Sortie « ${song.title} »`); if (e2) return fail(s0, e2) }
   song.release = r; song.stage = 'scheduled'; song.standby = false
   return ok(s, `« ${song.title} » sortira en ${wk(r.week)}.`)
@@ -199,10 +205,11 @@ export function scheduleRelease(s0: GameState, songId: string, r: SongRelease): 
 export function releaseCalendar(s: GameState, from: number, n = 6): { week: number; tag: string; tone: 'free' | 'fest' | 'rival' }[] {
   return Array.from({ length: n }, (_, i) => {
     const w = from + i
-    const h = hash(`cal${w}${s.label.name}`) % 10
-    if (h === 0 || h === 1) return { week: w, tag: 'Sortie rivale', tone: 'rival' as const }
-    if (h === 2 || h === 3) return { week: w, tag: 'Fête nationale', tone: 'fest' as const }
-    return { week: w, tag: 'Libre', tone: 'free' as const }
+    const star = plannedReleases(s, w).sort((x, y) => y.pop - x.pop)[0]
+    if (star) return { week: w, tag: `Sortie rivale : ${star.artist}`, tone: 'rival' as const }
+    const season = seasonOf(w)
+    if (season && season.id !== 'hiver') return { week: w, tag: season.label, tone: 'fest' as const }
+    return { week: w, tag: season ? season.label : 'Libre', tone: 'free' as const }
   })
 }
 

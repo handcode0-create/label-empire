@@ -1,3 +1,6 @@
+import { inflation } from './prices'
+import { addHeat, saturation } from './fans'
+import { train } from './artistLife'
 import { PARTNERS, venueKind, venuesFor } from '../data/people'
 import { cityById } from '../data/world'
 import type { Artist, GameState, Result, Tour, TourStop } from './types'
@@ -29,17 +32,17 @@ export function estimateStop(s: GameState, a: Artist, stop: Pick<TourStop, 'city
   return { sold, fill: sold / stop.capacity, gross: sold * price }
 }
 
-export function stopCost(stop: Pick<TourStop, 'capacity' | 'cityId' | 'kind'>, prevCityId: string | null) {
+export function stopCost(stop: Pick<TourStop, 'capacity' | 'cityId' | 'kind'>, prevCityId: string | null, week = 1) {
   const c = cityById(stop.cityId)
   const dist = prevCityId ? Math.hypot(cityById(prevCityId).x - c.x, cityById(prevCityId).y - c.y) : 0
-  return Math.round(stop.capacity * 3 + 2500 + (stop.kind ? venueKind(stop.kind).fee : 0) + dist * 14 + (c.visa ? 600 : 0))
+  return Math.round((stop.capacity * 3 + 2500 + (stop.kind ? venueKind(stop.kind).fee : 0) + dist * 14 + (c.visa ? 600 : 0)) * inflation(week))
 }
 
 export function tourSummary(s: GameState, artist: Artist, stops: TourStop[], partners: string[]) {
   const eff = partnerEffects(partners)
   let cost = 0, revenue = 0, prev: string | null = null
   for (const st of stops) {
-    cost += stopCost(st, prev); prev = st.cityId
+    cost += stopCost(st, prev, s.week); prev = st.cityId
     const e = estimateStop(s, artist, st, partners)
     revenue += e.gross * (1 - eff.share)
   }
@@ -94,13 +97,14 @@ export function runTourStops(s: GameState, notes: { tag: string; text: string; t
       const sold = Math.round(clamp(est.sold * (0.92 + rng.next() * 0.16), 0, st.capacity))
       const gross = sold * st.price
       const rev = gross * (1 - eff.share) + eff.guarantee / t.stops.length
-      const cost = Math.round(stopCost(st, prev) * 0.7)
+      const cost = Math.round(stopCost(st, prev, s.week) * 0.7)
       prev = st.cityId
       st.sold = sold; st.revenue = Math.round(rev)
       s.cash += Math.round(rev); receipts += Math.round(rev)
       s.cash -= cost; s.spent += cost
       t.revenue += Math.round(rev)
-      a.fans[st.cityId] = (a.fans[st.cityId] ?? 0) + Math.round(sold * 0.3)
+      a.fans[st.cityId] = (a.fans[st.cityId] ?? 0) + Math.round(sold * 0.3 * saturation(s, st.cityId)); addHeat(a, sold / st.capacity > 0.7 ? 3 : -1)
+      train(a, 'scene', 0.9); train(a, 'charisme', 0.4); train(a, 'endurance', 0.3)
       a.fatigue = clamp(a.fatigue + 8 - eff.fatigue, 0, 100)
       a.morale = clamp(a.morale + (sold / st.capacity > 0.7 ? 4 : -3), 0, 100)
       addRep(s, sold / st.capacity > 0.85 ? 0.3 : 0.1)

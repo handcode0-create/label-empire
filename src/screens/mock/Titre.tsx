@@ -7,7 +7,7 @@ import { gradientFor, useOpen } from '../../components/useOpen'
 import { cityById } from '../../data/world'
 import { chartFor } from '../../engine/market'
 import { projectOf } from '../../engine/projects'
-import { rivalArtist, rivalSong } from '../../engine/rivals'
+import { rivalArtistIn, rivalSongIn } from '../../engine/rivalLife'
 import { useGame } from '../../store/gameStore'
 import { compact, songName } from '../../lib'
 
@@ -16,13 +16,13 @@ export default function Titre() {
   const sel = useGame((s) => s.sel)
   const open = useOpen()
   const mine = g.songs.find((s) => s.id === sel.viewSongId)
-  const rs = !mine ? rivalSong(sel.viewSongId ?? '') : undefined
+  const rs = !mine ? rivalSongIn(g, sel.viewSongId ?? '') : undefined
   if (!mine && !rs) return (
     <div className="scr"><Dock active="classements" /><Hud /><div className="main"><div className="pn cut" style={{maxWidth: 600}}><div className="h2">Titre introuvable</div><a href="Classements.dc.html" className="btn">Classements</a></div></div></div>
   )
   const artistId = (mine ?? rs)!.artistId
   const ma = g.artists.find((a) => a.id === artistId)
-  const ra = !ma ? rivalArtist(artistId) : undefined
+  const ra = !ma ? rivalArtistIn(g, artistId) : undefined
   const stage = ma?.stageName ?? ra?.stageName ?? ''
   const labelName = ma ? g.label.name : ra?.labelName ?? ''
   const title = mine ? songName(mine) : rs!.title

@@ -3,6 +3,7 @@ import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { ARTIST_LABELS, cityById } from '../../data/world'
 import { artistSlots, signedCount, sum } from '../../engine/util'
+import { artistWish } from '../../engine/artistLife'
 import { STATUS_LABELS, artistStatus, type ArtistStatus } from '../../engine/selectors'
 import { useState } from 'react'
 import { useGame } from '../../store/gameStore'
@@ -11,21 +12,13 @@ import {compact, stars} from '../../lib'
 const tone = (m: number) => (m >= 70 ? 'tg' : m >= 45 ? 'te' : 'tr_')
 const barc = (m: number) => (m >= 70 ? 'gr' : m >= 45 ? 'gd' : 'rd')
 
-function wish(g: ReturnType<typeof useGame.getState>['game'], a: NonNullable<ReturnType<typeof useGame.getState>['game']>['artists'][number]) {
-  if (a.morale < 40) return ['Inquiet', 'Je me sens oublié. J’ai besoin d’un projet, ou d’un geste du label.']
-  const mine = g!.songs.filter((s) => s.artistId === a.id)
-  if (!mine.length) return ['Confiant', 'Je suis prêt à écrire mon premier titre. Donnez-moi une semaine de studio.']
-  if (!g!.tours.some((t) => t.artistId === a.id)) return ['Confiant', 'Mes fans veulent me voir sur scène. Une tournée serait une bonne idée.']
-  return ['Confiant', 'Je veux sortir un nouveau titre avant la fin du trimestre.']
-}
-
 export default function Artistes() {
   const g = useGame((s) => s.game)!
   const { sel, select } = useGame()
   const [filter, setFilter] = useState<ArtistStatus | 'tous'>('tous')
   const shown = g.artists.filter((x) => filter === 'tous' || artistStatus(g, x.id) === filter)
   const a = g.artists.find((x) => x.id === sel.artistId) ?? g.artists[0]
-  const [mood, line] = a ? wish(g, a) : ['', '']
+  const [mood, line] = a ? artistWish(g, a) : ['', '']
   const fansList = a ? Object.entries(a.fans).sort((x, y) => y[1] - x[1]).slice(0, 5) : []
   const maxF = Math.max(1, ...fansList.map((f) => f[1]))
   const weeksLeft = a?.contract ? Math.max(0, a.contract.weeks - (g.week - a.contract.signedWeek)) : 0

@@ -1,6 +1,6 @@
-import { CITIES, GENRES, cityById } from '../data/world'
+import { GENRES, cityById } from '../data/world'
 import { weekNo } from '../lib'
-import { rivalWorld } from './rivals'
+import { departToRival } from './rivalLife'
 import type { Artist, Boost, GameState, Song, Trend } from './types'
 import { clamp, drawRng, modsOf } from './util'
 
@@ -15,11 +15,13 @@ export const SEASONS: Season[] = [
   { id: 'hiver', label: 'Creux de janvier', weeks: [1, 6], genres: { Pop: 0.96, Électro: 0.95 }, text: 'Janvier est calme : le public écoute moins.' },
 ]
 export const seasonOf = (week: number): Season | undefined => SEASONS.find((x) => weekNo(week) >= x.weeks[0] && weekNo(week) <= x.weeks[1])
-export const seasonMult = (genre: string, week: number) => seasonOf(week)?.genres[genre] ?? 1
+/** Hémisphère sud : les saisons sont décalées d'une demi-année (ville au sud de l'équateur de la carte). */
+export const isSouth = (c: { y: number }) => c.y > 56
+export const seasonMult = (genre: string, week: number, city?: { y: number }) => seasonOf(city && isSouth(city) ? week + 26 : week)?.genres[genre] ?? 1
 
 /* ───────────── Tendances ───────────── */
-export const trendMult = (s: GameState, genre: string, week: number) =>
-  (s.trends ?? []).filter((t) => t.genre === genre && t.start <= week && t.until >= week).reduce((m, t) => m * t.mult, 1) * seasonMult(genre, week)
+export const trendMult = (s: GameState, genre: string, week: number, city?: { y: number }) =>
+  (s.trends ?? []).filter((t) => t.genre === genre && t.start <= week && t.until >= week).reduce((m, t) => m * t.mult, 1) * seasonMult(genre, week, city)
 
 export function addTrend(s: GameState, t: Omit<Trend, 'id'>) {
   s.trends ??= []
@@ -64,24 +66,9 @@ export function boostMult(s: GameState, song: Song, cityId: string, week: number
 
 /* ───────────── Rivaux ───────────── */
 export const RIVAL_VERBS = ['dévoile', 'lâche', 'sort', 'balance']
-function rivalMoves(s: GameState, notes: Notes) {
+/** Les sorties rivales sont créées par rivalLife.ts (rivalsTick) ; ici on retire celles qui sont terminées. */
+function rivalMoves(s: GameState) {
   s.rivalMoves = (s.rivalMoves ?? []).filter((m) => m.until >= s.week)
-  const rng = drawRng(s)
-  const rate = 0.22 + Math.min(0.25, s.reputation / 300)
-  if (s.rivalMoves.length >= 3 || !rng.chance(rate)) return
-  const world = rivalWorld()
-  const pool = world.artists.filter((a) => a.popularity > 0.35)
-  const a = rng.pick(pool)
-  const song = rng.pick(a.songs.slice(0, 4))
-  // le rival vise de préférence les marchés où le joueur est fort
-  const mine = new Set(s.artists.flatMap((x) => Object.keys(x.fans)))
-  const cands = CITIES.filter((c) => c.minRep <= s.reputation + 20)
-  const scored = cands.map((c) => ({ c, k: (mine.has(c.id) ? 1 : 0) + rng.next() })).sort((x, y) => y.k - x.k)
-  const cityIds = scored.slice(0, rng.int(1, 3)).map((x) => x.c.id)
-  const strength = Math.round((0.06 + a.popularity * 0.2) * 100) / 100
-  s.rivalMoves.push({ id: `rm-${s.week}-${s.rivalMoves.length}`, week: s.week, until: s.week + rng.int(3, 5), label: a.labelName, artist: a.stageName, title: song.title, genre: a.genre, cityIds, strength })
-  const names = cityIds.map((id) => cityById(id).name).join(', ')
-  notes.push({ tag: 'Rival', text: `${a.labelName} ${rng.pick(RIVAL_VERBS)} « ${song.title} » (${a.stageName}, ${a.genre}) à ${names} : vos titres de ce genre y perdent du terrain.`, tone: 'r' })
 }
 /** Part des écoutes perdue face aux sorties rivales et à l'offensive Meridian. */
 export function pressureMult(s: GameState, song: Song, cityId: string, week: number): number {
@@ -118,7 +105,7 @@ function meridianTick(s: GameState, notes: Notes) {
 }
 
 /* ───────────── Vie des artistes ───────────── */
-export const egoOf = (a: Artist) => (a.traits.some((t) => /Ambitieux|Exigeant/.test(t)) ? 72 : a.traits.some((t) => /Loyal/.test(t)) ? 25 : 45) + (a.potential >= 4 ? 8 : 0)
+export const egoOf = (a: Artist) => a.ego ?? (a.traits.some((t) => /Ambitieux|Exigeant/.test(t)) ? 72 : a.traits.some((t) => /Loyal/.test(t)) ? 25 : 45) + (a.potential >= 4 ? 8 : 0)
 export const loyaltyOf = (a: Artist) => a.loyalty ?? (a.traits.includes('Loyal') ? 75 : 60)
 export const relKey = (a: string, b: string) => [a, b].sort().join('|')
 
@@ -138,7 +125,8 @@ function artistLife(s: GameState, notes: Notes) {
     a.loyalty = clamp(l, 0, 100)
     if (a.loyalty < 25 && a.morale < 40 && rng.chance(0.06)) notes.push({ tag: 'Artiste', text: `${a.stageName} envisage de quitter le label : fidélité au plus bas (${Math.round(a.loyalty)}).`, tone: 'r' })
     if (a.departing) {
-      notes.push({ tag: 'Contrat', text: `${a.stageName} quitte le label${a.contract ? ' et rejoint un concurrent' : ''}.`, tone: 'r' })
+      const to = a.contract ? departToRival(s, a, a.poachedBy) : null
+      notes.push({ tag: 'Contrat', text: `${a.stageName} quitte le label${to ? ` et rejoint ${to}` : ''}.`, tone: 'r' })
       s.artists = s.artists.filter((x) => x.id !== a.id)
     }
   }
@@ -152,7 +140,7 @@ function artistLife(s: GameState, notes: Notes) {
 export function worldTick(s: GameState, notes: Notes) {
   s.boosts = (s.boosts ?? []).filter((b) => b.until >= s.week)
   updateTrends(s, notes)
-  rivalMoves(s, notes)
+  rivalMoves(s)
   meridianTick(s, notes)
   artistLife(s, notes)
 }

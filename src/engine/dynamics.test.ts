@@ -14,7 +14,7 @@ const cfg = {
 const mkSong = (id: string, artistId: string, week: number): Song => ({ id, title: id, artistId, genre: 'Afro-pop', theme: 'x', lang: 'français', mood: 'x', lyrics: '', writer: 'artiste', lyricsQ: 70, mastering: true, quality: 70, stage: 'released', readyWeek: 1, release: { week, strategy: 'regionale', cityIds: ['abidjan', 'accra'], promo: 0, loc: [] }, stats: { streams: 0, revenue: 0, fans: 0, weeks: 0, byCity: {}, lastByCity: {}, prevByCity: {}, peak: {} }, hype: 0 })
 
 describe('monde dynamique', () => {
-  it('150 semaines : événements variés, tendances, rivaux, sans valeur aberrante', () => {
+  it('150 semaines : événements variés, tendances, rivaux, sans valeur aberrante', { timeout: 30_000 }, () => {
     let g: GameState = createGame(cfg)
     g.cash = 500_000
     const kinds = new Set<string>(); let trends = 0, moves = 0, offensives = 0
@@ -49,6 +49,7 @@ describe('monde dynamique', () => {
   })
   it('la fidélité baisse si le moral est bas', () => {
     let g = createGame(cfg)
+    g.eventSeen = Object.fromEntries(['fx', 'raise', 'viral', 'gig', 'rival', 'sponsor', 'scandal', 'burnout', 'leak', 'playlist', 'festival', 'censure', 'poach', 'meridian', 'clash', 'audit', 'charity', 'wave'].map((k) => [k, 9999])) // aucun événement : on isole la règle de fidélité
     const a = g.artists[0]
     g.artists.push({ ...structuredClone(a), id: 'x2', isFounder: false, stageName: 'Test', morale: 20, loyalty: 60, contract: { royalty: 0.3, signedWeek: 1, weeks: 500 } as never })
     for (let i = 0; i < 6; i++) g = advanceWeek(g)

@@ -36,6 +36,38 @@ export default function Actualites() {
               </div>
             )
           })}
+          {(g.rumors ?? []).length > 0 && (
+            <div className="pn cut">
+              <div className="lbl">Rumeurs de l’industrie</div>
+              {g.rumors.map((r) => (
+                <div key={r.id} className="row" style={{gridTemplateColumns: '1fr auto', gap: 10}}>
+                  <span style={{fontSize: 14, opacity: r.status === 'ouverte' ? 1 : 0.7}}>{r.text.charAt(0).toUpperCase() + r.text.slice(1)}</span>
+                  <span className={'tag ' + (r.status === 'ouverte' ? 'te' : r.status === 'confirmee' ? 'tg' : 'ti')}>{r.status === 'ouverte' ? `Vérifié sem. ${((r.due - 1) % 52) + 1}` : r.status === 'confirmee' ? 'Confirmée' : 'Démentie'}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {(g.echoes ?? []).length > 0 && (
+            <div className="pn cut">
+              <div className="lbl">Dossiers en suspens (suites de vos décisions)</div>
+              {[...g.echoes].sort((a, b) => a.due - b.due).map((e) => (
+                <div key={e.id} className="row" style={{gridTemplateColumns: '1fr auto'}}>
+                  <span style={{fontSize: 14}}>{e.origin}</span>
+                  <span className="mut" style={{fontSize: 13}}>{wk(e.due).replace('semaine', 'sem.')}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {(g.history ?? []).length > 0 && (
+            <div className="pn cut">
+              <div className="lbl">Vos dernières décisions</div>
+              {[...g.history].reverse().slice(0, 5).map((h, i) => (
+                <div key={i} className="row" style={{gridTemplateColumns: '1fr auto', gap: 10}}>
+                  <span style={{fontSize: 13}}>{h.title}</span><span className="tag ti">{h.choice}</span>
+                </div>
+              ))}
+            </div>
+          )}
           {(g.awards ?? []).length > 0 && (
             <div className="pn cut">
               <div className="lbl">Palmarès des cérémonies</div>

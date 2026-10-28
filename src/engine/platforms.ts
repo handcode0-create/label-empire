@@ -1,5 +1,6 @@
 import { CITIES, type Continent } from '../data/world'
 import type { GameState, Result } from './types'
+import { pitchCost } from './prices'
 import { addRep, clone, drawRng, fail, ok, spend, useAp } from './util'
 
 export interface Platform {
@@ -50,7 +51,7 @@ export function pitchPlaylist(s0: GameState, songId: string, platformId: string)
   const prev = lastPitch(s, songId, platformId)
   if (prev && s.week - prev.week < PITCH_COOLDOWN) return fail(s0, `Déjà démarché : réessayez dans ${PITCH_COOLDOWN - (s.week - prev.week)} semaine(s).`)
   const e = useAp(s); if (e) return fail(s0, e)
-  const e2 = spend(s, p.pitchCost, `Démarchage ${p.name}`); if (e2) return fail(s0, e2)
+  const e2 = spend(s, pitchCost(s, p), `Démarchage ${p.name}`); if (e2) return fail(s0, e2)
   const accepted = drawRng(s).chance(pitchChance(s, songId, platformId))
   s.pitches.push({ songId, platformId, week: s.week, accepted })
   if (accepted) { song.hype += p.hype; addRep(s, 0.15) }

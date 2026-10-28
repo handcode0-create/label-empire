@@ -1,3 +1,4 @@
+import { liveCity } from '../../engine/prices'
 import { useMemo } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -15,7 +16,7 @@ export default function Finances() {
   const top = Math.ceil(maxV / 10000) * 10000 || 10000
   const h = (v: number) => Math.max(1, Math.round((v / top) * 190))
   const peak = proj.reduce((a, b) => (b.expenses > a.expenses ? b : a), proj[0])
-  const reached = [...new Set(g.stats.countriesReached)].map(cityById).slice(0, 5)
+  const reached = [...new Set(g.stats.countriesReached)].map((id) => liveCity(g, cityById(id))).slice(0, 5)
   const pirate = [...reached].sort((a, b) => b.piracy - a.piracy).slice(0, 3)
   const pend = new Map<string, { amount: number; week: number }>()
   for (const p of g.pending) { const cur = cityById(p.cityId).currency; const e = pend.get(cur) ?? { amount: 0, week: p.week }; e.amount += p.amount; e.week = Math.min(e.week, p.week); pend.set(cur, e) }

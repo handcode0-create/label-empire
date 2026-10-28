@@ -1,4 +1,5 @@
 import Hud from '../../components/Hud'
+import { fxRate, liveCity } from '../../engine/prices'
 import Dock from '../../components/Dock'
 import { CITIES, TIER_LABEL, affinity, cityById } from '../../data/world'
 import { STUDIOS, venuesFor } from '../../data/people'
@@ -15,14 +16,14 @@ const letter = (v: number) => grade(v).toUpperCase()
 export default function Pays() {
   const g = useGame((s) => s.game)!
   const { sel, run, select } = useGame()
-  const c = cityById(sel.cityId ?? g.label.hqCityId)
+  const c = liveCity(g, cityById(sel.cityId ?? g.label.hqCityId))
   const fans = fansByCity(g)
   const sameCountry = CITIES.filter((x) => x.country === c.country)
   const around = (sameCountry.length > 1 ? sameCountry : CITIES.filter((x) => x.region === c.region)).slice(0, 4)
   const countryFans = sum(Object.fromEntries(sameCountry.map((x) => [x.id, fans[x.id] ?? 0])))
   const genres = [...new Set([...g.artists.map((a) => a.genre), ...c.strong])].slice(0, 5)
   const office = g.offices.find((o) => o.cityId === c.id)
-  const req = officeRequirement(c.id, 'partenaire')
+  const req = officeRequirement(g, c.id, 'partenaire')
   const rank = bestRank(g, 'ville', c.id)
   const audience = Math.min(1, c.base / 3_000_000)
   const power = c.tax > 0.18 ? 0.9 : 0.5
@@ -49,7 +50,7 @@ export default function Pays() {
               <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Audience</div><div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 8}}><span className={'ab ' + grade(audience * 2)}>{letter(audience * 2)}</span><span className="mut" style={{fontSize: 13}}>{compact(c.base)} écoutes/sem.</span></div></div>
               <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Pouvoir d'achat</div><div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 8}}><span className={'ab ' + grade(power)}>{letter(power)}</span><span className="mut" style={{fontSize: 13}}>{c.tier === 'A' ? 'Élevé' : 'Modéré'}</span></div></div>
               <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Paiement</div><div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 8}}><span className={'ab ' + (c.delay <= 3 ? 'a' : c.delay <= 4 ? 'b' : 'c')}>{c.delay <= 3 ? 'A' : c.delay <= 4 ? 'B' : 'C'}</span><span className="mut" style={{fontSize: 13}}>{c.delay} semaines</span></div></div>
-              <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Piratage</div><div style={{marginTop: 8}}><span className={'tag ' + (c.piracy > 0.25 ? 'tr_' : c.piracy > 0.12 ? 'te' : 'tg')}>{c.piracy > 0.25 ? 'Fort' : c.piracy > 0.12 ? 'Moyen' : 'Faible'} · {Math.round(c.piracy * 100)} %</span></div></div>
+              <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Piratage · change {c.currency}</div><div style={{marginTop: 8}}><span className={'tag ' + (fxRate(g, c.currency) < 0.92 ? 'tr_' : fxRate(g, c.currency) > 1.08 ? 'tg' : 'ti')} style={{marginRight: 6}}>{c.currency} {fxRate(g, c.currency).toFixed(2)}</span><span className={'tag ' + (c.piracy > 0.25 ? 'tr_' : c.piracy > 0.12 ? 'te' : 'tg')}>{c.piracy > 0.25 ? 'Fort' : c.piracy > 0.12 ? 'Moyen' : 'Faible'} · {Math.round(c.piracy * 100)} %</span></div></div>
               <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Langue</div><div style={{marginTop: 8, fontWeight: 700}}>{c.lang}</div></div>
               <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Genres dominants</div><div style={{marginTop: 8, fontSize: 14, fontWeight: 700}}>{c.strong.slice(0, 2).join(', ')}</div></div>
               <div className="pn" style={{padding: '14px 16px'}}><div className="lbl">Ouverture</div><div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 8}}><span className={'ab ' + grade(open)}>{letter(open)}</span><span className="mut" style={{fontSize: 13}}>{c.visa ? 'Visa requis' : 'Sans visa'}</span></div></div>

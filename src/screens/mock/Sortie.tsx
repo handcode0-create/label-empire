@@ -1,4 +1,6 @@
+import { liveCity } from '../../engine/prices'
 import { useMemo, useState } from 'react'
+import { mediaCost } from '../../engine/prices'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import Slider from '../../components/Slider'
@@ -42,14 +44,14 @@ export default function Sortie() {
   const cal = releaseCalendar(g, from, 5)
   const strat = STRATEGIES[strategy]
   const draft: SongRelease = { week: chosen, strategy, cityIds, promo, loc, media }
-  const cost = releaseCost(draft)
+  const cost = releaseCost(draft, g)
   const proj = (() => {
     const sim = { ...song, release: draft, stage: 'released' as const }
     let streams = 0, revenue = 0
     for (const c of CITIES) {
       const st = weeklyStreams(g, sim, c, chosen)
       streams += st
-      revenue += st * STREAM_VALUE * (1 - c.piracy) * (1 - c.tax) * (1 - royaltyShare(g, song))
+      revenue += st * STREAM_VALUE * (g.payout ?? 1) * (1 - liveCity(g, c).piracy) * (1 - liveCity(g, c).tax) * (1 - royaltyShare(g, song))
     }
     return { streams, revenue, fans: streams * 0.02 * (0.7 + artist.skills.charisme / 150) }
   })()
@@ -104,7 +106,7 @@ export default function Sortie() {
                     <div key={m.id} className="row" role="button" style={{gridTemplateColumns: '44px 1fr auto', gap: 10, cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.5 : 1, background: on ? '#3A1B52' : undefined}} onClick={() => { if (locked) return say(`${m.name} exige ${m.minRep} de réputation.`, 'err'); setMedia(on ? media.filter((x) => x !== m.id) : [...media, m.id]) }}>
                       <MediaLogo id={m.id} size={40} />
                       <div><b style={{fontSize: 14}}>{m.name}</b><div className="mut" style={{fontSize: 12}}>{m.kind} · {mediaScopeLabel(m)}{locked ? ` · 🔒 Réputation ${m.minRep}` : ` · +${Math.round(m.boost * 100)} %`}</div></div>
-                      <span style={{color: on ? '#FF7DBB' : '#FFC63D', fontSize: 13, fontWeight: 700}}>{on ? '■' : usd(m.cost)}</span>
+                      <span style={{color: on ? '#FF7DBB' : '#FFC63D', fontSize: 13, fontWeight: 700}}>{on ? '■' : usd(mediaCost(g, m))}</span>
                     </div>) })}
                 </div>)}
               </div>

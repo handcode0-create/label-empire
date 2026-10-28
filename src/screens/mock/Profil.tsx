@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { ARTIST_LABELS, cityById } from '../../data/world'
-import { hash } from '../../engine/rng'
+import { ageOf } from '../../engine/artistLife'
 import { sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
 import {compact, stars, usd} from '../../lib'
@@ -27,7 +27,7 @@ export default function Profil() {
       <div className="main"><div className="pn cut" style={{maxWidth: 600}}><div className="h2">Artiste introuvable</div><p className="mut">Cet artiste n'est plus disponible (signé ailleurs ou déjà dans votre label).</p><a href="Decouverte.dc.html" className="btn">Retour à la liste</a></div></div></div>
   )
   const c = cityById(a.originCityId)
-  const age = 19 + (hash(a.id) % 12)
+  const age = ageOf(g, a)
   const fansList = Object.entries(a.fans).sort((x, y) => y[1] - x[1]).slice(0, 4)
   const maxF = Math.max(1, ...fansList.map((f) => f[1]))
   const status = a.status === 'concours' ? ['te', 'Concours'] : a.rivalInterest ? ['tr_', 'Concurrence'] : ['tg', 'Disponible']

@@ -1,3 +1,4 @@
+import type { RivalState } from './rivalLife'
 export type Currency = 'USD' | 'EUR' | 'XOF'
 export type Difficulty = 'facile' | 'normal' | 'difficile'
 
@@ -53,6 +54,11 @@ export interface Artist {
   rivalInterest?: number
   loyalty?: number // 0..100 : fidélité au label
   departing?: boolean // quitte le label la semaine suivante
+  poachedBy?: string // label rival qui l'a débauché
+  xp?: Record<string, number> // expérience en cours d'acquisition par compétence
+  ego?: number // 0..100 : monte avec le succès
+  offer?: { label: string; until: number } // offre concurrente en cours
+  heat?: number // 0..100 : ferveur du public
 }
 
 export interface SongRelease {
@@ -155,13 +161,21 @@ export type Fx =
   | { t: 'fans'; a?: string; city?: string; v: number }
   | { t: 'boost'; kind: 'hype' | 'streams' | 'city'; mult: number; weeks: number; songId?: string; cityId?: string; label: string }
   | { t: 'trend'; genre: string; mult: number; weeks: number; kind: Trend['kind']; cause: string }
-  | { t: 'leave'; a: string } | { t: 'relation'; a: string; b: string; v: number }
+  | { t: 'leave'; a: string; to?: string } | { t: 'relation'; a: string; b: string; v: number }
   | { t: 'rivalCut'; v: number } | { t: 'meridian'; phase: 'calme' | 'offensive'; weeks: number; region?: string }
   | { t: 'fxCity'; city: string; v: number } | { t: 'release'; songId: string }
+  | { t: 'fanPct'; a?: string; v: number } | { t: 'heat'; a?: string; v: number }
+  | { t: 'later'; after: number; text: string; tone?: Echo['tone']; fx?: Fx[]; event?: EchoEvent }
   | { t: 'roll'; p: number; win: Fx[]; lose: Fx[]; winText?: string; loseText?: string }
 export interface EventChoice { id: string; label: string; detail: string; cost: number; fx?: Fx[] }
 export interface GameEvent { id: string; kind: string; title: string; text: string; cityId?: string; artistId?: string; songId?: string; tone?: 'g' | 'c' | 'e' | 'r' | 'i'; choices: EventChoice[]; resolved?: string; outcome?: string; week: number }
 
+/** Événement porté par une suite (chaîne d'événements). */
+export type EchoEvent = Omit<GameEvent, 'id' | 'kind' | 'week' | 'resolved' | 'outcome'>
+/** Conséquence différée d'un choix : s'applique, ou se transforme en nouvel événement, quelques semaines plus tard. */
+export interface Echo { id: string; due: number; origin: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i'; fx?: Fx[]; event?: EchoEvent; artistId?: string; songId?: string; cityId?: string }
+/** Rumeur : un fait réel décidé à l'avance, qui se confirme ou non à l'échéance. */
+export interface Rumor { id: string; week: number; due: number; kind: 'sortie' | 'transfert' | 'meridian' | 'offre' | 'tendance'; text: string; truth: boolean; status: 'ouverte' | 'confirmee' | 'dementie'; ref?: string; to?: string; genre?: string }
 /** Tendance de marché sur un genre (hausse, baisse ou effet viral). */
 export interface Trend { id: string; genre: string; mult: number; start: number; until: number; kind: 'hausse' | 'baisse' | 'viral'; cause: string }
 /** Coup de pouce ou frein temporaire (événements). */
@@ -204,6 +218,13 @@ export interface GameState {
   boosts: Boost[] // effets temporaires d'événements
   rivalMoves: RivalMove[] // sorties rivales actives
   meridian: MeridianState // posture de Meridian Group
+  markets: Record<string, { base: number; tax: number; piracy: number }> // évolution des marchés par ville (absent = valeurs d'origine)
+  payout: number // multiplicateur de rémunération des plateformes
+  rumors: Rumor[] // rumeurs de la presse (confirmées ou démenties plus tard)
+  fx: Record<string, number> // taux de change des devises face au dollar
+  echoes: Echo[] // suites programmées des choix passés
+  history: { week: number; title: string; choice: string }[] // décisions prises (les 40 dernières)
+  rivals: RivalState // monde rival vivant (popularité, sorties, transferts, classements)
   relations: Record<string, number> // relations entre artistes du label (-100..100)
   eventSeen: Record<string, number> // dernière semaine de chaque type d'événement
   drafts: Draft[] // brouillons de chansons (reprise possible après plusieurs semaines)

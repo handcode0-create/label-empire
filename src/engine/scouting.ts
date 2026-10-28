@@ -1,6 +1,7 @@
 import { wk } from '../lib'
 import { AGENCIES, FIRST, GRADIENTS, LAST, SIGNATURE, STAGE_WORDS, TRAITS } from '../data/people'
 import { CITIES, GENRES, cityById, type City } from '../data/world'
+import { signToRival } from './rivalLife'
 import type { Rng } from './rng'
 import type { Artist, Contest, GameState, Result } from './types'
 import { ARTIST_SKILLS } from './types'
@@ -179,7 +180,7 @@ export function rivalsAndRefresh(s: GameState, notes: { tag: string; text: strin
     if (a.status === 'concours' && a.exclusiveUntil) { a.status = 'disponible'; a.exclusiveUntil = undefined }
     if (a.rivalInterest && rng.chance(0.07)) {
       s.pool.splice(s.pool.indexOf(a), 1)
-      notes.push({ tag: 'Rival', text: `Un label rival a signé ${a.stageName} (${cityById(a.originCityId).name}).`, tone: 'r' })
+      signToRival(s, a, notes)
     }
   }
   if (s.week % 3 === 0 && s.pool.length < 40) for (let i = 0; i < 3; i++) s.pool.push(generateCandidate(rng, s))

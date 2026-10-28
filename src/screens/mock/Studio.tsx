@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { priceDelta, studioPrice } from '../../engine/prices'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { STUDIOS, SESSION_OPTIONS } from '../../data/people'
@@ -26,14 +27,14 @@ export default function Studio() {
   const artist = g.artists.find((a) => a.id === song.artistId)!
   const list = STUDIOS
     .filter((s) => !cont || cityById(s.cityId).continent.startsWith(cont))
-    .filter((s) => !cheap || s.pricePerDay <= 2000)
-    .sort((a, b) => (byQuality ? b.quality - a.quality : a.pricePerDay - b.pricePerDay))
+    .filter((s) => !cheap || studioPrice(g, s) <= 2000)
+    .sort((a, b) => (byQuality ? b.quality - a.quality : studioPrice(g, a) - studioPrice(g, b)))
   const st = STUDIOS.find((s) => s.id === studioId) ?? STUDIOS[0]
   const sc = cityById(st.cityId)
   const t = travelCost(artist.originCityId, st)
   const est = recordingEstimate(g, song, st, days)
   const av = studioAvailability(st, g.week)
-  const total = st.pricePerDay * days
+  const total = studioPrice(g, st) * days
   const submit = () => { if (run((s) => bookStudio(s, song.id, st.id, days))) { select({ songId: song.id, studioId: st.id }); go('Mixage') } }
   const written = g.songs.filter((s) => s.stage === 'written')
   return (
@@ -55,7 +56,7 @@ export default function Studio() {
             {list.map((s) => { const a = studioAvailability(s, g.week); const c = cityById(s.cityId); return (
               <a key={s.id} href="Studio.dc.html" onClick={(e) => { e.preventDefault(); setStudioId(s.id) }} className={'pn' + (s.id === st.id ? ' sel' : '')} style={{display: 'grid', gridTemplateColumns: '1fr 100px 70px 70px 100px', gap: 12, alignItems: 'center', padding: '9px 16px'}}>
                 <div><b>{s.name}</b><div className="mut" style={{fontSize: 13}}>{c.name}, {c.country}</div></div>
-                <span style={{color: '#FFC63D'}}>{'★'.repeat(s.stars)}</span><b>{usd(s.pricePerDay)}/j</b>
+                <span style={{color: '#FFC63D'}}>{'★'.repeat(s.stars)}</span><b>{usd(studioPrice(g, s))}/j{studioPrice(g, s) !== s.pricePerDay && <span style={{fontSize: 11, marginLeft: 4, color: studioPrice(g, s) > s.pricePerDay ? '#FF5470' : '#3DDC97'}}>{priceDelta(studioPrice(g, s), s.pricePerDay) > 0 ? '▲' : '▼'}{Math.abs(priceDelta(studioPrice(g, s), s.pricePerDay))} %</span>}</b>
                 <span className="num" style={{fontSize: 22, color: '#35D3F0'}}>{s.quality}</span>
                 <span className={'tag ' + (!a.open ? 'tr_' : a.wait ? 'te' : 'tg')}>{a.label}</span>
               </a>) })}

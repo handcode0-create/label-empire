@@ -1,3 +1,4 @@
+import { opCost } from '../../engine/prices'
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -46,7 +47,7 @@ export default function Clips() {
                         <b style={{fontSize: 17}}>{t.label}</b> <span className="tag te">{t.weeks} sem.</span> <span className="tag tc">qualité {t.q[0]}–{t.q[1]}</span>
                         <div className="mut" style={{fontSize: 13, marginTop: 4}}>{t.desc} Prestige +{t.rep}.</div>
                       </div>
-                      <button type="button" className="btn sm" disabled={!sel} onClick={() => sel && run((st) => commissionClip(st, sel.id, k))}>{usd(t.cost)}</button>
+                      <button type="button" className="btn sm" disabled={!sel} onClick={() => sel && run((st) => commissionClip(st, sel.id, k))}>{usd(opCost(g, t.cost))}</button>
                     </div>
                   )
                 })}

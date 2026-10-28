@@ -1,3 +1,4 @@
+import { opCost } from '../../engine/prices'
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -31,7 +32,7 @@ export default function Mixage() {
   const from = Math.max(g.week, ready)
   const cal = releaseCalendar(g, from, 4)
   const chosen = sel.week && sel.week >= from && sel.week <= from + 12 ? sel.week : from
-  const total = mix.cost + (withMaster ? MASTERING.cost : 0)
+  const total = opCost(g, mix.cost + (withMaster ? MASTERING.cost : 0))
   const next = () => {
     if (!done && !run((s) => chooseMix(s, song.id, mixId, master))) return
     select({ songId: song.id, week: chosen }); go('Sortie')
@@ -51,7 +52,7 @@ export default function Mixage() {
               return (
                 <div key={m.id} className={'pn' + (on ? ' sel' : '')} role="button" tabIndex={0} onClick={() => !done && setMixId(m.id)} style={{display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', cursor: done ? 'default' : 'pointer'}}>
                   <div style={{flex: 1}}><b style={{fontSize: 18}}>{m.name}</b><div className="mut" style={{fontSize: 13}}>{m.id === 'local' && st ? `Un ingénieur du son reconnu à ${cityById(st.cityId).name}.` : m.desc}</div></div>
-                  <span className="tag tc">{usd(m.cost)}</span><span className="tag te">{m.label}</span><span className="tag ti">Qualité +{m.bonus}</span><span className={'tag ' + (m.risk === 'Moyen' ? 'tr_' : 'tg')}>Risque : {m.risk.toLowerCase()}</span>
+                  <span className="tag tc">{usd(opCost(g, m.cost))}</span><span className="tag te">{m.label}</span><span className="tag ti">Qualité +{m.bonus}</span><span className={'tag ' + (m.risk === 'Moyen' ? 'tr_' : 'tg')}>Risque : {m.risk.toLowerCase()}</span>
                 </div>
               )
             })}

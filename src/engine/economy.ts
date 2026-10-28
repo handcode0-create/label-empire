@@ -2,6 +2,7 @@ import { wk } from '../lib'
 import { RECRUITS } from '../data/people'
 import { cityById } from '../data/world'
 import type { GameState, Result } from './types'
+import { rentFor } from './prices'
 import { clamp, clone, fail, modsOf, fansInCity, money, ok, spend, staffSkill, useAp } from './util'
 
 // ---------- équipe ----------
@@ -36,14 +37,14 @@ export function raiseSalary(s0: GameState, id: string): Result {
 }
 
 // ---------- bureaux ----------
-export function officeRequirement(cityId: string, kind: 'bureau' | 'partenaire') {
-  const c = cityById(cityId)
+export function officeRequirement(s: GameState, cityId: string, kind: 'bureau' | 'partenaire') {
+  const c = { ...cityById(cityId), rent: rentFor(s, cityId) }
   return { cost: kind === 'bureau' ? c.rent * 4 : Math.round(c.rent * 1.2), fans: Math.round((c.base * (kind === 'bureau' ? 0.1 : 0.04)) / 10000) * 10000, weeks: kind === 'bureau' ? 6 : 3, rep: c.minRep }
 }
 export function openOffice(s0: GameState, cityId: string, kind: 'bureau' | 'partenaire'): Result {
   const s = clone(s0)
   if (s.offices.some((o) => o.cityId === cityId)) return fail(s0, 'Vous êtes déjà présent dans cette ville.')
-  const req = officeRequirement(cityId, kind)
+  const req = officeRequirement(s, cityId, kind)
   const c = cityById(cityId)
   if (s.reputation < req.rep) return fail(s0, `Réputation ${req.rep} requise pour ${c.name}.`)
   const fans = fansInCity(s, cityId)
@@ -78,7 +79,7 @@ export function repayLoan(s0: GameState): Result {
 
 export function weeklyFixedCosts(s: GameState) {
   const salaries = s.staff.reduce((t, m) => t + m.salary, 0)
-  const rent = s.offices.filter((o) => o.since <= s.week).reduce((t, o) => t + (o.kind === 'partenaire' ? 0 : cityById(o.cityId).rent / 4.33), 0)
+  const rent = s.offices.filter((o) => o.since <= s.week).reduce((t, o) => t + (o.kind === 'partenaire' ? 0 : rentFor(s, o.cityId) / 4.33), 0)
   const overhead = Math.round(s.reputation * 30 + s.reputation * s.reputation * 1.2) // frais de structure : croissent plus vite que la réputation (50 → 4 500 $/sem, 100 → 15 000 $/sem)
   const k = modsOf(s).costs
   const sal = Math.round(salaries * k), rt = Math.round(rent * k), ov = Math.round(overhead * k)
