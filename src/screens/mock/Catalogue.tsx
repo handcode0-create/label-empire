@@ -2,10 +2,11 @@ import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import Avatar from '../../components/Avatar'
+import Cover, { CoverPicker, defaultCover } from '../../components/Cover'
 import { generateProjectName } from '../../data/titles'
 import { createRng } from '../../engine/rng'
 import { rivalProjectNames } from '../../engine/rivals'
-import { PROJECT_RULES, assignSong, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong, setStandby } from '../../engine/projects'
+import { PROJECT_RULES, assignSong, setCover, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong, setStandby } from '../../engine/projects'
 import type { Project, ProjectKind } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
 import { compact, songName, usd } from '../../lib'
@@ -19,6 +20,7 @@ export default function Catalogue() {
   const [name, setName] = useState('')
   const [kind, setKind] = useState<ProjectKind>('EP')
   const [adding, setAdding] = useState<string | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
   const a = g.artists.find((x) => x.id === artistId) ?? g.artists[0]
   if (!a) return (
     <div className="scr"><Dock active="sorties" /><Hud /><div className="main"><div className="pn cut" style={{maxWidth: 640}}><div className="h2">Catalogue vide</div><p className="mut">Signez un artiste pour constituer son catalogue.</p><a href="Decouverte.dc.html" className="btn">Découvrir un artiste</a></div></div></div>
@@ -32,10 +34,13 @@ export default function Catalogue() {
   const suggest = () => setName(generateProjectName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { kind, artist: a.stageName }, [...g.projects.map((p) => p.name), ...rivalProjectNames()]))
   const create = () => { if (run((s) => createProject(s, name, kind, a.id))) setName('') }
   const cover = (p: Project) => (
-    <div style={{height: 120, borderRadius: 12, background: 'linear-gradient(135deg,#F43F9D,#8B5CF6)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', padding: 12}}>
-      <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 30%,rgba(10,6,24,.75))'}} />
-      <div style={{position: 'absolute', right: 10, top: 10}} className={'tag ' + (p.status === 'sorti' ? 'tg' : 'te')}>{p.status === 'sorti' ? `Sorti S${p.releaseWeek}` : 'En préparation'}</div>
-      <div style={{position: 'relative'}}><div className="lbl" style={{color: '#fff'}}>{p.kind}</div><div className="h2" style={{fontSize: 22, color: '#fff'}}>{p.name}</div></div>
+    <div style={{display: 'flex', gap: 14, alignItems: 'flex-end'}}>
+      <Cover title={p.name} artist={a.stageName} kind={p.kind} cover={p.cover} size={132} />
+      <div style={{flex: 1}}>
+        <span className={'tag ' + (p.status === 'sorti' ? 'tg' : 'te')}>{p.status === 'sorti' ? `Sorti S${p.releaseWeek}` : 'En préparation'}</span>
+        <div className="h2" style={{fontSize: 22, marginTop: 6}}>{p.name}</div>
+        <span className="chip" role="button" style={{marginTop: 6}} onClick={() => setEditing(editing === p.id ? null : p.id)}>{editing === p.id ? 'Fermer' : 'Pochette'}</span>
+      </div>
     </div>
   )
   return (
@@ -69,21 +74,22 @@ export default function Catalogue() {
             {(['EP', 'Album'] as ProjectKind[]).map((k) => <span key={k} className={'chip' + (kind === k ? ' on' : '')} role="button" onClick={() => setKind(k)}>{k}</span>)}
             <button type="button" className="btn sm" onClick={create}>Créer</button>
           </div>
-          {projects.length === 0 && <div className="pn cut mut">Aucun EP ni album pour {a.stageName}. Créez-en un ci-dessus, puis ajoutez-y des titres mixés (standby) ou déjà sortis.</div>}
+          {projects.length === 0 && <div className="pn cut mut">Aucun EP ni album pour {a.stageName}. Créez-en un ci-dessus, puis ajoutez-y des titres inédits (écrits, enregistrés ou mixés, en standby) ou déjà sortis.</div>}
           <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14}}>
             {projects.map((p) => {
               const rule = PROJECT_RULES[p.kind]
               const open = p.status === 'brouillon'
-              const candidates = free.filter((s) => s.stage === 'mixed' || s.stage === 'released')
+              const candidates = free.filter((s) => s.stage !== 'scheduled')
               return (
                 <div key={p.id} className="pn cut" style={{display: 'flex', flexDirection: 'column', gap: 8}}>
                   {cover(p)}
+                  {editing === p.id && <CoverPicker title={p.name} artist={a.stageName} kind={p.kind} value={p.cover ?? defaultCover(p.name + a.stageName)} onChange={(c) => run((st) => setCover(st, 'project', p.id, c))} />}
                   <div className="mut" style={{fontSize: 12}}>{p.songIds.length}/{rule.min} titres min · qualité {projectQuality(g, p)}{p.status === 'sorti' ? ` · ${compact(projectStreams(g, p))} écoutes` : ` · publication ${usd(rule.cost)}`}</div>
                   <div>
                     {projectSongs(g, p).map((s, i) => (
                       <div key={s.id} className="row" style={{gridTemplateColumns: '22px 1fr auto auto', gap: 8, padding: '6px 0'}}>
                         <span className="mut">{i + 1}</span><b style={{fontSize: 14}}>{songName(s)}</b>
-                        <span className={'tag ' + (s.stage === 'released' ? 'tg' : 'te')}>{s.standby ? 'Standby' : STAGE[s.stage]}</span>
+                        <span className={'tag ' + (s.stage === 'released' ? 'tg' : 'te')}>{s.exclusive ? 'Inédit' : s.standby ? 'Standby · inédit' : s.stage === 'written' || s.stage === 'recorded' ? 'À finaliser' : STAGE[s.stage]}</span>
                         {open ? <span className="chip" role="button" onClick={() => run((st) => removeSong(st, p.id, s.id))}>Retirer</span> : <span />}
                       </div>
                     ))}
@@ -93,7 +99,7 @@ export default function Catalogue() {
                     <>
                       {adding === p.id && (
                         <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>
-                          {candidates.length === 0 && <span className="mut" style={{fontSize: 13}}>Aucun titre mixé ou sorti disponible.</span>}
+                          {candidates.length === 0 && <span className="mut" style={{fontSize: 13}}>Aucun titre disponible : écrivez-en dans le Studio.</span>}
                           {candidates.map((s) => <span key={s.id} className="chip" role="button" onClick={() => run((st) => assignSong(st, p.id, s.id))}>+ {songName(s)}</span>)}
                         </div>
                       )}
@@ -110,7 +116,7 @@ export default function Catalogue() {
           </div>
           <div className="pn cut">
             <div className="lbl">Réserve · titres en standby</div>
-            {standby.length === 0 && mixedFree.length === 0 && <p className="mut" style={{fontSize: 14}}>Aucun titre mixé en attente.</p>}
+            {standby.length === 0 && mixedFree.length === 0 && <p className="mut" style={{fontSize: 14}}>Aucun titre en attente. Écrivez-en dans le Studio pour les garder inédits.</p>}
             {standby.map((s) => (
               <div key={s.id} className="row" style={{gridTemplateColumns: '1fr auto auto', gap: 10}}>
                 <div><b>{songName(s)}</b><div className="mut" style={{fontSize: 12}}>Q{s.quality ?? '–'} · prêt à rejoindre un EP / album</div></div>
@@ -122,7 +128,21 @@ export default function Catalogue() {
                 <b>{songName(s)}</b><span className="tag ti">Mixé</span><span className="chip" role="button" onClick={() => run((st) => setStandby(st, s.id, true))}>Mettre en standby</span>
               </div>
             ))}
-            {singles.length > 0 && <div className="mut" style={{fontSize: 13, marginTop: 10}}>Singles : {singles.map((s) => `${songName(s)}${s.stage === 'released' ? ` (${compact(s.stats.streams)})` : ' (programmé)'}`).join(' · ')}</div>}
+            {singles.length > 0 && (
+              <div style={{marginTop: 12}}>
+                <div className="lbl">Singles</div>
+                <div style={{display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8}}>
+                  {singles.map((sg) => (
+                    <div key={sg.id} style={{width: 96}}>
+                      <div role="button" style={{cursor: 'pointer'}} onClick={() => setEditing(editing === sg.id ? null : sg.id)} title="Changer la pochette"><Cover title={sg.title} artist={a.stageName} kind="Single" cover={sg.cover} size={96} radius={10} /></div>
+                      <div style={{fontSize: 12, fontWeight: 700, marginTop: 4}}>{songName(sg)}</div>
+                      <div className="mut" style={{fontSize: 11}}>{sg.stage === 'released' ? compact(sg.stats.streams) + ' écoutes' : 'programmé'}</div>
+                    </div>
+                  ))}
+                </div>
+                {singles.filter((sg) => sg.id === editing).map((sg) => <div key={sg.id} style={{marginTop: 10}}><CoverPicker title={sg.title} artist={a.stageName} kind="Single" value={sg.cover ?? defaultCover(sg.title + a.stageName)} onChange={(c) => run((st) => setCover(st, 'song', sg.id, c))} /></div>)}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { CHARS, SCENES, contextFor, fillText, type Bg, type Line } from '../data
 import { useGame } from '../store/gameStore'
 import Avatar from './Avatar'
 import { acceptMeridianOffer } from '../engine/objectives'
+import { careForTourArtist } from '../engine/tour'
 
 const SKY: Record<Bg, string> = {
   ville: 'linear-gradient(180deg,#0B0720 0%,#2A1B4D 55%,#FF7A59 130%)',
@@ -89,6 +90,7 @@ export default function Cinematic() {
   }
   const choose = (reply: Line[], effect?: string) => {
     if (effect === 'accept-meridian') run(acceptMeridianOffer)
+    if (effect === 'repos' || effect === 'prime') run((s) => careForTourArtist(s, effect))
     setQueue([...queue.slice(0, i + 1), ...reply, ...queue.slice(i + 1)]); setPicked(true); setI(i + 1); setPicked(false) }
 
   useEffect(() => {
@@ -155,7 +157,7 @@ export default function Cinematic() {
           </div>
           {done && line.choices && (
             <div className="an-rise" style={{ display: 'flex', gap: 12, marginTop: 12, justifyContent: 'flex-end' }}>
-              {line.choices.map((c) => <button key={c.label} className="btn sm" onClick={(e) => { e.stopPropagation(); choose(c.reply, c.effect) }}>{c.label}</button>)}
+              {line.choices.map((c) => <button key={c.label} className="btn sm" onClick={(e) => { e.stopPropagation(); choose(c.reply, c.effect) }}>{ctx ? fillText(c.label, ctx) : c.label}</button>)}
             </div>
           )}
         </div>

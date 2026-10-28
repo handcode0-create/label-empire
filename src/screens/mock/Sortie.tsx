@@ -7,6 +7,7 @@ import { CITIES, affinity } from '../../data/world'
 import { MEDIA, mediaScopeLabel } from '../../data/media'
 import { MediaLogo } from '../../components/Logo'
 import { STREAM_VALUE, royaltyShare, weeklyStreams } from '../../engine/market'
+import Cover from '../../components/Cover'
 import { setStandby } from '../../engine/projects'
 import { STRATEGIES, releaseCalendar, releaseCost, scheduleRelease } from '../../engine/production'
 import { fansByCity } from '../../engine/selectors'
@@ -70,7 +71,7 @@ export default function Sortie() {
       <Dock active="sorties" />
       <Hud />
       <div className="main">
-        <div style={{display: 'flex', alignItems: 'center', gap: 14}}><h1 className="h1">Programmer la sortie</h1><a href="Catalogue.dc.html" className="chip">Catalogue</a><a href="Projets.dc.html" className="chip">EP & albums</a><span className="tag ti">« {song.title} » · {artist.stageName} · qualité {song.quality}</span></div>
+        <div style={{display: 'flex', alignItems: 'center', gap: 14}}><Cover title={song.title} artist={artist.stageName} kind="Single" cover={song.cover} size={72} radius={10} /><h1 className="h1">Programmer la sortie</h1><a href="Catalogue.dc.html" className="chip">Catalogue</a><a href="Projets.dc.html" className="chip">EP & albums</a><span className="tag ti">« {song.title} » · {artist.stageName} · qualité {song.quality}</span></div>
         <div style={{display: 'flex', gap: 20, marginTop: 16}}>
           <div style={{width: 820}}>
             <div className="lbl">Stratégie</div>

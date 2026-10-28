@@ -62,3 +62,8 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 **Clips, plateformes, actualités d'accueil** : clips vidéo (lo-fi, studio, cinéma : coût, durée de tournage, qualité, vues et revenus publicitaires, buzz et prestige à la sortie) ; espace Plateformes (5 plateformes fictives : parts de marché par continent, rémunération, démarchage de playlists avec chances estimées et délai de 8 semaines) ; le Hub affiche les actualités de la semaine.
 
 **Banque de titres** : 8 thèmes (Amour, Fête, Ambition, Société, Nostalgie, Voyage, Argent, Spiritualité) en français, anglais et nouchi, des milliers de combinaisons ; générateur de noms d'EP et d'albums ; aucun doublon avec vos titres ni avec ceux des rivaux (bouton dé dans Écriture, Catalogue et EP & albums).
+
+## Pochettes, inédits et scènes de tournée
+- **Pochettes** : chaque single, EP et album a une pochette SVG générée (8 styles × 8 palettes), modifiable via « Pochette » dans Sorties › Catalogue ; visible aussi sur la fiche titre et l'écran de programmation.
+- **Inédits** : les titres écrits, enregistrés ou mixés peuvent être mis en standby puis ajoutés à un EP/album ; à la sortie du projet ils sont marqués « Inédit » (+ léger buzz).
+- **Scènes de tournée** : scènes cinématiques déclenchées par les concerts (salle, billets, taux de remplissage), avec choix repos / prime pour l'artiste.

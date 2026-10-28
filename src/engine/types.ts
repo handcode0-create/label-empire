@@ -93,6 +93,8 @@ export interface Song {
   mixQ?: number
   quality?: number
   clip?: Clip // clip vidéo
+  cover?: Cover // pochette personnalisée
+  exclusive?: boolean // inédit sorti avec un EP / album
   standby?: boolean // titre mixé mis en réserve (pour un EP / album)
   stage: 'written' | 'recorded' | 'mixed' | 'scheduled' | 'released'
   readyWeek: number
@@ -109,6 +111,7 @@ export interface Project {
   songIds: string[]
   status: 'brouillon' | 'sorti'
   releaseWeek?: number
+  cover?: Cover
 }
 
 export interface TourStop { cityId: string; venue: string; kind?: string; capacity: number; week: number; price: number; sold?: number; revenue?: number }
@@ -214,3 +217,5 @@ export interface Award { year: number; week: number; category: 'titre' | 'artist
 
 export interface Clip { tier: 'lofi' | 'standard' | 'cine'; cost: number; quality: number; startWeek: number; readyWeek: number; status: 'tournage' | 'sorti'; views: number; revenue: number }
 export interface Pitch { songId: string; platformId: string; week: number; accepted: boolean }
+
+export interface Cover { style: number; palette: number }

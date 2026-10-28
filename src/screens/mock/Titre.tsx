@@ -1,6 +1,7 @@
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import Avatar from '../../components/Avatar'
+import Cover from '../../components/Cover'
 import { LabelLogo } from '../../components/Logo'
 import { gradientFor, useOpen } from '../../components/useOpen'
 import { cityById } from '../../data/world'
@@ -44,6 +45,7 @@ export default function Titre() {
       <Hud />
       <div className="main">
         <div style={{display: 'flex', alignItems: 'center', gap: 18}}>
+          <Cover title={title} artist={stage} kind={proj ? (ra ? undefined : (g.projects.find((p) => p.songIds.includes(sel.viewSongId ?? ''))?.kind ?? 'EP')) : 'Single'} cover={mine?.cover} size={110} />
           <div>
             <div className="lbl">Titre</div>
             <h1 className="h1" style={{lineHeight: 1.05}}>{title}</h1>

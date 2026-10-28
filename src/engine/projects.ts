@@ -37,6 +37,15 @@ export function setStandby(s0: GameState, songId: string, on: boolean): Result {
   return ok(s, on ? `« ${song.title} » est en standby.` : `« ${song.title} » peut de nouveau sortir en single.`)
 }
 
+/** Pochette d'un titre ou d'un projet (style et palette). Gratuit. */
+export function setCover(s0: GameState, target: 'song' | 'project', id: string, cover: { style: number; palette: number }): Result {
+  const s = clone(s0)
+  const t = target === 'song' ? s.songs.find((x) => x.id === id) : s.projects.find((x) => x.id === id)
+  if (!t) return fail(s0, 'Introuvable.')
+  t.cover = cover
+  return ok(s)
+}
+
 export function assignSong(s0: GameState, projectId: string, songId: string): Result {
   const s = clone(s0)
   const p = s.projects.find((x) => x.id === projectId)
@@ -90,10 +99,10 @@ export function releaseProject(s0: GameState, projectId: string, plan?: { cityId
   const when = s.week + 1
   for (const x of toRelease) {
     const r: SongRelease = { week: when, strategy: 'regionale', cityIds, promo: Math.round(promo / toRelease.length), loc: [] }
-    x.release = r; x.stage = 'scheduled'; x.standby = false
+    x.release = r; x.stage = 'scheduled'; x.standby = false; x.exclusive = true; x.hype += 0.1
   }
   p.status = 'sorti'; p.releaseWeek = toRelease.length ? when : s.week
   for (const x of songs) x.hype += rule.hype
   s.reputation += p.kind === 'Album' ? 1 : 0.5
-  return ok(s, `${p.kind} « ${p.name} » ${toRelease.length ? `sortira en semaine ${when} avec ${toRelease.length} titre(s) en standby` : 'est sorti'} : +${Math.round(rule.hype * 100)} % de buzz.`)
+  return ok(s, `${p.kind} « ${p.name} » ${toRelease.length ? `sortira en semaine ${when} avec ${toRelease.length} inédit(s)` : 'est sorti'} : +${Math.round(rule.hype * 100)} % de buzz.`)
 }

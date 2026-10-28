@@ -118,3 +118,21 @@ export const newStop = (cityId: string, week: number, venueIndex = 1, price?: nu
   return { cityId, venue: v.name, kind: v.kind, capacity: v.capacity, week, price: price ?? suggestedPrice(cityId, v.kind) }
 }
 export type { Tour }
+
+/** Dernier concert joué (tournée, étape) : sert aux scènes et aux choix de fin de concert. */
+export function lastPlayed(g: GameState): { tour: Tour; stop: TourStop } | undefined {
+  let best: { tour: Tour; stop: TourStop } | undefined
+  for (const tour of g.tours) for (const stop of tour.stops) if (stop.sold !== undefined && (!best || stop.week >= best.stop.week)) best = { tour, stop }
+  return best
+}
+export type TourCare = 'repos' | 'prime'
+/** Choix de scène : repos pour l'artiste de la dernière tournée, ou prime d'encouragement. */
+export function careForTourArtist(s0: GameState, kind: TourCare): Result {
+  const s = clone(s0)
+  const t = [...s.tours].reverse().find((x) => x.status !== 'prepared') ?? s.tours[s.tours.length - 1]
+  const a = t && s.artists.find((x) => x.id === t.artistId)
+  if (!a) return fail(s0, 'Aucun artiste en tournée.')
+  if (kind === 'prime') { const e = spend(s, 2000, 'Prime de tournée'); if (e) return fail(s0, e); a.morale = clamp(a.morale + 10, 0, 100); a.fatigue = clamp(a.fatigue - 5, 0, 100); return ok(s, `${a.stageName} touche une prime de 2 000 $ : le moral remonte.`) }
+  a.fatigue = clamp(a.fatigue - 25, 0, 100); a.morale = clamp(a.morale + 4, 0, 100)
+  return ok(s, `${a.stageName} se repose : fatigue en baisse.`)
+}
