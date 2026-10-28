@@ -31,3 +31,13 @@
 }
 
 @keyframes kenburns{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.09) translate(-1.2%,-1%)}}
+
+/* Splashscreen */
+@keyframes drawArc{from{stroke-dashoffset:400}to{stroke-dashoffset:0}}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.9);opacity:.35}}
+@keyframes titleIn{0%{opacity:0;transform:translateY(46px) scale(.9);filter:blur(10px)}100%{opacity:1;transform:none;filter:blur(0)}}
+@keyframes sheen{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes spark{0%{opacity:0;transform:translateY(20px) scale(.5)}20%{opacity:.9}100%{opacity:0;transform:translateY(-520px) scale(1.1)}}
+@keyframes logoSpin{0%{opacity:0;transform:scale(.3) rotate(-25deg)}65%{transform:scale(1.12) rotate(4deg)}100%{opacity:1;transform:none}}
+.sp-title{background:linear-gradient(100deg,#F4F0FF 30%,#FF7DBB 45%,#35D3F0 55%,#F4F0FF 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 4.5s linear 1.6s infinite}
+@media (prefers-reduced-motion: reduce){.sp-title,.sp-spark{animation:none!important}}
