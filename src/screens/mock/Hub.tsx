@@ -73,6 +73,7 @@ export default function Hub() {
             <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Objectif de l'histoire</span><span className="sp" /><span className="tag te">{goal.title}</span></div>
             <div style={{fontSize: 14, marginTop: 8, lineHeight: 1.4}}>{goal.text}</div>
             <a href="Objectifs.dc.html" className="btn sm" style={{marginTop: 10}} onClick={(e) => { e.preventDefault(); go('Objectifs') }}>Objectifs · {(g.objectives ?? []).length} / {OBJECTIVES.length}</a>
+            <a href="Certifications.dc.html" className="btn s sm" style={{marginTop: 10, marginLeft: 8}} onClick={(e) => { e.preventDefault(); go('Certifications') }}>Certifications · {(g.certs ?? []).length}</a>
           </div>
           <div className="pn cut" style={{paddingBottom: 8}}>
             <div style={{display: 'flex', alignItems: 'center'}}><span className="h2">Cette semaine</span><span className="sp" /><span className="tag ti">{items.length} événement{items.length > 1 ? 's' : ''}</span></div>

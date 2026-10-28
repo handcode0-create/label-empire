@@ -1,4 +1,5 @@
 import { CITIES, cityById, palierFor } from '../data/world'
+import { checkCertifications } from './certifications'
 import { OBJECTIVES, applyBailout, applyDealLevy, checkObjectives } from './objectives'
 import { createRng } from './rng'
 import { STREAM_VALUE, rankInCity, royaltyShare, weeklyStreams } from './market'
@@ -132,6 +133,7 @@ export function advanceWeek(s0: GameState): GameState {
     if ((s.bailouts ?? 0) < 1) { applyBailout(s); notes.push({ tag: 'Meridian', text: 'Meridian Group rachète vos dettes : +$250 000, mais 30 % de vos recettes pendant 2 ans et −8 de réputation.', tone: 'r' }) }
     else if (s.negWeeks >= 6) s.outcome = 'defaite'
   }
+  checkCertifications(s, notes)
   for (const o of checkObjectives(s)) notes.push({ tag: 'Objectif', text: `Objectif accompli : ${o.title}${o.reward.cash ? ` (+$${o.reward.cash.toLocaleString('fr-FR')})` : ''}`, tone: 'g' })
   if (OBJECTIVES.every((o) => s.objectives.includes(o.id)) && !s.freeMode && !s.outcome) s.outcome = 'victoire'
   if (s.cash < 0) notes.push({ tag: 'Alerte', text: `Trésorerie négative depuis ${s.negWeeks} semaine(s)${(s.bailouts ?? 0) < 1 ? ' : à 4 semaines, Meridian proposera un sauvetage à vos dépens.' : ' : à 6 semaines, c’est la faillite.'}`, tone: 'r' })

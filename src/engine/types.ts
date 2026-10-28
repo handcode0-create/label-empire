@@ -172,6 +172,7 @@ export interface GameState {
   objectives: string[] // objectifs accomplis
   deal: { kind: 'offre' | 'sauvetage'; weeksLeft: number; levy: number } | null // accord avec Meridian Group
   bailouts: number
+  certs: { id: string; kind: 'titre' | 'projet'; level: 'or' | 'platine' | 'diamant'; week: number }[] // disques certifiés
   songs: Song[]
   projects: Project[]
   tours: Tour[]

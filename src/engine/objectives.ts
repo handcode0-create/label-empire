@@ -36,12 +36,15 @@ export const OBJECTIVES: Objective[] = [
 
   { id: 'trois-artistes', act: 3, title: 'Un roster', desc: 'Avez trois artistes sous contrat.', reward: { cash: 60_000 }, done: (g) => g.artists.filter((a) => !a.isFounder).length >= 3, progress: (g) => ratio(g.artists.filter((a) => !a.isFounder).length, 3) },
   { id: 'album', act: 3, title: 'Un album', desc: 'Publiez un album.', reward: { cash: 80_000 }, done: (g) => g.projects.some((p) => p.status === 'sorti' && p.kind === 'Album') },
+  { id: 'disque-or', act: 2, title: 'Disque d’or', desc: 'Obtenez la certification or sur un titre.', reward: { cash: 30_000 }, done: (g) => (g.certs ?? []).length >= 1 },
   { id: 'top3-pays', act: 3, title: 'Podium national', desc: 'Placez un titre dans le top 3 de votre pays.', reward: { cash: 100_000 }, done: (g) => { const r = bestRank(g, 'pays', g.label.hqCityId); return r !== null && r <= 3 } },
   { id: 'pays-8', act: 3, title: 'Huit villes conquises', desc: 'Atteignez 8 villes différentes.', reward: { cash: 120_000 }, done: (g) => g.stats.countriesReached.length >= 8, progress: (g) => ratio(g.stats.countriesReached.length, 8) },
   { id: 'rep-75', act: 3, title: 'Label continental', desc: 'Atteignez 75 de réputation.', reward: { cash: 200_000 }, done: (g) => g.reputation >= 75, progress: (g) => ratio(Math.floor(g.reputation), 75) },
   { id: 'fans-1m', act: 3, title: 'Un million de fans', desc: 'Rassemblez 1 000 000 de fans.', reward: { cash: 200_000 }, done: (g) => totalFans(g) >= 1_000_000, progress: (g) => ratio(Math.round(totalFans(g)), 1_000_000) },
   { id: 'revenus-10m', act: 3, title: 'Dix millions de recettes', desc: 'Cumulez 10 000 000 $ de recettes.', reward: { cash: 300_000 }, done: (g) => g.stats.totalRevenue >= 10_000_000, progress: (g) => ratio(Math.round(g.stats.totalRevenue), 10_000_000) },
 
+  { id: 'disque-platine', act: 3, title: 'Disque de platine', desc: 'Obtenez la certification platine.', reward: { cash: 100_000 }, done: (g) => (g.certs ?? []).some((c) => c.level !== 'or') },
+  { id: 'disque-diamant', act: 4, title: 'Disque de diamant', desc: 'Obtenez la certification diamant.', reward: { cash: 300_000 }, done: (g) => (g.certs ?? []).some((c) => c.level === 'diamant') },
   { id: 'continents-4', act: 4, title: 'Quatre continents', desc: 'Atteignez 4 continents.', reward: { cash: 300_000 }, done: (g) => continents(g) >= 4, progress: (g) => ratio(continents(g), 4) },
   { id: 'numero-un', act: 4, title: 'Numéro un mondial', desc: 'Placez un titre n°1 du classement mondial.', reward: { cash: 300_000 }, done: (g) => bestRank(g, 'monde', g.label.hqCityId) === 1 },
   { id: 'rep-100', act: 4, title: 'Label mondial', desc: 'Atteignez 100 de réputation : Meridian Group tombe.', reward: { cash: 1_000_000 }, done: (g) => g.reputation >= 100, progress: (g) => ratio(Math.floor(g.reputation), 100) },

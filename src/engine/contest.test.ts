@@ -24,3 +24,22 @@ describe('continuité des concours', () => {
     expect(g.contests[0].finalists.every((id) => g.pool.some((a) => a.id === id))).toBe(true)
   })
 })
+
+import { checkCertifications, levelFor } from './certifications'
+describe('certifications', () => {
+  it('niveaux selon les écoutes et prime versée une seule fois', () => {
+    expect(levelFor('titre', 2_999_999)).toBeNull()
+    expect(levelFor('titre', 3_000_000)).toBe('or')
+    expect(levelFor('titre', 30_000_000)).toBe('diamant')
+    const g = createGame(cfg)
+    g.songs.push({ id: 's1', title: 'Hit', artistId: g.artists[0].id, stage: 'released', stats: { streams: 11_000_000, weeks: 5, revenue: 0, lastByCity: {} } } as never)
+    const notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[] = []
+    const c0 = g.cash
+    checkCertifications(g, notes)
+    expect(g.certs[0].level).toBe('platine')
+    expect(g.cash).toBe(c0 + 20_000)
+    checkCertifications(g, notes)
+    expect(g.cash).toBe(c0 + 20_000)
+    expect(notes).toHaveLength(1)
+  })
+})
