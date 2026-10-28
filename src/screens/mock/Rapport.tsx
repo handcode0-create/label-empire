@@ -42,7 +42,7 @@ export default function Rapport() {
               <div style={{display: 'flex', gap: 10, alignItems: 'center'}}><span className="tag tr_">Événement</span><span className="lbl">{ev.cityId ? cityById(ev.cityId).name : 'Industrie'}</span></div>
               <div className="h2" style={{marginTop: 10, fontSize: 28}}>{ev.title}</div>
               <p className="mut" style={{margin: '8px 0 14px'}}>{ev.text}</p>
-              {ev.resolved ? <div className="tag tg">Décision prise : {ev.resolved}</div> : (
+              {ev.resolved ? <div><div className="tag tg">Décision prise : {ev.resolved}</div>{ev.outcome && <div className="mut" style={{marginTop: 10, fontSize: 14}}>{ev.outcome}</div>}</div> : (
                 <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
                   {ev.choices.map((c) => (
                     <div key={c.id} className="pn" role="button" tabIndex={0} onClick={() => run((s) => resolveEvent(s, c.id))} style={{padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer'}}><div style={{flex: 1}}><b>{c.label}</b><div className="mut" style={{fontSize: 13}}>{c.detail}</div></div><span className={'tag ' + (c.cost ? 'te' : 'tc')}>{c.cost ? usd(c.cost) : 'Gratuit'}</span></div>

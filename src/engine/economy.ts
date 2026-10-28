@@ -1,8 +1,8 @@
 import { wk } from '../lib'
 import { RECRUITS } from '../data/people'
 import { cityById } from '../data/world'
-import type { EventChoice, GameEvent, GameState, Result } from './types'
-import { clamp, clone, drawRng, fail, fansInCity, money, ok, spend, staffSkill, useAp } from './util'
+import type { GameState, Result } from './types'
+import { clamp, clone, fail, fansInCity, money, ok, spend, staffSkill, useAp } from './util'
 
 // ---------- équipe ----------
 export function hireStaff(s0: GameState, id: string): Result {
@@ -83,71 +83,6 @@ export function weeklyFixedCosts(s: GameState) {
   return { salaries, rent: Math.round(rent), overhead, loan: s.loan?.weekly ?? 0, total: salaries + Math.round(rent) + overhead + (s.loan?.weekly ?? 0) }
 }
 
-// ---------- événements ----------
-export function makeEvent(s: GameState): GameEvent | null {
-  const rng = drawRng(s)
-  if (!rng.chance(0.4)) return null
-  const id = `e-${s.week}`
-  const reached = s.stats.countriesReached.map(cityById).filter((c) => !['USD', 'EUR'].includes(c.currency))
-  const kinds: string[] = ['rival']
-  if (reached.length) kinds.push('fx')
-  if (s.artists.some((a) => !a.isFounder)) kinds.push('raise')
-  if (s.songs.some((x) => x.stage === 'released' && s.week - (x.release?.week ?? 0) < 4)) kinds.push('viral')
-  if (s.artists.length) kinds.push('gig')
-  const kind = rng.pick(kinds)
-  if (kind === 'fx') {
-    const c = rng.pick(reached)
-    return { id, kind, week: s.week, cityId: c.id, title: `La monnaie locale chute (${c.country})`, text: `Vos revenus en attente de ${c.name} perdent 9 % cette semaine. Un partenaire local peut couvrir une partie du risque de change.`, choices: [
-      { id: 'accept', label: 'Accepter la perte', detail: 'Certain : −9 % sur les revenus en attente', cost: 0 },
-      { id: 'hedge', label: 'Négocier avec un partenaire local', detail: 'Estimé : la perte tombe à 3 %', cost: 1500 }] }
-  }
-  if (kind === 'raise') {
-    const a = rng.pick(s.artists.filter((x) => !x.isFounder))
-    return { id, kind, week: s.week, title: `${a.stageName} demande une revalorisation`, text: `Le manager de ${a.stageName} réclame une prime. Son moral est en jeu.`, choices: [
-      { id: 'pay', label: 'Verser une prime', detail: 'Certain : moral +20', cost: 2500 },
-      { id: 'refuse', label: 'Refuser', detail: 'Risque : moral −15', cost: 0 }] }
-  }
-  if (kind === 'viral') {
-    const song = s.songs.filter((x) => x.stage === 'released').slice(-1)[0]
-    return { id, kind, week: s.week, title: `« ${song.title} » devient viral`, text: 'Un extrait explose sur les réseaux sociaux. Vous pouvez amplifier le mouvement.', choices: [
-      { id: 'push', label: 'Investir dans la promotion', detail: 'Estimé : écoutes +60 % pendant 2 semaines', cost: 3000 },
-      { id: 'wait', label: 'Laisser faire', detail: 'Estimé : écoutes +25 %', cost: 0 }] }
-  }
-  if (kind === 'gig') {
-    const a = rng.pick(s.artists)
-    const c = cityById(a.originCityId)
-    return { id, kind, week: s.week, cityId: c.id, title: `Invitation au ${c.festivals[0]}`, text: `${a.stageName} est invité à jouer à ${c.name}. Cachet à la clé, mais de la fatigue en plus.`, choices: [
-      { id: 'go', label: 'Accepter', detail: 'Estimé : +$4 000, +300 fans, fatigue +10', cost: 0 },
-      { id: 'no', label: 'Décliner', detail: 'Aucun effet', cost: 0 }] }
-  }
-  const c = rng.pick(['Paris', 'Lagos', 'Londres', 'Johannesburg'])
-  return { id, kind: 'rival', week: s.week, title: `Un rival sort un titre à ${c}`, text: `Un label concurrent sort un single à ${c} cette semaine. Surveillez vos classements.`, choices: [{ id: 'ok', label: 'Noté', detail: 'Information', cost: 0 }] }
-}
-
-export function resolveEvent(s0: GameState, choiceId: string): Result {
-  const s = clone(s0)
-  const ev = s.event
-  if (!ev || ev.resolved) return fail(s0, 'Aucun événement à traiter.')
-  const ch: EventChoice | undefined = ev.choices.find((c) => c.id === choiceId)
-  if (!ch) return fail(s0, 'Choix inconnu.')
-  if (ch.cost > 0) { const e = spend(s, ch.cost, ev.title); if (e) return fail(s0, e) }
-  const rng = drawRng(s)
-  if (ev.kind === 'fx') {
-    const loss = choiceId === 'hedge' ? 0.03 : 0.09
-    for (const p of s.pending) if (p.cityId === ev.cityId) p.amount = Math.round(p.amount * (1 - loss))
-  } else if (ev.kind === 'raise') {
-    const a = s.artists.find((x) => ev.title.startsWith(x.stageName))
-    if (a) a.morale = clamp(a.morale + (choiceId === 'pay' ? 20 : -15), 0, 100)
-  } else if (ev.kind === 'viral') {
-    for (const x of s.songs) if (x.stage === 'released') x.hype = Math.max(x.hype, choiceId === 'push' ? 0.6 : 0.25)
-  } else if (ev.kind === 'gig' && choiceId === 'go') {
-    const a = s.artists.find((x) => ev.title && x.originCityId === ev.cityId) ?? s.artists[0]
-    s.cash += 4000
-    a.fans[ev.cityId!] = (a.fans[ev.cityId!] ?? 0) + 300
-    a.fatigue = clamp(a.fatigue + 10, 0, 100)
-  }
-  void rng
-  ev.resolved = ch.label
-  return ok(s, ch.detail)
-}
+// ---------- événements : voir events.ts ----------
+export { makeEvent, resolveEvent } from './events'
 export { staffSkill }

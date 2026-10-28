@@ -38,12 +38,16 @@ export function agenda(s: GameState): AgendaItem[] {
 
 export function alerts(s: GameState): { tag: string; text: string; tone: 'r' | 'e' | 'i' }[] {
   const out: { tag: string; text: string; tone: 'r' | 'e' | 'i' }[] = []
+  if (s.meridian?.phase === 'offensive' && s.meridian.until >= s.week) out.push({ tag: 'Meridian', text: 'Offensive en cours : vos écoutes reculent dans la zone ciblée', tone: 'r' })
+  const heat = (s.rivalMoves ?? []).filter((m) => m.until >= s.week)
+  if (heat.length) out.push({ tag: 'Rival', text: `${heat.length} sortie(s) rivale(s) vous font de l'ombre`, tone: 'e' })
+  for (const a of s.artists) if (!a.isFounder && (a.loyalty ?? 60) < 35) out.push({ tag: 'Risque', text: `${a.stageName} pourrait partir (fidélité ${Math.round(a.loyalty ?? 0)})`, tone: 'r' })
   for (const a of s.artists) if (!a.isFounder && a.morale < 40) out.push({ tag: 'Risque', text: `Moral de ${a.stageName} à ${Math.round(a.morale)}`, tone: 'r' })
   if (s.cash < weeklyFixedCosts(s).total * 4) out.push({ tag: 'Risque', text: 'Trésorerie : moins de 4 semaines de charges', tone: 'r' })
   if (s.event) out.push({ tag: 'Info', text: s.event.title, tone: 'i' })
   if (!s.songs.length) out.push({ tag: 'Info', text: 'Écrivez votre premier titre dans Studio', tone: 'i' })
   if (!s.artists.length) out.push({ tag: 'Info', text: 'Signez un artiste via « Découvrir un artiste »', tone: 'i' })
-  return out.slice(0, 3)
+  return out.slice(0, 4)
 }
 
 /** Projection sur n semaines : on rejoue le moteur sans nouvelle action. */

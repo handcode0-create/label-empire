@@ -48,6 +48,7 @@ export function writeSong(s0: GameState, d: SongDraft): Result {
     if (!partner) return fail(s0, 'Partenaire du feat introuvable.')
     if (partner.id === d.artistId) return fail(s0, 'Un artiste ne peut pas faire un feat avec lui-même.')
     feat = makeFeat(partner, d.feat.kind === 'externe')
+    if (d.feat.kind === 'label') { const k = [d.artistId, partner.id].sort().join('|'); s.relations ??= {}; s.relations[k] = Math.min(100, (s.relations[k] ?? 0) + 6) }
   }
   if (d.writer === 'externe') { const e2 = spend(s, EXTERNAL_WRITER_COST, 'Auteur externe'); if (e2) return fail(s0, e2) }
   if (feat && feat.fee > 0) { const e3 = spend(s, feat.fee, `Feat avec ${feat.name}`); if (e3) return fail(s0, e3) }

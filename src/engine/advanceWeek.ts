@@ -9,6 +9,7 @@ import { STREAM_VALUE, rankInCity, royaltyShare, weeklyStreams } from './market'
 import { makeEvent, resolveEvent, weeklyFixedCosts } from './economy'
 import { rivalsAndRefresh, resolveContests } from './scouting'
 import { runTourStops } from './tour'
+import { worldTick } from './dynamics'
 import type { GameState, Report } from './types'
 import { clamp, clone, drawRng, money, totalFans } from './util'
 
@@ -93,6 +94,7 @@ export function advanceWeek(s0: GameState): GameState {
   receipts += runTourStops(s, notes)
   resolveContests(s, notes)
   rivalsAndRefresh(s, notes)
+  worldTick(s, notes)
 
   // 4. paiements reçus
   const due = s.pending.filter((p) => p.week <= W)

@@ -51,6 +51,8 @@ export interface Artist {
   contestId?: string
   exclusiveUntil?: number
   rivalInterest?: number
+  loyalty?: number // 0..100 : fidélité au label
+  departing?: boolean // quitte le label la semaine suivante
 }
 
 export interface SongRelease {
@@ -146,8 +148,27 @@ export interface Loan { principal: number; remaining: number; weekly: number; we
 
 export interface ChartRow { rank: number; title: string; artist: string; label: string; streams: number; delta: number | null; mine: boolean; artistId?: string; songId?: string; projectId?: string }
 
-export interface EventChoice { id: string; label: string; detail: string; cost: number }
-export interface GameEvent { id: string; kind: string; title: string; text: string; cityId?: string; choices: EventChoice[]; resolved?: string; week: number }
+/** Effets d'un choix d'événement (sérialisables). `roll` : issue incertaine. */
+export type Fx =
+  | { t: 'cash'; v: number } | { t: 'rep'; v: number }
+  | { t: 'morale'; a?: string; v: number } | { t: 'loyalty'; a?: string; v: number } | { t: 'fatigue'; a?: string; v: number }
+  | { t: 'fans'; a?: string; city?: string; v: number }
+  | { t: 'boost'; kind: 'hype' | 'streams' | 'city'; mult: number; weeks: number; songId?: string; cityId?: string; label: string }
+  | { t: 'trend'; genre: string; mult: number; weeks: number; kind: Trend['kind']; cause: string }
+  | { t: 'leave'; a: string } | { t: 'relation'; a: string; b: string; v: number }
+  | { t: 'rivalCut'; v: number } | { t: 'meridian'; phase: 'calme' | 'offensive'; weeks: number; region?: string }
+  | { t: 'fxCity'; city: string; v: number } | { t: 'release'; songId: string }
+  | { t: 'roll'; p: number; win: Fx[]; lose: Fx[]; winText?: string; loseText?: string }
+export interface EventChoice { id: string; label: string; detail: string; cost: number; fx?: Fx[] }
+export interface GameEvent { id: string; kind: string; title: string; text: string; cityId?: string; artistId?: string; songId?: string; tone?: 'g' | 'c' | 'e' | 'r' | 'i'; choices: EventChoice[]; resolved?: string; outcome?: string; week: number }
+
+/** Tendance de marché sur un genre (hausse, baisse ou effet viral). */
+export interface Trend { id: string; genre: string; mult: number; start: number; until: number; kind: 'hausse' | 'baisse' | 'viral'; cause: string }
+/** Coup de pouce ou frein temporaire (événements). */
+export interface Boost { id: string; kind: 'hype' | 'streams' | 'city'; mult: number; until: number; songId?: string; cityId?: string; label: string }
+/** Sortie d'un rival qui vous fait de l'ombre. */
+export interface RivalMove { id: string; week: number; until: number; label: string; artist: string; title: string; genre: string; cityIds: string[]; strength: number }
+export interface MeridianState { phase: 'calme' | 'offensive'; until: number; region?: string; since: number }
 
 export interface Report {
   week: number
@@ -179,6 +200,12 @@ export interface GameState {
   bailouts: number
   pitches: Pitch[] // démarchages de playlists
   awards: Award[] // palmarès des cérémonies
+  trends: Trend[] // tendances de genres en cours
+  boosts: Boost[] // effets temporaires d'événements
+  rivalMoves: RivalMove[] // sorties rivales actives
+  meridian: MeridianState // posture de Meridian Group
+  relations: Record<string, number> // relations entre artistes du label (-100..100)
+  eventSeen: Record<string, number> // dernière semaine de chaque type d'événement
   drafts: Draft[] // brouillons de chansons (reprise possible après plusieurs semaines)
   missions: Mission[] // missions à échéance
   news: NewsItem[] // fil d'actualités

@@ -75,6 +75,7 @@ export default function Hub() {
               <a href="Actualites.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Actualites') }}>Tout voir</a>
               <a href="Clips.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Clips') }}>Clips</a>
               <a href="Plateformes.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Plateformes') }}>Plateformes</a>
+              <a href="Tendances.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Tendances') }}>Marché</a>
             </div>
             {weekNews.length === 0 && <div className="mut" style={{fontSize: 13}}>Rien de neuf. Validez la semaine pour voir l’actualité arriver.</div>}
             {weekNews.map((n) => <div key={n.id} style={{display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13, lineHeight: '20px', whiteSpace: 'nowrap', overflow: 'hidden'}}><span className={'tag ' + (TONE[n.tone] ?? 'ti')} style={{flex: 'none'}}>{n.tag}</span><span style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>{n.text}</span></div>)}

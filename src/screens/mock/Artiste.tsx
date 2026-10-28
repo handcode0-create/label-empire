@@ -8,6 +8,7 @@ import { chartFor } from '../../engine/market'
 import { projectOf, projectSongs, projectStreams } from '../../engine/projects'
 import { rivalArtist, rivalOrigin, rivalTotalPlays } from '../../engine/rivals'
 import { sum } from '../../engine/util'
+import { egoOf, loyaltyOf, relKey } from '../../engine/dynamics'
 import { useGame } from '../../store/gameStore'
 import { compact, songName, usd, weekNo } from '../../lib'
 
@@ -100,6 +101,16 @@ export default function Artiste() {
                 <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 18px', marginTop: 10}}>
                   {gauges.map(([l, v, c]) => <div key={l}><div style={{display: 'flex', fontSize: 13}}><span>{l}</span><span className="sp" /><b>{Math.round(Math.min(100, v))}</b></div><div className="mt"><i style={{width: Math.max(2, Math.min(100, v)) + '%', background: c}} /></div></div>)}
                 </div>
+              </div>
+            )}
+            {mine && !mine.isFounder && (
+              <div className="pn">
+                <div className="lbl">Vie de l’artiste</div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 18px', marginTop: 10}}>
+                  {([['Fidélité au label', loyaltyOf(mine), loyaltyOf(mine) < 35 ? '#FF5470' : '#3DDC97'], ['Ego', egoOf(mine), '#FFC63D']] as const).map(([l, v, c]) => <div key={l}><div style={{display: 'flex', fontSize: 13}}><span>{l}</span><span className="sp" /><b>{Math.round(v)}</b></div><div className="mt"><i style={{width: Math.max(2, Math.min(100, v)) + '%', background: c}} /></div></div>)}
+                </div>
+                <div className="mut" style={{fontSize: 12, marginTop: 8}}>{loyaltyOf(mine) < 35 ? 'Risque élevé de départ : les rivaux le courtisent.' : loyaltyOf(mine) < 55 ? 'Fidélité fragile : soignez son moral et ses sorties.' : 'Relation solide avec le label.'}</div>
+                {g.artists.filter((o) => o.id !== mine.id).map((o) => { const r = g.relations?.[relKey(mine.id, o.id)] ?? 0; return <div key={o.id} className="row" style={{gridTemplateColumns: '1fr auto'}}><span>Relation avec {o.stageName}</span><span className={'tag ' + (r > 10 ? 'tg' : r < -10 ? 'tr_' : 'ti')}>{r > 10 ? 'Complices' : r < -10 ? 'Tendue' : 'Neutre'}</span></div> })}
               </div>
             )}
             {mine && (

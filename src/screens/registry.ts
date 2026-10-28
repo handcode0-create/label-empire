@@ -20,6 +20,7 @@ import Certifications from './mock/Certifications'
 import Objectifs from './mock/Objectifs'
 import Clips from './mock/Clips'
 import Plateformes from './mock/Plateformes'
+import Tendances from './mock/Tendances'
 import Catalogue from './mock/Catalogue'
 import Actualites from './mock/Actualites'
 import Pays from './mock/Pays'
@@ -36,6 +37,7 @@ export const SCREENS: Record<string, () => React.JSX.Element> = {
   Objectifs,
   Clips,
   Plateformes,
+  Tendances,
   Catalogue,
   Actualites,
   Certifications,

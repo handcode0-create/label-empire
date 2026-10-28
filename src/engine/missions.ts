@@ -99,7 +99,7 @@ export function updateNews(s: GameState, notes: Notes) {
   s.news ??= []
   const rng = drawRng(s)
   const add = (tag: string, text: string, tone: NewsItem['tone']) => s.news.unshift({ id: `n-${s.week}-${s.news.length}-${rng.int(0, 9999)}`, week: s.week, tag, text, tone })
-  const mine = new Set(['Sortie', 'Classement', 'Certification', 'Objectif', 'Palier', 'Concours', 'Mission', 'Meridian', 'Clip', 'Plateforme', 'Bureau', 'Tournée', 'Contrat'])
+  const mine = new Set(['Sortie', 'Classement', 'Certification', 'Objectif', 'Palier', 'Concours', 'Mission', 'Meridian', 'Clip', 'Plateforme', 'Bureau', 'Tournée', 'Contrat', 'Tendance', 'Rival', 'Artiste', 'Événement'])
   for (const n of notes) if (mine.has(n.tag)) add(n.tag, n.text, n.tone)
   const rows = chartFor(s, 'monde', s.label.hqCityId).filter((r) => !r.mine).slice(0, 8)
   if (rows.length) {

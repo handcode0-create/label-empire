@@ -1,6 +1,7 @@
 import { mediaById, mediaReaches } from '../data/media'
 import { CITIES, affinity, cityById, type City } from '../data/world'
 import { songName } from '../lib'
+import { boostMult, pressureMult, trendMult } from './dynamics'
 import { projectSongs } from './projects'
 import { createRng, hash } from './rng'
 import { rivalArtist, rivalWorld } from './rivals'
@@ -50,7 +51,8 @@ export function weeklyStreams(s: GameState, song: Song, city: City, week: number
   const promoF = Math.min(0.8, r.promo / r.cityIds.length / (city.base * 0.004)) + staffSkill(s, 'marketing') * 0.02
   const M = promoF + locBoost(song, city) + officeBoost(s, city) + mediaBoost(song, city)
   const direct = r.cityIds.includes(city.id)
-  const base = city.base * 0.25 * q * q * affinity(song.genre, city) * (1 + M) * (1 + fanF) * decay * (1 + song.hype)
+  const dyn = trendMult(s, song.genre, week) * boostMult(s, song, city.id, week) * pressureMult(s, song, city.id, week)
+  const base = city.base * 0.25 * q * q * affinity(song.genre, city) * (1 + M) * (1 + fanF) * decay * (1 + song.hype) * dyn
   if (direct) return base
   // diffusion : zone, langue
   let diffusion = 0
@@ -59,7 +61,7 @@ export function weeklyStreams(s: GameState, song: Song, city: City, week: number
     const k = src.region === city.region ? 0.08 : src.lang === city.lang ? 0.04 : 0
     if (k) diffusion += k * city.base * 0.25 * q * q * affinity(song.genre, city) * decay
   }
-  return diffusion
+  return diffusion * trendMult(s, song.genre, week) * pressureMult(s, song, city.id, week)
 }
 
 export const royaltyShare = (s: GameState, song: Song) => (s.artists.find((a) => a.id === song.artistId)?.contract?.royalty ?? 0) + (song.feat?.share ?? 0)
