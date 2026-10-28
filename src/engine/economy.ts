@@ -2,7 +2,7 @@ import { wk } from '../lib'
 import { RECRUITS } from '../data/people'
 import { cityById } from '../data/world'
 import type { GameState, Result } from './types'
-import { clamp, clone, fail, fansInCity, money, ok, spend, staffSkill, useAp } from './util'
+import { clamp, clone, fail, modsOf, fansInCity, money, ok, spend, staffSkill, useAp } from './util'
 
 // ---------- équipe ----------
 export function hireStaff(s0: GameState, id: string): Result {
@@ -80,7 +80,9 @@ export function weeklyFixedCosts(s: GameState) {
   const salaries = s.staff.reduce((t, m) => t + m.salary, 0)
   const rent = s.offices.filter((o) => o.since <= s.week).reduce((t, o) => t + (o.kind === 'partenaire' ? 0 : cityById(o.cityId).rent / 4.33), 0)
   const overhead = Math.round(s.reputation * 30) // frais de structure : un label plus gros coûte plus cher
-  return { salaries, rent: Math.round(rent), overhead, loan: s.loan?.weekly ?? 0, total: salaries + Math.round(rent) + overhead + (s.loan?.weekly ?? 0) }
+  const k = modsOf(s).costs
+  const sal = Math.round(salaries * k), rt = Math.round(rent * k), ov = Math.round(overhead * k)
+  return { salaries: sal, rent: rt, overhead: ov, loan: s.loan?.weekly ?? 0, total: sal + rt + ov + (s.loan?.weekly ?? 0) }
 }
 
 // ---------- événements : voir events.ts ----------

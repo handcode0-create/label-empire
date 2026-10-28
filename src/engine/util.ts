@@ -7,6 +7,13 @@ export function drawRng(s: GameState): Rng {
   s.rngState = (Math.imul(s.rngState, 1664525) + 1013904223) >>> 0
   return rng
 }
+/** Réglages de difficulté : écoutes, charges fixes et pression des rivaux. */
+export const DIFFICULTY_MODS = {
+  facile: { streams: 1.15, costs: 0.85, pressure: 0.75 },
+  normal: { streams: 1, costs: 1, pressure: 1 },
+  difficile: { streams: 0.82, costs: 1.2, pressure: 1.3 },
+} as const
+export const modsOf = (s: GameState) => DIFFICULTY_MODS[s.label?.difficulty ?? 'normal'] ?? DIFFICULTY_MODS.normal
 export const clone = (s: GameState): GameState => structuredClone(s)
 export const fail = (s: GameState, error: string): Result => ({ state: s, error })
 export const ok = (s: GameState, info?: string): Result => ({ state: s, info })

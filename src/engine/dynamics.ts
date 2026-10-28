@@ -2,7 +2,7 @@ import { CITIES, GENRES, cityById } from '../data/world'
 import { weekNo } from '../lib'
 import { rivalWorld } from './rivals'
 import type { Artist, Boost, GameState, Song, Trend } from './types'
-import { clamp, drawRng } from './util'
+import { clamp, drawRng, modsOf } from './util'
 
 type Notes = { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]
 
@@ -95,7 +95,7 @@ export function pressureMult(s: GameState, song: Song, cityId: string, week: num
     const c = cityById(cityId)
     if (!mer.region || mer.region === c.region) loss += 0.1
   }
-  return 1 - Math.min(0.4, loss)
+  return 1 - Math.min(0.4, loss * modsOf(s).pressure)
 }
 
 /* ───────────── Meridian ───────────── */
