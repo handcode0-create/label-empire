@@ -80,7 +80,7 @@ export default function Hub() {
             {weekNews.map((n) => <div key={n.id} style={{display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13, lineHeight: '20px', whiteSpace: 'nowrap', overflow: 'hidden'}}><span className={'tag ' + (TONE[n.tone] ?? 'ti')} style={{flex: 'none'}}>{n.tag}</span><span style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>{n.text}</span></div>)}
           </div>
         </div>
-        <div style={{width: 376, display: 'flex', flexDirection: 'column', gap: 14}}>
+        <div style={{width: 376, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto', maxHeight: 'calc(var(--sh, 900px) - 128px)', paddingBottom: 4}}>
           <div className="pn sel" title={STORY_GOAL}>
             <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Objectif de l'histoire</span><span className="sp" /><span className="tag te">{goal.title}</span></div>
             <div style={{fontSize: 14, marginTop: 8, lineHeight: 1.4}}>{goal.text}</div>
@@ -117,7 +117,7 @@ export default function Hub() {
             </div>
           </div>
           <div className="sp" />
-          <a href="Rapport.dc.html" className="btn" style={{height: 64, fontSize: 24}} onClick={guard(() => { nextWeek(); if (useGame.getState().game?.outcome) { go('Fin'); return false } })}>Valider la semaine</a>
+          <a href="Rapport.dc.html" className="btn" style={{height: 64, fontSize: 24, position: 'sticky', bottom: 0, flex: 'none', boxShadow: '0 -14px 18px 6px #0C0719'}} onClick={guard(() => { nextWeek(); if (useGame.getState().game?.outcome) { go('Fin'); return false } })}>Valider la semaine</a>
         </div>
       </div>
     </div>
