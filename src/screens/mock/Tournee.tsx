@@ -18,10 +18,11 @@ export default function Tournee() {
   const [name, setName] = useState(`Tournée ${g.label.name.split(' ')[0]}`)
   const [stops, setStops] = useState<TourStop[]>(() => (sel.cityId ? [newStop(sel.cityId, g.week + 2)] : []))
   const [partners, setPartners] = useState<string[]>([])
+  const [picker, setPicker] = useState(false)
+  const [openVenue, setOpenVenue] = useState<number | null>(null)
   const unlocked = CITIES.filter((c) => c.minRep <= g.reputation)
   const patch = (i: number, p: Partial<TourStop>) => setStops(stops.map((s, j) => (j === i ? { ...s, ...p } : s)))
   const addStop = (cityId: string) => { if (!cityId) return; const lastW = stops.length ? stops[stops.length - 1].week : g.week + 1; setStops([...stops, newStop(cityId, lastW + 1)]) }
-  const cycleVenue = (i: number) => { const s = stops[i]; const vs = venuesFor(cityById(s.cityId)); const k = (vs.findIndex((v) => v.name === s.venue) + 1) % vs.length; patch(i, { venue: vs[k].name, capacity: vs[k].capacity }) }
   const togglePartner = (id: string, minRep: number) => {
     if (partners.includes(id)) return setPartners(partners.filter((p) => p !== id))
     if (g.reputation < minRep) return say(`Ce partenaire exige une réputation de ${minRep}.`, 'err')
@@ -39,26 +40,41 @@ export default function Tournee() {
       <Hud />
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 700, display: 'flex', flexDirection: 'column', gap: 10}}>
-          <div style={{display: 'flex', alignItems: 'center', gap: 12}}><h1 className="h1" style={{fontSize: 36}}>Nouvelle tournée</h1><span className="sp" /><span className="tag tg" style={link} onClick={() => setArtistId(g.artists[(g.artists.findIndex((a) => a.id === artistId) + 1) % g.artists.length].id)}>Artiste : {artist.stageName}{g.artists.length > 1 ? ' ⇄' : ''}</span></div>
+          <div style={{display: 'flex', alignItems: 'center', gap: 12}}><h1 className="h1" style={{fontSize: 36}}>Nouvelle tournée</h1><span className="sp" />{g.artists.map((x) => <span key={x.id} className={'chip' + (x.id === artistId ? ' on' : '')} role="button" onClick={() => setArtistId(x.id)}>{x.stageName}</span>)}</div>
           <div className="pn cut" style={{padding: '14px 18px'}}><label htmlFor="tn" className="lbl">Nom de la tournée</label><input id="tn" className="in" style={{marginTop: 8, fontSize: 20, fontWeight: 700}} value={name} onChange={(e) => setName(e.target.value)} /></div>
           <div className="map" style={{height: 190, position: 'relative'}}>
             <div className="mk g" style={{left: cityById(artist.originCityId).x + '%', top: cityById(artist.originCityId).y + '%'}} />
-            {stops.map((s, i) => { const c = cityById(s.cityId); return <div key={i}><div className="mk c" style={{left: c.x + '%', top: c.y + '%'}} /><div className="mn" style={{left: c.x + '%', top: c.y + '%'}}>{c.name}</div></div> })}
+            {unlocked.map((c) => { const n = stops.findIndex((x) => x.cityId === c.id); return (
+              <div key={c.id}>
+                <div className={'mk' + (n >= 0 ? ' c' : ' d')} role="button" tabIndex={0} aria-label={(n >= 0 ? 'Retirer ' : 'Ajouter ') + c.name} title={c.name} onClick={() => (n >= 0 ? setStops(stops.filter((_, j) => j !== n)) : addStop(c.id))} style={{left: c.x + '%', top: c.y + '%', cursor: 'pointer', opacity: n >= 0 ? 1 : 0.7}} />
+                {n >= 0 && <div className="mn" style={{left: c.x + '%', top: c.y + '%', pointerEvents: 'none'}}>{n + 1}. {c.name}</div>}
+              </div>) })}
           </div>
           <div style={{display: 'flex', alignItems: 'center', gap: 10}}><span className="lbl">Étapes et prix des billets</span><span className="sp" />
-            <select aria-label="Ajouter une étape" value="" onChange={(e) => addStop(e.target.value)} style={{height: 36, padding: '0 14px', borderRadius: 18, fontWeight: 700, fontSize: 14, color: '#FF7DBB', boxShadow: 'inset 0 0 0 2px var(--mag)', background: 'transparent', border: 0, cursor: 'pointer'}}>
-              <option value="">+ Ajouter une étape</option>
-              {unlocked.map((c) => <option key={c.id} value={c.id}>{c.name}, {c.country}</option>)}
-            </select></div>
+            <button type="button" className={'chip' + (picker ? ' on' : '')} onClick={() => setPicker(!picker)}>{picker ? 'Fermer' : '+ Ajouter une étape'}</button></div>
+          {picker && (
+            <div className="pn" style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, padding: 12, maxHeight: 220, overflow: 'auto'}}>
+              {unlocked.map((c) => { const n = stops.filter((x) => x.cityId === c.id).length; const fans = artist.fans[c.id] ?? 0; return (
+                <div key={c.id} className={'pn' + (n ? ' sel' : '')} role="button" tabIndex={0} onClick={() => addStop(c.id)} style={{padding: '8px 10px', cursor: 'pointer'}}>
+                  <b style={{fontSize: 14}}>{c.name}</b>{n > 0 && <span className="tag tg" style={{marginLeft: 6}}>×{n}</span>}
+                  <div className="mut" style={{fontSize: 11}}>{c.country} · {fans > 0 ? `${Math.round(fans / 1000)} k fans` : 'aucun fan'}{c.visa ? ' · visa' : ''}</div>
+                </div>) })}
+            </div>
+          )}
           <div style={{display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 330, overflow: 'auto'}}>
             {stops.length === 0 && <div className="pn mut">Aucune étape. Ajoutez une ville : la capacité de la salle et le prix du billet déterminent le remplissage.</div>}
             {stops.map((s, i) => { const c = cityById(s.cityId); const f = fills[i]?.f ?? 0; return (
               <div key={i} className={'pn' + (i === 1 ? ' sel' : '')} style={{display: 'grid', gridTemplateColumns: '28px 1fr 100px 130px 64px', gap: 12, alignItems: 'center', padding: '10px 16px'}}>
                 <b className="disp" style={{fontSize: 22, color: '#FF7DBB'}}>{i + 1}</b>
-                <div><b>{c.name}, {c.country}</b><div className="mut" style={{fontSize: 13}}><span style={link} onClick={() => cycleVenue(i)} title="Changer de salle">{s.venue} · {s.capacity.toLocaleString('fr-FR')} places ⇄</span> · <span style={{...link, color: '#FF7DBB'}} onClick={() => setStops(stops.filter((_, j) => j !== i))}>retirer</span></div></div>
+                <div><b>{c.name}, {c.country}</b><div className="mut" style={{fontSize: 13}}><span style={link} onClick={() => setOpenVenue(openVenue === i ? null : i)} title="Choisir la salle">{s.venue} · {s.capacity.toLocaleString('fr-FR')} places ▾</span> · <span style={{...link, color: '#FF7DBB'}} onClick={() => setStops(stops.filter((_, j) => j !== i))}>retirer</span></div></div>
                 <span className="tag ti"><span style={link} onClick={() => patch(i, { week: Math.max(g.week + 1, s.week - 1) })}>‹</span>&nbsp;Sem. {(s.week - 1) % 52 + 1}&nbsp;<span style={link} onClick={() => patch(i, { week: s.week + 1 })}>›</span></span>
                 <div style={{display: 'flex', alignItems: 'center', gap: 6}}><a href="Tournee.dc.html" className="chip" style={{height: 28, padding: '0 10px'}} onClick={(e) => { e.preventDefault(); patch(i, { price: Math.max(1, s.price - 1) }) }}>−</a><b style={{minWidth: 40, textAlign: 'center', fontSize: 17}}>${s.price}</b><a href="Tournee.dc.html" className="chip on" style={{height: 28, padding: '0 10px'}} onClick={(e) => { e.preventDefault(); patch(i, { price: s.price + 1 }) }}>+</a></div>
                 <b className={f >= 0.7 ? 'up' : f >= 0.45 ? '' : 'dn'}>{Math.round(f * 100)} %</b>
+                {openVenue === i && (
+                  <div style={{gridColumn: '1 / -1', display: 'flex', gap: 8, flexWrap: 'wrap'}}>
+                    {venuesFor(c).map((v) => <span key={v.name} className={'chip' + (v.name === s.venue ? ' on' : '')} role="button" onClick={() => { patch(i, { venue: v.name, capacity: v.capacity }); setOpenVenue(null) }}>{v.name} · {v.capacity.toLocaleString('fr-FR')}</span>)}
+                  </div>
+                )}
               </div>) })}
           </div>
         </div>
