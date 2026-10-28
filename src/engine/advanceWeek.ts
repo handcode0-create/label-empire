@@ -1,3 +1,4 @@
+const FAN_RATE = 0.014
 import { CITIES, cityById, palierFor } from '../data/world'
 import { updateClips } from './clips'
 import { runAwards } from './awards'
@@ -71,7 +72,7 @@ export function advanceWeek(s0: GameState): GameState {
       song.stats.revenue += gross
       byContinent[c.continent] = (byContinent[c.continent] ?? 0) + gross
       if (artist) {
-        const nf = Math.round(st * 0.02 * (0.7 + artist.skills.charisme / 150))
+        const nf = Math.round(st * FAN_RATE * (0.7 + artist.skills.charisme / 150))
         artist.fans[c.id] = (artist.fans[c.id] ?? 0) + nf
         song.stats.fans += nf
       }
@@ -133,6 +134,13 @@ export function advanceWeek(s0: GameState): GameState {
   for (const m of s.staff) m.morale = clamp(m.morale + r2.int(-3, 2), 0, 100)
   for (const o of s.offices) if (o.since === W) notes.push({ tag: 'Bureau', text: `Le bureau de ${cityById(o.cityId).name} est opérationnel.`, tone: 'c' })
   if (!s.songs.some((x) => x.release && W - x.release.week < 12)) s.reputation = Math.max(0, s.reputation - 0.15)
+  // érosion des fans : sans sortie récente, le public se disperse (plus vite si l'artiste est inactif depuis longtemps)
+  for (const a of s.artists) {
+    const last = Math.max(-99, ...s.songs.filter((x) => x.artistId === a.id && x.release && x.release.week <= W).map((x) => x.release!.week))
+    const idle = W - last
+    const churn = idle < 6 ? 0.001 : idle < 12 ? 0.006 : 0.015
+    for (const k of Object.keys(a.fans)) a.fans[k] = Math.floor(a.fans[k] * (1 - churn))
+  }
   receipts = applyDealLevy(s, receipts, (t) => notes.push({ tag: 'Meridian', text: t, tone: 'r' }))
   s.stats.totalRevenue += receipts
 
