@@ -78,9 +78,10 @@ export default function App() {
   const extraX = vw - W * scale, extraY = vh - H * scale
   const fade = 'linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent)'
   const fadeY = 'linear-gradient(180deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)'
-  const mask = [extraX > 2 ? fade : null, extraY > 2 ? fadeY : null].filter(Boolean).join(',')
+  const dockless = ['Main', 'Menu', 'NouvellePartie', 'NouvellePartie2', 'Fin', 'Battle', 'Rapport'].includes(missing ? 'Menu' : screen)
+  const mask = dockless ? [extraX > 2 ? fade : null, extraY > 2 ? fadeY : null].filter(Boolean).join(',') : ''
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', display: 'grid', placeItems: 'center', position: 'relative', background: 'radial-gradient(900px 600px at 82% -8%,rgba(139,92,246,.30),transparent 60%),radial-gradient(700px 520px at 0% 100%,rgba(255,61,154,.15),transparent 60%),#0C0719' }}>
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', display: 'grid', placeItems: 'center', position: 'relative', background: 'radial-gradient(900px 600px at 82% -8%,rgba(139,92,246,.30),transparent 60%),radial-gradient(700px 520px at 0% 100%,rgba(255,61,154,.15),transparent 60%),#120B24' }}>
       <div ref={ref} onClick={onClick} style={{ width: W * scale, height: H * scale, WebkitMaskImage: mask || undefined, maskImage: mask || undefined, WebkitMaskComposite: 'source-in', maskComposite: 'intersect' }}>
         <div style={{ position: 'relative', width: W, height: H, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
           <Screen />
