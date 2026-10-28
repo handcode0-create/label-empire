@@ -36,6 +36,8 @@ export function regionOfCity(cityId: string): AvatarRegion {
 /** Clé de portrait, ex. « afrique-ouest-f2 » : région, genre déduit du prénom, variante choisie selon l'identifiant. */
 export function avatarKey(a: { id: string; stageName: string; realName?: string; originCityId: string }): string {
   const g = genderOf(a.realName ?? a.stageName)
-  return `${regionOfCity(a.originCityId)}-${g}${1 + (hash(a.id) % 2)}`
+  // Les portraits d'Afrique de l'Ouest servent pour tout le continent africain.
+  const r = regionOfCity(a.originCityId)
+  return `${r.startsWith('afrique') ? 'afrique-ouest' : r}-${g}${1 + (hash(a.id) % 2)}`
 }
 export const ALL_AVATAR_KEYS = AVATAR_REGIONS.flatMap((r) => ['f1', 'f2', 'm1', 'm2'].map((v) => `${r.id}-${v}`))
