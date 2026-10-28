@@ -45,10 +45,10 @@ export function useAp(s: GameState, n = 1): string | null {
 
 /** Places d'artistes sous contrat : 3 au départ, +1 par bureau ou partenaire, +1 par palier atteint. */
 /** Réputation : les gains sont freinés (échelle globale) et de plus en plus difficiles à mesure qu'on monte. */
-export const REP_SCALE = 0.55
+export const REP_SCALE = 0.85
 export function addRep(s: { reputation: number }, v: number) {
   if (v <= 0) { s.reputation = Math.max(0, s.reputation + v); return }
-  const f = REP_SCALE * Math.max(0.2, 1 - s.reputation / 135)
+  const f = REP_SCALE * Math.max(0.35, 1 - s.reputation / 200)
   s.reputation = Math.min(100, s.reputation + v * f)
 }
 export const artistSlots = (s: GameState) => 3 + s.offices.length - 1 + Math.floor(s.reputation / 25)
