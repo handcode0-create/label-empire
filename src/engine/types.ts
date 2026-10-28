@@ -92,6 +92,7 @@ export interface Song {
   mastering: boolean
   mixQ?: number
   quality?: number
+  clip?: Clip // clip vidéo
   standby?: boolean // titre mixé mis en réserve (pour un EP / album)
   stage: 'written' | 'recorded' | 'mixed' | 'scheduled' | 'released'
   readyWeek: number
@@ -173,6 +174,7 @@ export interface GameState {
   objectives: string[] // objectifs accomplis
   deal: { kind: 'offre' | 'sauvetage'; weeksLeft: number; levy: number } | null // accord avec Meridian Group
   bailouts: number
+  pitches: Pitch[] // démarchages de playlists
   awards: Award[] // palmarès des cérémonies
   missions: Mission[] // missions à échéance
   news: NewsItem[] // fil d'actualités
@@ -209,3 +211,6 @@ export interface Mission {
 export interface NewsItem { id: string; week: number; tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }
 
 export interface Award { year: number; week: number; category: 'titre' | 'artiste'; winner: string; artistId?: string; mine: boolean; nominated: boolean }
+
+export interface Clip { tier: 'lofi' | 'standard' | 'cine'; cost: number; quality: number; startWeek: number; readyWeek: number; status: 'tournage' | 'sorti'; views: number; revenue: number }
+export interface Pitch { songId: string; platformId: string; week: number; accepted: boolean }

@@ -4,7 +4,7 @@ import { missionProgress } from '../../engine/missions'
 import { useGame } from '../../store/gameStore'
 import { usd } from '../../lib'
 
-const TONE: Record<string, string> = { g: 'tg', c: 'tc', e: 'te', r: 'tr', i: 'ti' }
+const TONE: Record<string, string> = { g: 'tg', c: 'tc', e: 'te', r: 'tr_', i: 'ti' }
 
 export default function Actualites() {
   const g = useGame((s) => s.game)!
@@ -29,10 +29,10 @@ export default function Actualites() {
             const pct = m.kind === 'rank' ? (p.done ? 100 : 0) : Math.min(100, Math.round((p.now / p.goal) * 100))
             return (
               <div key={m.id} className="pn cut">
-                <div style={{display: 'flex', alignItems: 'center'}}><b>{m.title}</b><span className="sp" /><span className={'tag ' + (left <= 2 ? 'tr' : 'te')}>{left} sem. restante{left > 1 ? 's' : ''}</span></div>
+                <div style={{display: 'flex', alignItems: 'center'}}><b>{m.title}</b><span className="sp" /><span className={'tag ' + (left <= 2 ? 'tr_' : 'te')}>{left} sem. restante{left > 1 ? 's' : ''}</span></div>
                 <div className="mut" style={{fontSize: 13, marginTop: 4}}>{m.desc}</div>
                 <div className="mt" style={{marginTop: 10}}><i style={{width: pct + '%'}} /></div>
-                <div style={{display: 'flex', marginTop: 8, fontSize: 13}}><span className="mut">{p.label}</span><span className="sp" /><span className="tag tg">+{usd(m.reward.cash)}</span><span className="tag tr" style={{marginLeft: 6}}>−{m.penalty} rép.</span></div>
+                <div style={{display: 'flex', marginTop: 8, fontSize: 13}}><span className="mut">{p.label}</span><span className="sp" /><span className="tag tg">+{usd(m.reward.cash)}</span><span className="tag tr_" style={{marginLeft: 6}}>−{m.penalty} rép.</span></div>
               </div>
             )
           })}

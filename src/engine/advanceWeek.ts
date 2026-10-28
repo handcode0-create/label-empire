@@ -1,4 +1,5 @@
 import { CITIES, cityById, palierFor } from '../data/world'
+import { updateClips } from './clips'
 import { runAwards } from './awards'
 import { updateMissions, updateNews } from './missions'
 import { checkCertifications } from './certifications'
@@ -42,6 +43,7 @@ export function advanceWeek(s0: GameState): GameState {
   const rng = drawRng(s)
   let streams = 0
   let receipts = 0
+  const weekStreams: Record<string, number> = {}
   const byContinent: Record<string, number> = {}
   let repGain = 0
   for (const song of s.songs) {
@@ -80,10 +82,12 @@ export function advanceWeek(s0: GameState): GameState {
       weekRk = Math.min(weekRk, rank)
     }
     if (counted) song.stats.weeks++
+    weekStreams[song.id] = weekSt
     song.stats.hist = [...(song.stats.hist ?? []), { w: W, st: weekSt, rk: weekRk }].slice(-52)
     song.hype = song.hype < 0.05 ? 0 : song.hype * 0.55
   }
   s.reputation += Math.min(0.5, repGain)
+  receipts += updateClips(s, W, weekStreams, notes)
 
   // 3. tournées, concours, rivaux
   receipts += runTourStops(s, notes)

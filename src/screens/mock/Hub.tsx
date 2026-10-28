@@ -21,6 +21,9 @@ export default function Hub() {
   const maxCont = Math.max(1, ...Object.values(conts))
   const items = agenda(g)
   const al = alerts(g)
+  const newsAll = g.news ?? []
+  const lastWeek = newsAll.length ? newsAll[0].week : 0
+  const weekNews = newsAll.filter((n) => n.week === lastWeek).sort((a, b) => (a.tag === 'Industrie' ? 1 : 0) - (b.tag === 'Industrie' ? 1 : 0)).slice(0, 3)
   const last = proj[proj.length - 1]
   const delta = g.cash > 0 ? Math.round(((last.cash - g.cash) / g.cash) * 100) : 0
   const pts = [g.cash, ...proj.map((p) => p.cash)]
@@ -66,7 +69,16 @@ export default function Hub() {
               <div key={c}><div className="lbl">{c === 'Amérique du Nord' ? 'Amér. Nord' : c === 'Amérique latine' ? 'Amér. latine' : c}</div><div className="disp" style={{fontSize: 22}}>{compact(conts[c] ?? 0)}</div><div className="mt" style={{marginTop: 6}}><i style={{width: Math.round(((conts[c] ?? 0) / maxCont) * 100) + '%'}} /></div></div>
             ))}
           </div>
-          <div style={{position: 'absolute', left: 20, right: 20, bottom: 56, fontSize: 13, color: '#9C90CC'}}>Fans du label par continent. Cliquez un continent pour filtrer, puis une ville pour ouvrir sa fiche.</div>
+          <div style={{position: 'absolute', left: 20, right: 20, bottom: 48, top: 626}} title="Cliquez un continent pour filtrer, puis une ville pour ouvrir sa fiche.">
+            <div style={{display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6}}>
+              <span className="lbl">Actualités de la semaine</span><span className="sp" />
+              <a href="Actualites.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Actualites') }}>Tout voir</a>
+              <a href="Clips.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Clips') }}>Clips</a>
+              <a href="Plateformes.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Plateformes') }}>Plateformes</a>
+            </div>
+            {weekNews.length === 0 && <div className="mut" style={{fontSize: 13}}>Rien de neuf. Validez la semaine pour voir l’actualité arriver.</div>}
+            {weekNews.map((n) => <div key={n.id} style={{display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13, lineHeight: '20px', whiteSpace: 'nowrap', overflow: 'hidden'}}><span className={'tag ' + (TONE[n.tone] ?? 'ti')} style={{flex: 'none'}}>{n.tag}</span><span style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>{n.text}</span></div>)}
+          </div>
         </div>
         <div style={{width: 376, display: 'flex', flexDirection: 'column', gap: 14}}>
           <div className="pn sel" title={STORY_GOAL}>

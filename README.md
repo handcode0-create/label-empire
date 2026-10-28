@@ -58,3 +58,5 @@ Missions à échéance (classement, sorties, fans, recettes, écoutes) : récomp
 Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inactif). Cérémonie annuelle (semaine 52) : titre et artiste de l'année ; si le vainqueur est de votre label : +$60 000 et +2 de réputation ; palmarès dans Actualités.
 
 **Standby et catalogue** : un titre mixé peut être mis en standby (Sortie ou Catalogue) pour rejoindre un EP/album ; les titres en standby d'un projet sortent avec lui (semaine suivante). L'onglet Sorties ouvre le Catalogue : projets, singles et standby par artiste.
+
+**Clips, plateformes, actualités d'accueil** : clips vidéo (lo-fi, studio, cinéma : coût, durée de tournage, qualité, vues et revenus publicitaires, buzz et prestige à la sortie) ; espace Plateformes (5 plateformes fictives : parts de marché par continent, rémunération, démarchage de playlists avec chances estimées et délai de 8 semaines) ; le Hub affiche les actualités de la semaine.
