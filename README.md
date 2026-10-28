@@ -24,7 +24,7 @@ npm run build    # build de production
 
 ## Règles clés
 
-6 actions par semaine, victoire quand les 26 objectifs sont tous accomplis (`src/engine/objectives.ts`), sauvetage Meridian après 4 semaines de trésorerie négative (défaite seulement si la faillite persiste à 6 semaines après sauvetage),
+6 actions par semaine, victoire quand les 25 objectifs sont tous accomplis (`src/engine/objectives.ts`), sauvetage Meridian après 4 semaines de trésorerie négative (défaite seulement si la faillite persiste à 6 semaines après sauvetage),
 places d'artistes : 3 au départ, +1 par bureau et par palier.
 
 ## Grand Tournoi, battles et scènes
@@ -46,4 +46,4 @@ places d'artistes : 3 au départ, +1 par bureau et par palier.
 Les prompts viennent de `docs/avatars/prompts.json`, régénéré par `python3 tools/avatars/prompts.py`.
 
 ## Histoire (fil rouge)
-Un fil rouge : devenir le premier label mondial face à **Meridian Group** (Tomás Reyes). Le jeu ne s'arrête jamais sur un mauvais passage : 26 objectifs en 4 actes (récompenses en cash), écran Objectifs. On peut accepter l'offre de Tomás (+750 000 $, −20 % de recettes 2 ans, −5 réputation, rachat de liberté possible) ; la faillite déclenche un sauvetage Meridian (+250 000 $, −30 % de recettes, −8 réputation). Quatre actes liés aux paliers de réputation (`src/data/story.ts`) : refus de l'offre de rachat, premières sorties, Grand Tournoi, tournées, plan Horizon révélé par Inès, sommet. `goalFor(g)` donne l'objectif courant : affiché dans la carte « Objectif de l'histoire » du Monde et à la fin de chaque scène. Épilogues de victoire et de défaite sur l'écran de fin.
+Un fil rouge : devenir le premier label mondial face à **Meridian Group** (Tomás Reyes). Le jeu ne s'arrête jamais sur un mauvais passage : 25 objectifs en 4 actes (récompenses en cash), écran Objectifs. On peut accepter l'offre de Tomás (+750 000 $, −20 % de recettes 2 ans, −5 réputation, rachat de liberté possible) ; la faillite déclenche un sauvetage Meridian (+250 000 $, −30 % de recettes, −8 réputation). Quatre actes liés aux paliers de réputation (`src/data/story.ts`) : refus de l'offre de rachat, premières sorties, Grand Tournoi, tournées, plan Horizon révélé par Inès, sommet. `goalFor(g)` donne l'objectif courant : affiché dans la carte « Objectif de l'histoire » du Monde et à la fin de chaque scène. Épilogues de victoire et de défaite sur l'écran de fin.
