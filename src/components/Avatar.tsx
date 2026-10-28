@@ -13,7 +13,8 @@ function loadManifest(): Promise<void> {
 function useAvatarFile(key: string): string | null {
   const [, tick] = useState(0)
   useEffect(() => { if (manifest === null) loadManifest().then(() => tick((n) => n + 1)) }, [])
-  const f = manifest?.[key]
+  // Si la variante 2 n'existe pas, on retombe sur la variante 1 de la même région et du même genre.
+  const f = manifest?.[key] ?? manifest?.[key.replace(/([fm])2$/, '$11')]
   return f ? `/avatars/${f}` : null
 }
 
