@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { CITIES, CONTINENTS } from '../../data/world'
+import { STORY_GOAL, goalFor } from '../../data/story'
 import { agenda, alerts, fansByCity, fansByContinent, projection } from '../../engine/selectors'
 import { guard, useGame } from '../../store/gameStore'
 import { compact, usd } from '../../lib'
@@ -10,6 +11,7 @@ const TONE = { g: 'tg', e: 'te', c: 'tc', r: 'tr_', i: 'ti' } as const
 
 export default function Hub() {
   const g = useGame((s) => s.game)!
+  const goal = goalFor(g)
   const { select, go, nextWeek } = useGame()
   const [zoom, setZoom] = useState<string | null>(null)
   const proj = useMemo(() => projection(g, 8), [g])
@@ -66,6 +68,10 @@ export default function Hub() {
           <div style={{position: 'absolute', left: 20, right: 20, bottom: 56, fontSize: 13, color: '#9C90CC'}}>Fans du label par continent. Cliquez un continent pour filtrer, puis une ville pour ouvrir sa fiche.</div>
         </div>
         <div style={{width: 376, display: 'flex', flexDirection: 'column', gap: 14}}>
+          <div className="pn sel" title={STORY_GOAL}>
+            <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Objectif de l'histoire</span><span className="sp" /><span className="tag te">{goal.title}</span></div>
+            <div style={{fontSize: 14, marginTop: 8, lineHeight: 1.4}}>{goal.text}</div>
+          </div>
           <div className="pn cut" style={{paddingBottom: 8}}>
             <div style={{display: 'flex', alignItems: 'center'}}><span className="h2">Cette semaine</span><span className="sp" /><span className="tag ti">{items.length} événement{items.length > 1 ? 's' : ''}</span></div>
             <div style={{marginTop: 8}}>

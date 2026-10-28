@@ -44,3 +44,6 @@ places d'artistes : 3 au départ, +1 par bureau et par palier.
 2. `npm run avatars:generate` : génère dans `avatars_src/` les images manquantes (personnages de l'histoire d'abord). Options : `-- --only story`, `-- --force`, `-- --dry`.
 3. `npm run avatars` : conversion WebP 512 px dans `public/avatars/` + manifeste.
 Les prompts viennent de `docs/avatars/prompts.json`, régénéré par `python3 tools/avatars/prompts.py`.
+
+## Histoire (fil rouge)
+Un seul but : devenir le premier label mondial (réputation 100) avant que **Meridian Group** (Tomás Reyes) ne rachète le label (faillite = défaite). Quatre actes liés aux paliers de réputation (`src/data/story.ts`) : refus de l'offre de rachat, premières sorties, Grand Tournoi, tournées, plan Horizon révélé par Inès, sommet. `goalFor(g)` donne l'objectif courant : affiché dans la carte « Objectif de l'histoire » du Monde et à la fin de chaque scène. Épilogues de victoire et de défaite sur l'écran de fin.

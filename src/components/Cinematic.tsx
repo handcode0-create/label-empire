@@ -64,7 +64,7 @@ export default function Cinematic() {
   const founderKey = founderLabel?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur'
   const founderPhoto = founderLabel?.photo
 
-  useEffect(() => { if (scene) { setQueue(scene.lines); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (scene) { setQueue([...scene.lines, { who: 'narrateur', text: 'Objectif · {goal}' }]); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!scene?.title) return; const t = setTimeout(() => setTitleDone(true), 2300); return () => clearTimeout(t) }, [scene?.id, scene?.title])
 
   const line = queue[i]

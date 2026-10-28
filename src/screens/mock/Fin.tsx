@@ -2,6 +2,7 @@ import { cityById, palierFor } from '../../data/world'
 import { totalFans } from '../../engine/util'
 import { guard, useGame } from '../../store/gameStore'
 import { compact, usd } from '../../lib'
+import { EPILOGUE_LOSE, EPILOGUE_WIN } from '../../data/story'
 
 export default function Fin() {
   const g = useGame((s) => s.game)
@@ -24,6 +25,7 @@ export default function Fin() {
         <div className="disp" style={{fontSize: 120, lineHeight: 1, letterSpacing: '0.08em', color: accent, textShadow: `0 0 40px ${win ? 'rgba(255,198,61,0.5)' : 'rgba(255,84,112,0.5)'}`}}>{win ? 'VICTOIRE' : 'DÉFAITE'}</div>
         <div className="lbl" style={{fontSize: 16, letterSpacing: '0.28em', color: '#B3A6D9'}}>{win ? `${g.label.name} règne sur la scène mondiale` : `${g.label.name} ferme ses portes : quatre semaines de trésorerie négative`}</div>
       </div>
+      <div className="mut" style={{position: 'absolute', left: 290, right: 290, top: 330, textAlign: 'center', fontSize: 16, lineHeight: 1.5, color: '#D8D0F5'}}>{(win ? EPILOGUE_WIN : EPILOGUE_LOSE).replace('{label}', g.label.name)}</div>
       <div style={{position: 'absolute', left: 150, right: 150, top: 440, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14}}>
         <div className="pn cut" style={{textAlign: 'center'}}><div className="lbl">Durée</div><div className="num" style={{marginTop: 6}}>{years ? `${years} an${years > 1 ? 's' : ''}` : `${g.week - 1} sem.`}</div><div className="mut" style={{fontSize: 13}}>{g.week - 1} semaines</div></div>
         <div className="pn cut" style={{textAlign: 'center'}}><div className="lbl">Villes conquises</div><div className="num" style={{marginTop: 6, color: '#FF7DBB'}}>{g.stats.countriesReached.length}</div><div className="mut" style={{fontSize: 13}}>sur {conts} continent{conts > 1 ? 's' : ''}</div></div>
