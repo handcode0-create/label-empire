@@ -2,13 +2,13 @@ import type { City } from './world'
 
 export interface Studio { id: string; name: string; cityId: string; pricePerDay: number; quality: number; producer: string; stars: number; genres: string[] }
 export const STUDIOS: Studio[] = [
-  { id: 'ebene', name: 'Studio Ébène', cityId: 'abidjan', pricePerDay: 590, quality: 62, producer: 'Yao Séka', stars: 2, genres: ['Coupé-décalé', 'Afro-pop'] },
+  { id: 'ebene', name: 'Studio Ébène', cityId: 'abidjan', pricePerDay: 590, quality: 62, producer: 'Yao Séka', stars: 2, genres: ['Coupé-décalé', 'Afro-pop', 'Zouk'] },
   { id: 'dakar', name: 'Mix Lab Dakar', cityId: 'dakar', pricePerDay: 730, quality: 66, producer: 'Ibou Faye', stars: 2, genres: ['Mbalax', 'Hip-hop'] },
-  { id: 'accra', name: 'Accra Tape House', cityId: 'accra', pricePerDay: 910, quality: 68, producer: 'Nana Owusu', stars: 3, genres: ['Hip-hop', 'Afro-pop'] },
-  { id: 'eko', name: 'Eko Sound Lab', cityId: 'lagos', pricePerDay: 1260, quality: 74, producer: 'Tayo Bello', stars: 4, genres: ['Afro-pop', 'R&B'] },
+  { id: 'accra', name: 'Accra Tape House', cityId: 'accra', pricePerDay: 910, quality: 68, producer: 'Nana Owusu', stars: 3, genres: ['Hip-hop', 'Afro-pop', 'Drill', 'Dancehall'] },
+  { id: 'eko', name: 'Eko Sound Lab', cityId: 'lagos', pricePerDay: 1260, quality: 74, producer: 'Tayo Bello', stars: 4, genres: ['Afro-pop', 'R&B', 'Gospel'] },
   { id: 'luanda', name: 'Luanda Beat', cityId: 'luanda', pricePerDay: 770, quality: 64, producer: 'Zeca Neto', stars: 2, genres: ['Kuduro'] },
   { id: 'joburg', name: 'Joburg Tapes', cityId: 'johannesburg', pricePerDay: 1540, quality: 78, producer: 'Lwazi Khumalo', stars: 3, genres: ['Amapiano', 'Hip-hop'] },
-  { id: 'nairobi', name: 'Nairobi Tapes', cityId: 'nairobi', pricePerDay: 840, quality: 67, producer: 'Amani Otieno', stars: 2, genres: ['Afro-pop'] },
+  { id: 'nairobi', name: 'Nairobi Tapes', cityId: 'nairobi', pricePerDay: 840, quality: 67, producer: 'Amani Otieno', stars: 2, genres: ['Afro-pop', 'Rumba'] },
   { id: 'cairo', name: 'Cairo Vox', cityId: 'cairo', pricePerDay: 980, quality: 70, producer: 'Karim Fouad', stars: 3, genres: ['Pop', 'Électro'] },
   { id: 'rivoli', name: 'Maison Rivoli', cityId: 'paris', pricePerDay: 2520, quality: 83, producer: 'Marc Lefèvre', stars: 4, genres: ['Hip-hop', 'Pop', 'Électro'] },
   { id: 'abbey', name: 'Abbey Row Studios', cityId: 'london', pricePerDay: 3640, quality: 86, producer: 'Oliver Pryce', stars: 4, genres: ['Pop', 'R&B', 'Rock'] },

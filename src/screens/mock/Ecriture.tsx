@@ -32,7 +32,7 @@ export default function Ecriture() {
   const [lyrics, setLyrics] = useState('')
   const [feat, setFeat] = useState<{ kind: 'label' | 'externe'; id: string } | null>(null)
   const [featOpen, setFeatOpen] = useState(false)
-  const genres = [...new Set([artist?.genre ?? 'Afro-pop', ...GENRES.slice(0, 5)])].slice(0, 4)
+  const genres = [...new Set([artist?.genre ?? 'Afro-pop', ...GENRES])]
   const est = lyricsEstimate(g, { artistId, lyrics, writer, theme })
   const lines = lyrics.split('\n')
   const add = (t: string) => setLyrics((l) => (l.trim() ? l.replace(/\n*$/, '\n') : '') + t)
@@ -53,7 +53,7 @@ export default function Ecriture() {
       <Dock active="studio" />
       <Hud />
       <div className="main" style={{display: 'flex', gap: 20}}>
-        <div style={{width: 330, display: 'flex', flexDirection: 'column', gap: 12}}>
+        <div style={{width: 330, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', maxHeight: 800, paddingRight: 4}}>
           <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>{STEPS.map(([s, l], i) => <a key={s} href={s + '.dc.html'} className={'chip' + (i === 0 ? ' on' : '')}>{l}</a>)}<a href="Projets.dc.html" className="chip">EP & albums</a></div>
           <div className="pn cut">
             <label htmlFor="tt" className="lbl">Titre</label>

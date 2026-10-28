@@ -1,3 +1,4 @@
+import { GENRES } from '../../data/world'
 import Avatar from '../../components/Avatar'
 import { palierFor } from '../../data/world'
 import { CAPITALS } from '../../engine/newGame'
@@ -60,7 +61,7 @@ export default function NouvellePartie() {
         <label htmlFor="nat" className="mut" style={{fontSize: 13, display: 'block', marginTop: 14}}>Nationalité</label>
         <input id="nat" className="in" style={{marginTop: 6}} value={c.nationality} onChange={(e) => patch({ nationality: e.target.value })} />
         <div className="lbl" style={{marginTop: 18}}>Genre musical principal</div>
-        <div style={{display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap'}}><Chip on={c.mainGenre === 'Afro-pop'} onClick={() => patch({ mainGenre: 'Afro-pop' })}>Afro-pop</Chip><Chip on={c.mainGenre === 'Coupé-décalé'} onClick={() => patch({ mainGenre: 'Coupé-décalé' })}>Coupé-décalé</Chip><Chip on={c.mainGenre === 'Hip-hop'} onClick={() => patch({ mainGenre: 'Hip-hop' })}>Hip-hop</Chip><Chip on={c.mainGenre === 'R&B'} onClick={() => patch({ mainGenre: 'R&B' })}>R&amp;B</Chip><Chip on={c.mainGenre === 'Amapiano'} onClick={() => patch({ mainGenre: 'Amapiano' })}>Amapiano</Chip><Chip on={c.mainGenre === 'Pop'} onClick={() => patch({ mainGenre: 'Pop' })}>Pop</Chip><Chip on={c.mainGenre === 'Électro'} onClick={() => patch({ mainGenre: 'Électro' })}>Électro</Chip><Chip on={c.mainGenre === 'Rock'} onClick={() => patch({ mainGenre: 'Rock' })}>Rock</Chip></div>
+        <div style={{display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap'}}>{GENRES.map((x) => <Chip key={x} on={c.mainGenre === x} onClick={() => patch({ mainGenre: x })}>{x}</Chip>)}</div>
         <div className="lbl" style={{marginTop: 18}}>Capital de départ</div>
         <div style={{display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap'}}>{(Object.keys(CAPITALS) as (keyof typeof CAPITALS)[]).map((k) => <Chip key={k} on={(c.capital ?? 'standard') === k} onClick={() => patch({ capital: k, startReputation: CAPITALS[k].reputation })}>{CAPITALS[k].label} · {compactUsd(CAPITALS[k].cash)}</Chip>)}</div>
         <div className="mut" style={{fontSize: 13, marginTop: 12}}>Réputation de départ : <b style={{color: '#FF7DBB'}}>{c.startReputation}</b> · {palierFor(c.startReputation).name}. Un capital plus élevé place le label plus haut dans le monde de la musique et débloque plus de marchés. Trésorerie de départ : <b style={{color: '#FFC63D'}}>${cash.toLocaleString('fr-FR')}</b>.</div>
