@@ -5,7 +5,7 @@ import { cityById } from '../../data/world'
 import { loanLimit, repayLoan, takeLoan, weeklyFixedCosts } from '../../engine/economy'
 import { projection } from '../../engine/selectors'
 import { guard, useGame } from '../../store/gameStore'
-import { compact, usd } from '../../lib'
+import { compact, usd, wk } from '../../lib'
 
 export default function Finances() {
   const g = useGame((s) => s.game)!
@@ -39,7 +39,7 @@ export default function Finances() {
               <g fill="#B3A6D9" fontFamily="DM Sans, sans-serif" fontSize={12} textAnchor="middle">{proj.map((p, i) => <text key={i} x={68 + i * 66} y={220}>S{(p.week - 1) % 52 + 1}</text>)}</g>
               <g fontFamily="DM Sans, sans-serif" fontSize={13} fill="#F4F0FF"><rect x={568} y={30} width={12} height={12} fill="#FFC63D" rx={2} /><text x={586} y={41}>Recettes</text><rect x={568} y={54} width={12} height={12} fill="#FF3D9A" rx={2} /><text x={586} y={65}>Dépenses</text></g>
             </svg>
-            <div className="mut" style={{fontSize: 13}}>Pic de dépenses en semaine {(peak.week - 1) % 52 + 1} ({usd(peak.expenses)}). Trésorerie projetée en semaine {(proj[proj.length - 1].week - 1) % 52 + 1} : <b style={{color: proj[proj.length - 1].cash < 0 ? '#FF5470' : '#FFC63D'}}>{usd(proj[proj.length - 1].cash)}</b>. La projection suppose aucune nouvelle action.</div>
+            <div className="mut" style={{fontSize: 13}}>Pic de dépenses en {wk(peak.week)} ({usd(peak.expenses)}). Trésorerie projetée en {wk(proj[proj.length - 1].week)} : <b style={{color: proj[proj.length - 1].cash < 0 ? '#FF5470' : '#FFC63D'}}>{usd(proj[proj.length - 1].cash)}</b>. La projection suppose aucune nouvelle action.</div>
           </div>
           <div className="pn">
             <div className="lbl">Trésorerie et revenus en attente</div>

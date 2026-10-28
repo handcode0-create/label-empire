@@ -1,3 +1,4 @@
+import { wk } from '../lib'
 import { AGENCIES, FIRST, GRADIENTS, LAST, SIGNATURE, STAGE_WORDS, TRAITS } from '../data/people'
 import { CITIES, GENRES, cityById, type City } from '../data/world'
 import type { Rng } from './rng'
@@ -153,7 +154,7 @@ export function startContest(s0: GameState, c: { name: string; cityId: string; f
 export function resolveContests(s: GameState, notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]) {
   for (const k of s.contests) {
     if (k.status === 'ouvert' && k.endWeek > s.week + 1) {
-      notes.push({ tag: 'Concours', text: `« ${k.name} » se poursuit : finale en semaine ${k.endWeek}.`, tone: 'c' })
+      notes.push({ tag: 'Concours', text: `« ${k.name} » se poursuit : finale en ${wk(k.endWeek)}.`, tone: 'c' })
       continue
     }
     if (k.status !== 'ouvert') continue

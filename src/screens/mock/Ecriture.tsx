@@ -11,7 +11,7 @@ import { featBonus, featFee } from '../../engine/production'
 import { visibleCandidates } from '../../engine/scouting'
 import { EXTERNAL_WRITER_COST, lyricsEstimate, words, writeSong } from '../../engine/production'
 import { useGame } from '../../store/gameStore'
-import {usd} from '../../lib'
+import { usd, wk } from '../../lib'
 
 const IDEAS = ["Sous le ciel d'Abidjan, le soir se lève doux", 'Mes rêves dans mes poches, des étoiles à genoux', 'On danse jusqu’au matin, la ville nous appartient', 'Même quand tout s’éteint, ta voix reste allumée', 'Le rythme dans mes veines, la rue sous mes pieds', 'Je porte mes racines comme une couronne', 'Un jour ils chanteront ce refrain avec nous', 'La route est longue mais le cœur est lourd d’espoir']
 const STEPS = [['Ecriture', '1 Écrire'], ['Studio', '2 Enregistrer'], ['Mixage', '3 Mixer'], ['Sortie', '4 Sortir']]
@@ -114,14 +114,14 @@ export default function Ecriture() {
             {g.drafts.length + inProgress.length === 0 && <div className="mut" style={{fontSize: 13, marginTop: 8}}>Vos paroles sont enregistrées automatiquement : vous pouvez passer la semaine et reprendre plus tard.</div>}
             {g.drafts.map((d) => (
               <div key={d.id} className={'row' + (d.id === draftId ? ' sel' : '')} style={{gridTemplateColumns: '1fr auto auto', gap: 8, cursor: 'pointer'}} onClick={() => loadDraft(d.id)}>
-                <div style={{minWidth: 0}}><b style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'}}>{d.title || 'Sans titre'}</b><div className="mut" style={{fontSize: 12}}>Brouillon · {words(d.lyrics)} mots · sem. {d.week}</div></div>
+                <div style={{minWidth: 0}}><b style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'}}>{d.title || 'Sans titre'}</b><div className="mut" style={{fontSize: 12}}>Brouillon · {words(d.lyrics)} mots · {wk(d.week).replace('semaine', 'sem.')}</div></div>
                 <span className="tag te">{d.id === draftId ? 'Ouvert' : 'Reprendre'}</span>
                 <span className="chip" role="button" aria-label="Supprimer le brouillon" onClick={(e) => { e.stopPropagation(); dropDraft(d.id) }}>✕</span>
               </div>
             ))}
             {inProgress.map((x) => { const [scr, label] = NEXT[x.stage]; const wait = x.stage !== 'written' && x.readyWeek > g.week; return (
               <div key={x.id} className="row" style={{gridTemplateColumns: '1fr auto', gap: 8, cursor: 'pointer'}} onClick={() => { select({ songId: x.id, artistId: x.artistId }); go(scr) }}>
-                <div style={{minWidth: 0}}><b style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'}}>{x.title}</b><div className="mut" style={{fontSize: 12}}>{x.stage === 'written' ? 'Écrit' : x.stage === 'recorded' ? 'Enregistré' : 'Mixé'}{wait ? ` · prêt en sem. ${x.readyWeek}` : ''}</div></div>
+                <div style={{minWidth: 0}}><b style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'}}>{x.title}</b><div className="mut" style={{fontSize: 12}}>{x.stage === 'written' ? 'Écrit' : x.stage === 'recorded' ? 'Enregistré' : 'Mixé'}{wait ? ` · prêt en ${wk(x.readyWeek).replace('semaine', 'sem.')}` : ''}</div></div>
                 <span className={'tag ' + (wait ? 'ti' : 'tg')}>{label}</span>
               </div>) })}
           </div>

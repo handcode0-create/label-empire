@@ -6,7 +6,7 @@ import { cityById } from '../../data/world'
 import { visibleCandidates } from '../../engine/scouting'
 import { sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
-import {compact, stars, usd} from '../../lib'
+import { compact, stars, usd, wk } from '../../lib'
 
 export default function Decouverte() {
   const g = useGame((s) => s.game)!
@@ -72,7 +72,7 @@ export default function Decouverte() {
           <div className="pn">
             <div className="lbl">Concours en cours</div>
             {open.length + done.length === 0 && <div className="mut" style={{fontSize: 14, marginTop: 10}}>Aucun concours pour l'instant.</div>}
-            {open.map((k) => <div key={k.id} className="row" style={{gridTemplateColumns: '1fr 90px'}}><div><b>{k.name}</b><div className="mut" style={{fontSize: 13}}>{cityById(k.cityId).name} · finale en semaine {k.endWeek}</div></div><span className="tag te">{k.candidates} candidats</span></div>)}
+            {open.map((k) => <div key={k.id} className="row" style={{gridTemplateColumns: '1fr 90px'}}><div><b>{k.name}</b><div className="mut" style={{fontSize: 13}}>{cityById(k.cityId).name} · finale en {wk(k.endWeek)}</div></div><span className="tag te">{k.candidates} candidats</span></div>)}
             {done.map((k) => <div key={k.id} className="row" style={{gridTemplateColumns: '1fr 90px'}}><div><b>{k.name}</b><div className="mut" style={{fontSize: 13}}>Terminé · {k.finalists.length} finalistes</div></div><span className="tag tg">Terminé</span></div>)}
           </div>
           <div className="sp" />

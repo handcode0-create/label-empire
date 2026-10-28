@@ -12,3 +12,9 @@ export function currentSong(g: GameState, id: string | null, stages: Song['stage
 }
 /** Titre affiché, avec le partenaire d'un feat. */
 export const songName = (s: { title: string; feat?: { name: string } }) => (s.feat ? `${s.title} (feat. ${s.feat.name})` : s.title)
+
+/** Semaine du calendrier : le jeu compte les semaines de façon cumulée (91 = semaine 39 de l'An 2). */
+export const weekNo = (w: number) => ((Math.max(1, Math.round(w)) - 1) % 52) + 1
+export const yearOf = (w: number) => Math.floor((Math.max(1, Math.round(w)) - 1) / 52) + 1
+/** « semaine 39 (An 2) » — l'année n'est précisée qu'à partir de l'An 2. */
+export const wk = (w: number) => `semaine ${weekNo(w)}${yearOf(w) > 1 ? ` (An ${yearOf(w)})` : ''}`

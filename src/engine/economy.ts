@@ -1,3 +1,4 @@
+import { wk } from '../lib'
 import { RECRUITS } from '../data/people'
 import { cityById } from '../data/world'
 import type { EventChoice, GameEvent, GameState, Result } from './types'
@@ -52,7 +53,7 @@ export function openOffice(s0: GameState, cityId: string, kind: 'bureau' | 'part
   const e2 = spend(s, req.cost, `Bureau de ${c.name}`)
   if (e2) return fail(s0, e2)
   s.offices.push({ cityId, kind, since: s.week + req.weeks })
-  return ok(s, `${kind === 'bureau' ? 'Bureau' : 'Partenaire'} à ${c.name} : opérationnel en semaine ${s.week + req.weeks}.`)
+  return ok(s, `${kind === 'bureau' ? 'Bureau' : 'Partenaire'} à ${c.name} : opérationnel en ${wk(s.week + req.weeks)}.`)
 }
 
 // ---------- prêt ----------

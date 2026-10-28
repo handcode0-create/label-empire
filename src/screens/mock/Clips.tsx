@@ -4,7 +4,7 @@ import Dock from '../../components/Dock'
 import { CLIP_TIERS, clipCandidates, commissionClip } from '../../engine/clips'
 import type { Clip } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
-import { compact, songName, usd } from '../../lib'
+import { compact, songName, usd, wk } from '../../lib'
 
 export default function Clips() {
   const g = useGame((s) => s.game)!
@@ -63,7 +63,7 @@ export default function Clips() {
                 <div key={s.id} className="row" style={{gridTemplateColumns: '1fr auto', gap: 12}}>
                   <div>
                     <b>{songName(s)}</b> <span className="tag ti">{CLIP_TIERS[c.tier].label}</span>
-                    <div className="mut" style={{fontSize: 12, marginTop: 2}}>{artist(s.artistId)} · qualité {c.quality}{c.status === 'sorti' ? ` · ${compact(c.views)} vues · ${usd(c.revenue)} de revenus` : ` · tournage jusqu'en semaine ${c.readyWeek}`}</div>
+                    <div className="mut" style={{fontSize: 12, marginTop: 2}}>{artist(s.artistId)} · qualité {c.quality}{c.status === 'sorti' ? ` · ${compact(c.views)} vues · ${usd(c.revenue)} de revenus` : ` · tournage jusqu'en ${wk(c.readyWeek)}`}</div>
                   </div>
                   <span className={'tag ' + (c.status === 'sorti' ? 'tg' : 'te')}>{c.status === 'sorti' ? 'En ligne' : 'Tournage'}</span>
                 </div>

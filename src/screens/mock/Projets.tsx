@@ -9,7 +9,7 @@ import { CITIES } from '../../data/world'
 import { PROJECT_RULES, assignSong, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong } from '../../engine/projects'
 import type { ProjectKind } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
-import { compact, songName, usd } from '../../lib'
+import { compact, songName, usd, weekNo } from '../../lib'
 
 const STAGE: Record<string, string> = { standby: 'Standby', written: 'Écrit', recorded: 'Enregistré', mixed: 'Mixé', scheduled: 'Programmé', released: 'Sorti' }
 
@@ -54,7 +54,7 @@ export default function Projets() {
               {g.projects.map((p) => (
                 <div key={p.id} className={'row' + (p.id === selId ? ' sel' : '')} role="button" style={{gridTemplateColumns: '1fr auto auto', gap: 12, cursor: 'pointer', background: p.id === selId ? '#3A1B52' : undefined}} onClick={() => setSelId(p.id)}>
                   <div><b>{p.name}</b><div className="mut" style={{fontSize: 12}}>{p.kind} · {artist(p.artistId)?.stageName} · {p.songIds.length} titre(s){p.status === 'sorti' ? ` · ${compact(projectStreams(g, p))} écoutes` : ''}</div></div>
-                  <span className={'tag ' + (p.status === 'sorti' ? 'tg' : 'te')}>{p.status === 'sorti' ? `Sorti S${p.releaseWeek}` : 'En préparation'}</span>
+                  <span className={'tag ' + (p.status === 'sorti' ? 'tg' : 'te')}>{p.status === 'sorti' ? `Sorti S${weekNo(p.releaseWeek ?? 0)}` : 'En préparation'}</span>
                 </div>
               ))}
             </div>

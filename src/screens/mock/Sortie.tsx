@@ -38,7 +38,7 @@ export default function Sortie() {
   const artist = g.artists.find((a) => a.id === song.artistId)!
   const locWeeks = Math.max(0, ...loc.map((id) => LOC_OPTIONS.find((l) => l.id === id)?.weeks ?? 0))
   const from = Math.max(g.week + locWeeks, song.readyWeek)
-  const chosen = week && week >= from ? week : from
+  const chosen = week && week >= from && week <= from + 12 ? week : from
   const cal = releaseCalendar(g, from, 5)
   const strat = STRATEGIES[strategy]
   const draft: SongRelease = { week: chosen, strategy, cityIds, promo, loc, media }

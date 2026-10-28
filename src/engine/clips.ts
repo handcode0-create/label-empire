@@ -1,3 +1,4 @@
+import { wk } from '../lib'
 import type { Clip, GameState, Result } from './types'
 import { clamp, clone, drawRng, fail, ok, spend, useAp } from './util'
 
@@ -22,7 +23,7 @@ export function commissionClip(s0: GameState, songId: string, tier: Clip['tier']
   const prod = Math.max(0, ...[s.staffSkills.production ?? 0]) // le savoir-faire de production aide un peu
   const quality = clamp(rng.int(t.q[0], t.q[1]) + Math.round(prod / 20), 10, 100)
   song.clip = { tier, cost: t.cost, quality, startWeek: s.week, readyWeek: s.week + t.weeks, status: 'tournage', views: 0, revenue: 0 }
-  return ok(s, `${t.label} lancé pour « ${song.title} » : prêt en semaine ${s.week + t.weeks}.`)
+  return ok(s, `${t.label} lancé pour « ${song.title} » : prêt en ${wk(s.week + t.weeks)}.`)
 }
 
 /** Fin de semaine : les clips sortent, les vues s'accumulent et rapportent des revenus publicitaires. Renvoie les recettes. */

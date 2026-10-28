@@ -55,3 +55,12 @@ describe('sortie d’un projet avec titres inachevés', () => {
     expect(r.state.songs.every((s) => s.stage === 'scheduled' && s.exclusive && (s.quality ?? 0) > 0)).toBe(true)
   })
 })
+
+import { wk } from '../lib'
+describe('format des semaines', () => {
+  it('semaine du calendrier plutôt que cumul', () => {
+    expect(wk(5)).toBe('semaine 5')
+    expect(wk(91)).toBe('semaine 39 (An 2)')
+    expect(wk(115)).toBe('semaine 11 (An 3)')
+  })
+})

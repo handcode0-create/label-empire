@@ -10,7 +10,7 @@ import { expressCost } from '../../engine/production'
 import { PROJECT_RULES, assignSong, setCover, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong, setStandby } from '../../engine/projects'
 import type { Project, ProjectKind } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
-import { compact, songName, usd } from '../../lib'
+import { compact, songName, usd, weekNo } from '../../lib'
 
 const STAGE: Record<string, string> = { written: 'Écrit', recorded: 'Enregistré', mixed: 'Mixé', scheduled: 'Programmé', released: 'Sorti' }
 
@@ -38,7 +38,7 @@ export default function Catalogue() {
     <div style={{display: 'flex', gap: 14, alignItems: 'flex-end'}}>
       <Cover title={p.name} artist={a.stageName} kind={p.kind} cover={p.cover} size={132} />
       <div style={{flex: 1}}>
-        <span className={'tag ' + (p.status === 'sorti' ? 'tg' : 'te')}>{p.status === 'sorti' ? `Sorti S${p.releaseWeek}` : 'En préparation'}</span>
+        <span className={'tag ' + (p.status === 'sorti' ? 'tg' : 'te')}>{p.status === 'sorti' ? `Sorti S${weekNo(p.releaseWeek ?? 0)}` : 'En préparation'}</span>
         <div className="h2" style={{fontSize: 22, marginTop: 6}}>{p.name}</div>
         <span className="chip" role="button" style={{marginTop: 6}} onClick={() => setEditing(editing === p.id ? null : p.id)}>{editing === p.id ? 'Fermer' : 'Pochette'}</span>
       </div>

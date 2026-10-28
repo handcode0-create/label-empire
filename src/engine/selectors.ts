@@ -1,3 +1,4 @@
+import { wk } from '../lib'
 import { cityById } from '../data/world'
 import { advanceWeek } from './advanceWeek'
 import { weeklyFixedCosts } from './economy'
@@ -28,8 +29,8 @@ export function agenda(s: GameState): AgendaItem[] {
   }
   for (const d of s.drafts ?? []) if (s.week - d.week >= 1) out.push({ day: day(), title: 'Brouillon à finir', detail: `« ${d.title || 'Sans titre'} » · ${d.lyrics.trim().split(/\s+/).filter(Boolean).length} mots`, tag: 'Reprendre', tone: 'c', link: 'Ecriture' })
   for (const t of s.tours) for (const st of t.stops) if (st.week === s.week && st.sold === undefined) out.push({ day: day(), title: `Concert à ${cityById(st.cityId).name}`, detail: `${s.artists.find((a) => a.id === t.artistId)?.stageName} · ${st.venue}`, tag: cityById(st.cityId).visa ? 'Visa OK' : 'Prévu', tone: 'c', link: 'Tournee' })
-  for (const k of s.contests) if (k.status === 'ouvert') out.push({ day: day(), title: `Concours ${k.name}`, detail: k.endWeek <= s.week ? 'Finale cette semaine' : `Finale en semaine ${k.endWeek}`, tag: 'En cours', tone: 'e', link: 'Concours' })
-  for (const m of s.missions ?? []) if (m.status === 'actif' && m.deadline - s.week <= 1) out.push({ day: day(), title: `Mission : ${m.title}`, detail: m.deadline < s.week ? 'Échéance cette semaine' : `Échéance en semaine ${m.deadline}`, tag: 'Urgent', tone: 'r', link: 'Actualites' })
+  for (const k of s.contests) if (k.status === 'ouvert') out.push({ day: day(), title: `Concours ${k.name}`, detail: k.endWeek <= s.week ? 'Finale cette semaine' : `Finale en ${wk(k.endWeek)}`, tag: 'En cours', tone: 'e', link: 'Concours' })
+  for (const m of s.missions ?? []) if (m.status === 'actif' && m.deadline - s.week <= 1) out.push({ day: day(), title: `Mission : ${m.title}`, detail: m.deadline < s.week ? 'Échéance cette semaine' : `Échéance en ${wk(m.deadline)}`, tag: 'Urgent', tone: 'r', link: 'Actualites' })
   const exclusive = s.pool.find((a) => a.status === 'concours' && a.exclusiveUntil && a.exclusiveUntil >= s.week)
   if (exclusive) out.push({ day: day(), title: 'Contrat à négocier', detail: `${exclusive.stageName} · ${cityById(exclusive.originCityId).name}`, tag: 'Ouvrir', tone: 'c', link: 'Profil' })
   return out.slice(0, 5)

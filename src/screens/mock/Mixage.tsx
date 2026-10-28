@@ -5,7 +5,7 @@ import { MASTERING, MIX_OPTIONS, studioById } from '../../data/people'
 import { cityById } from '../../data/world'
 import { chooseMix, qualityPreview, releaseCalendar } from '../../engine/production'
 import { useGame } from '../../store/gameStore'
-import { currentSong, usd } from '../../lib'
+import { currentSong, usd, wk } from '../../lib'
 
 const STEPS = [['Ecriture', '1 Écrire'], ['Studio', '2 Enregistrer'], ['Mixage', '3 Mixer'], ['Sortie', '4 Sortir']]
 const DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
@@ -30,7 +30,7 @@ export default function Mixage() {
   const ready = done ? song.readyWeek : song.readyWeek + mix.weeks
   const from = Math.max(g.week, ready)
   const cal = releaseCalendar(g, from, 4)
-  const chosen = sel.week && sel.week >= ready ? sel.week : from
+  const chosen = sel.week && sel.week >= from && sel.week <= from + 12 ? sel.week : from
   const total = mix.cost + (withMaster ? MASTERING.cost : 0)
   const next = () => {
     if (!done && !run((s) => chooseMix(s, song.id, mixId, master))) return
@@ -71,7 +71,7 @@ export default function Mixage() {
               ))}
             </div>
             <div style={{display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap'}}>{cal.map((c) => <span key={c.week} className={'tag ' + (c.tone === 'free' ? 'tg' : c.tone === 'rival' ? 'tr_' : 'te')}>S{(c.week - 1) % 52 + 1} : {c.tone === 'free' ? 'peu de concurrence' : c.tone === 'rival' ? "sortie d'un rival" : 'fête nationale, écoutes +15 %'}</span>)}</div>
-            <div className="mut" style={{fontSize: 13, marginTop: 10}}>Mixage prêt en semaine {(ready - 1) % 52 + 1} au plus tôt{done ? '' : ` avec « ${mix.name.toLowerCase()} »`}. Vous pourrez ajuster la date à l'étape suivante.</div>
+            <div className="mut" style={{fontSize: 13, marginTop: 10}}>Mixage prêt en {wk(ready)} au plus tôt{done ? '' : ` avec « ${mix.name.toLowerCase()} »`}. Vous pourrez ajuster la date à l'étape suivante.</div>
           </div>
           <div className="sp" />
           <div style={{display: 'flex', gap: 12}}><a href="Studio.dc.html" className="btn s">Retour</a><a href="Sortie.dc.html" className="btn" style={{flex: 1, height: 60}} onClick={(e) => { e.preventDefault(); next() }}>{done ? 'Programmer la sortie par territoire' : 'Lancer le mixage et programmer la sortie'}</a></div>

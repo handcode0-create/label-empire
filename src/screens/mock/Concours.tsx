@@ -6,7 +6,7 @@ import Slider from '../../components/Slider'
 import { CITIES, cityById } from '../../data/world'
 import { CONTEST_FORMATS, startContest } from '../../engine/scouting'
 import { useGame } from '../../store/gameStore'
-import {usd} from '../../lib'
+import { usd, wk } from '../../lib'
 
 export default function Concours() {
   const g = useGame((s) => s.game)!
@@ -70,7 +70,7 @@ export default function Concours() {
             <div style={{position: 'absolute', left: 28, bottom: 20}}><div className="lbl">{shown ? cityById(shown.cityId).name : city.name} · {CONTEST_FORMATS[shown?.format ?? format].label}</div><div className="disp" style={{fontSize: 42, lineHeight: 1}}>{shown?.name ?? name}</div></div>
             <div style={{position: 'absolute', right: 24, bottom: 20, textAlign: 'right'}}><div className="num" style={{color: '#FFC63D'}}>{shown?.candidates ?? estimate}</div><div className="mut" style={{fontSize: 13}}>candidats {shown ? 'auditionnés' : 'estimés'}</div></div>
           </div>
-          {shown?.status === 'ouvert' && <div className="pn" style={{padding: '12px 16px'}}><div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Progression du concours</span><span className="sp" /><span className="mut" style={{fontSize: 13}}>Semaine {elapsed} sur {total} · finale en semaine {shown.endWeek}</span></div><div className="mt" style={{marginTop: 8}}><i style={{width: Math.round((elapsed / total) * 100) + '%'}} /></div><div className="mut" style={{fontSize: 13, marginTop: 6}}>Le concours se poursuit quand vous passez les semaines : les finalistes arriveront automatiquement à la date de la finale.</div></div>}
+          {shown?.status === 'ouvert' && <div className="pn" style={{padding: '12px 16px'}}><div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Progression du concours</span><span className="sp" /><span className="mut" style={{fontSize: 13}}>Semaine {elapsed} sur {total} · finale en {wk(shown.endWeek)}</span></div><div className="mt" style={{marginTop: 8}}><i style={{width: Math.round((elapsed / total) * 100) + '%'}} /></div><div className="mut" style={{fontSize: 13, marginTop: 6}}>Le concours se poursuit quand vous passez les semaines : les finalistes arriveront automatiquement à la date de la finale.</div></div>}
           <div className="lbl">{finalists.length ? `Les ${finalists.length} finalistes` : 'Finalistes'}</div>
           {finalists.length ? (
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12}}>

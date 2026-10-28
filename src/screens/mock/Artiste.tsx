@@ -9,7 +9,7 @@ import { projectOf, projectSongs, projectStreams } from '../../engine/projects'
 import { rivalArtist, rivalOrigin, rivalTotalPlays } from '../../engine/rivals'
 import { sum } from '../../engine/util'
 import { useGame } from '../../store/gameStore'
-import { compact, songName, usd } from '../../lib'
+import { compact, songName, usd, weekNo } from '../../lib'
 
 interface SongRow { id: string; title: string; plays: number; project?: string; mine: boolean }
 interface ProjRow { id: string; name: string; kind: string; when: string; tracks: string[]; plays: number }
@@ -36,7 +36,7 @@ export default function Artiste() {
     : rival!.songs.map((s) => ({ id: s.id, title: s.title, plays: s.plays, project: rival!.projects.find((p) => p.id === s.projectId)?.name, mine: false }))
   songs.sort((a, b) => b.plays - a.plays)
   const projects: ProjRow[] = mine
-    ? g.projects.filter((p) => p.artistId === id).map((p) => ({ id: p.id, name: p.name, kind: p.kind, when: p.status === 'sorti' ? `Sorti S${p.releaseWeek}` : 'En préparation', tracks: projectSongs(g, p).map(songName), plays: projectStreams(g, p) }))
+    ? g.projects.filter((p) => p.artistId === id).map((p) => ({ id: p.id, name: p.name, kind: p.kind, when: p.status === 'sorti' ? `Sorti S${weekNo(p.releaseWeek ?? 0)}` : 'En préparation', tracks: projectSongs(g, p).map(songName), plays: projectStreams(g, p) }))
     : rival!.projects.map((p) => ({ id: p.id, name: p.name, kind: p.kind, when: `Il y a ${p.year} an${p.year > 1 ? 's' : ''}`, tracks: p.songIds.map((sid) => rival!.songs.find((s) => s.id === sid)!.title), plays: p.songIds.reduce((t, sid) => t + rival!.songs.find((s) => s.id === sid)!.plays, 0) }))
   const total = mine ? songs.reduce((t, s) => t + s.plays, 0) : rivalTotalPlays(rival!)
   const bestOf = (kind: 'singles' | 'artistes' | 'eps' | 'albums') => { const r = chartFor(g, 'monde', g.label.hqCityId, kind).find((x) => x.artistId === id); return r ? 'n°' + r.rank : 'hors' }

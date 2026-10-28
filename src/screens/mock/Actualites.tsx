@@ -2,7 +2,7 @@ import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { missionProgress } from '../../engine/missions'
 import { useGame } from '../../store/gameStore'
-import { usd } from '../../lib'
+import { usd, wk } from '../../lib'
 
 const TONE: Record<string, string> = { g: 'tg', c: 'tc', e: 'te', r: 'tr_', i: 'ti' }
 
@@ -54,7 +54,7 @@ export default function Actualites() {
                 <div key={m.id} className="row" style={{gridTemplateColumns: '24px 1fr auto'}}>
                   <span style={{color: m.status === 'reussi' ? '#3DDC97' : '#FF6B8A'}}>{m.status === 'reussi' ? '✓' : '✕'}</span>
                   <span>{m.title}</span>
-                  <span className="mut" style={{fontSize: 13}}>sem. {m.endWeek}</span>
+                  <span className="mut" style={{fontSize: 13}}>{wk(m.endWeek ?? 0).replace('semaine', 'sem.')}</span>
                 </div>
               ))}
             </div>

@@ -6,7 +6,7 @@ import { cityById } from '../../data/world'
 import { TOURNAMENT, abandonTournament, chooseWinner, countryOf, currentRound, entrantOf, openTournament, playRound, recruitCost, recruitEntrant, recruitableCities, startTournament } from '../../engine/tournament'
 import type { Artist, Duel, Tournament } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
-import { usd } from '../../lib'
+import { usd, wk } from '../../lib'
 
 const Side = ({ a, win, dim, score }: { a: Artist; win?: boolean; dim?: boolean; score?: number }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: dim ? 0.45 : 1 }}>
@@ -87,7 +87,7 @@ export default function Tournoi() {
                   <div style={{ flex: 1 }}>
                     <span className="tag te">Dernier vainqueur · {t.name}</span>
                     <div className="disp" style={{ fontSize: 40, lineHeight: 1.05, marginTop: 6 }}>{entrantOf(t, t.winnerId).stageName}</div>
-                    <div className="mut">{countryOf(entrantOf(t, t.winnerId))} · {entrantOf(t, t.winnerId).genre} · exclusivité jusqu'à la semaine {Math.round((entrantOf(t, t.winnerId).exclusiveUntil ?? 0))}</div>
+                    <div className="mut">{countryOf(entrantOf(t, t.winnerId))} · {entrantOf(t, t.winnerId).genre} · exclusivité jusqu'à la {wk(Math.round((entrantOf(t, t.winnerId).exclusiveUntil ?? 0)))}</div>
                   </div>
                   <a href="Profil.dc.html" className="btn" onClick={() => select({ candidateId: t.winnerId! })}>Voir le profil</a>
                 </div>

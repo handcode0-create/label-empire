@@ -4,7 +4,7 @@ import { useOpen } from '../../components/useOpen'
 import { CERT_LEVELS, CERT_THRESHOLDS, SNEP_REF, SNEP_SCALE, albumEquivalent, certOf, ladder, levelFor, levelInfo, nextLevel, type CertLevel } from '../../engine/certifications'
 import { projectSongs } from '../../engine/projects'
 import { useGame } from '../../store/gameStore'
-import { compact, songName } from '../../lib'
+import { compact, songName, wk } from '../../lib'
 
 function Disc({ level, size = 64 }: { level: CertLevel | null; size?: number }) {
   const c = level ? levelInfo(level).color : '#3A3270'
@@ -43,7 +43,7 @@ export default function Certifications() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {r.openIt ? <a href="Titre.dc.html" onClick={(e) => { e.preventDefault(); r.openIt?.() }}><b style={{ fontSize: 17 }}>{r.name}</b></a> : <b style={{ fontSize: 17 }}>{r.name}</b>}
                     <span className="tag ti">{r.kind === 'titre' ? 'Titre' : 'Projet'}</span>
-                    {lvl && <span className="tag" style={{ background: levelInfo(lvl).color + '33', color: levelInfo(lvl).color }}>{levelInfo(lvl).label}{c ? ` · sem. ${c.week}` : ''}</span>}
+                    {lvl && <span className="tag" style={{ background: levelInfo(lvl).color + '33', color: levelInfo(lvl).color }}>{levelInfo(lvl).label}{c ? ` · ${wk(c.week).replace('semaine', 'sem.')}` : ''}</span>}
                   </div>
                   <div className="mut" style={{ fontSize: 13, marginTop: 2 }}>{compact(r.streams)} {r.kind === 'titre' ? 'écoutes' : 'écoutes éq. album'}{goal ? ` · prochain palier : ${levelInfo(nx!).label.toLowerCase()} à ${compact(goal)}` : ' · palier maximal atteint'}</div>
                   {goal && <div className="mt" style={{ marginTop: 6 }}><i style={{ width: Math.min(100, Math.round((r.streams / goal) * 100)) + '%' }} /></div>}
