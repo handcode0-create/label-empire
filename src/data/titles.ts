@@ -1,22 +1,40 @@
 import type { Rng } from '../engine/rng'
 
-/** Banques de mots par thème et par langue pour proposer un titre automatiquement. */
+/** Banques de mots par thème et par langue pour proposer titres de chansons et noms de projets. Vaste combinatoire : des milliers de titres sans répétition. */
+export const TITLE_THEMES = ['Amour', 'Fête', 'Ambition', 'Société', 'Nostalgie', 'Voyage', 'Argent', 'Spiritualité']
 /** Noms : « mot|genre » ; adjectifs : « masculin/féminin » (ou une seule forme invariable). */
 const FR: Record<string, { n: string[]; a: string[]; p: string[] }> = {
-  Amour: { n: ['Cœur|m', 'Baiser|m', 'Promesse|f', 'Étreinte|f', 'Regard|m', 'Déclaration|f', 'Rendez-vous|m'], a: ['interdit/interdite', 'sauvage', 'éternel/éternelle', 'brûlant/brûlante', 'secret/secrète', 'doux/douce'], p: ['Ton nom dans le vent', 'Reste encore', 'Toi et moi', 'Mon soleil', 'Pour la vie', 'Dis-moi oui'] },
-  Fête: { n: ['Nuit|f', 'Soirée|f', 'Piste|f', 'Ambiance|f', 'Podium|m', 'Samedi|m'], a: ['sans fin', 'électrique', 'en feu', 'doré/dorée', 'fou/folle', 'infini/infinie'], p: ['On danse jusqu’au matin', 'Tout le monde debout', 'Allume la ville', 'Bouge ton corps', 'Cette nuit est à nous', 'Monte le son'] },
-  Ambition: { n: ['Couronne|f', 'Sommet|m', 'Chemin|m', 'Empire|m', 'Racine|f', 'Héritage|m', 'Étoile|f'], a: ['sans limite', 'invaincu/invaincue', 'brillant/brillante', 'royal/royale', 'têtu/têtue', 'de diamant'], p: ['Je ne lâche rien', 'Plus haut que les toits', 'Devenir légende', 'Le monde m’attend', 'Jamais à genoux', 'Premier de la route'] },
-  Société: { n: ['Quartier|m', 'Rue|f', 'Jeunesse|f', 'Voix|f', 'Frontière|f', 'Miroir|m', 'Génération|f'], a: ['debout', 'oublié/oubliée', 'en colère', 'lumineux/lumineuse', 'uni/unie', 'libre'], p: ['Écoute la rue', 'On est encore là', 'Le peuple chante', 'Les murs parlent', 'Demain nous appartient', 'Même ciel, même combat'] },
+  Amour: { n: ['Cœur|m', 'Baiser|m', 'Promesse|f', 'Étreinte|f', 'Regard|m', 'Déclaration|f', 'Rendez-vous|m', 'Sourire|m', 'Caresse|f', 'Serment|m', 'Lettre|f', 'Rose|f', 'Chanson|f', 'Tendresse|f', 'Passion|f', 'Murmure|m', 'Alliance|f', 'Aveu|m', 'Désir|m', 'Vertige|m', 'Manège|m', 'Matin|m', 'Jalousie|f', 'Fiancée|f', 'Prénom|m', 'Pardon|m', 'Battement|m', 'Frisson|m'], a: ['interdit/interdite', 'sauvage', 'éternel/éternelle', 'brûlant/brûlante', 'secret/secrète', 'doux/douce', 'fou/folle', 'tendre', 'perdu/perdue', 'premier/première', 'infini/infinie', 'fragile', 'sincère', 'rebelle', 'volé/volée', 'timide', 'ardent/ardente', 'muet/muette', 'précieux/précieuse', 'magnifique'], p: ['Ton nom dans le vent', 'Reste encore', 'Toi et moi', 'Mon soleil', 'Pour la vie', 'Dis-moi oui', 'Je t’attends toujours', 'Viens près de moi', 'Tu es mon étoile', 'Garde-moi contre toi', 'Un jour tu verras', 'Ne pars pas ce soir', 'Je pense à toi', 'Danse avec moi', 'Mon cœur bat pour toi', 'Dernier baiser', 'Aime-moi demain', 'Reviens-moi', 'C’est toi que je veux', 'Sous ton regard', 'Mes mains sur ton nom', 'Notre histoire', 'Écris-moi encore', 'Rien que nous deux'] },
+  Fête: { n: ['Nuit|f', 'Soirée|f', 'Piste|f', 'Ambiance|f', 'Podium|m', 'Samedi|m', 'Fièvre|f', 'Étincelle|f', 'Rythme|m', 'Basse|f', 'Boîte|f', 'Terrasse|f', 'Maquis|m', 'Carnaval|m', 'Festival|m', 'Feu|m', 'Confettis|m', 'Danse|f', 'Sono|f', 'Bamboula|f', 'Refrain|m', 'Vendredi|m', 'Toit|m', 'Minuit|m'], a: ['sans', 'fin', 'électrique', 'en feu', 'doré/dorée', 'fou/folle', 'infini/infinie', 'incendiaire', 'brillant/brillante', 'déchaîné/déchaînée', 'vibrant/vibrante', 'lumineux/lumineuse', 'endiablé/endiablée', 'brûlant/brûlante', 'tropical/tropicale', 'géant/géante'], p: ['On danse jusqu’au matin', 'Tout le monde debout', 'Allume la ville', 'Bouge ton corps', 'Cette nuit est à nous', 'Monte le son', 'Lève les mains', 'Ça va chauffer', 'Fais-moi danser', 'Le DJ ne dort pas', 'Pas de lendemain', 'Ce soir on oublie tout', 'Tourne la musique', 'Fête jusqu’à l’aube', 'Tout brille ce soir', 'Les lumières s’allument', 'Un dernier verre', 'Sur la piste', 'Samedi soir encore', 'Ça sent la fête'] },
+  Ambition: { n: ['Couronne|f', 'Sommet|m', 'Chemin|m', 'Empire|m', 'Racine|f', 'Héritage|m', 'Étoile|f', 'Horizon|m', 'Ascension|f', 'Victoire|f', 'Trône|m', 'Flamme|f', 'Destin|m', 'Conquête|f', 'Marathon|m', 'Défi|m', 'Prestige|m', 'Légende|f', 'Tempête|f', 'Ambition|f', 'Cime|f', 'Bâtisseur|m', 'Sacrifice|m', 'Rêve|m', 'Pari|m'], a: ['sans', 'limite', 'invaincu/invaincue', 'brillant/brillante', 'royal/royale', 'têtu/têtue', 'immortel/immortelle', 'affamé/affamée', 'solide', 'fier/fière', 'sans', 'peur', 'doré/dorée', 'ardent/ardente', 'indomptable', 'intact/intacte', 'légendaire', 'immense', 'implacable'], p: ['Je ne lâche rien', 'Plus haut que les toits', 'Devenir une légende', 'Je viens de loin', 'Rien ne m’arrête', 'Le monde m’attend', 'Chaque jour un peu plus', 'Mon nom sur les murs', 'J’ai fait le serment', 'Toujours debout', 'On vise la lune', 'Pas de limites', 'Fils de la persévérance', 'De zéro à tout', 'Je construis mon empire', 'Regarde-moi monter', 'Le temps travaille pour moi', 'Ils verront', 'Cap sur les sommets', 'Rien que le sommet'] },
+  Société: { n: ['Quartier|m', 'Rue|f', 'Jeunesse|f', 'Voix|f', 'Frontière|f', 'Miroir|m', 'Génération|f', 'Marché|m', 'Ruelle|f', 'Cour|f', 'Combat|m', 'Silence|m', 'Fumée|f', 'Faubourg|m', 'Colère|f', 'Espoir|m', 'Pavé|m', 'Mur|m', 'Radio|f', 'Gare|f', 'Boulevard|m', 'Lagune|f', 'Peuple|m', 'Vérité|f', 'Rumeur|f'], a: ['debout', 'oublié/oubliée', 'en', 'colère', 'lumineux/lumineuse', 'uni/unie', 'libre', 'fatigué/fatiguée', 'vivant/vivante', 'grondant/grondante', 'sans', 'nom', 'rebelle', 'clair/claire', 'brûlé/brûlée', 'éveillé/éveillée', 'lointain/lointaine', 'sourd/sourde'], p: ['Écoute la rue', 'On est encore là', 'Demain nous appartient', 'Même ciel', 'Le quartier parle', 'Pas de silence', 'Ici c’est chez nous', 'Nos voix montent', 'Debout la jeunesse', 'On ne se tait plus', 'Ce que la rue raconte', 'Frères et sœurs', 'Les murs ont des oreilles', 'Une autre génération', 'Ouvre les yeux', 'La vérité d’en bas', 'Nos rêves sans permission', 'Les enfants du quartier', 'Tant qu’il y a des voix', 'Au coin de la rue'] },
+  Nostalgie: { n: ['Souvenir|m', 'Enfance|f', 'Photo|f', 'Récré|f', 'Radio|f', 'Été|m', 'Cassette|f', 'Village|m', 'Grand mère|f', 'Pluie|f', 'Album|m', 'Horloge|f', 'Sentier|m', 'Berceuse|f', 'Veillée|f', 'Ombre|f', 'Maison|f', 'Printemps|m', 'Départ|m', 'Retour|m', 'Vinyle|m', 'Lampe|f', 'Véranda|f', 'Jardin|m'], a: ['lointain/lointaine', 'doré/dorée', 'perdu/perdue', 'tendre', 'ancien/ancienne', 'flou/floue', 'éternel/éternelle', 'jauni/jaunie', 'sucré/sucrée', 'muet/muette', 'familier/familière', 'secret/secrète', 'disparu/disparue', 'tranquille', 'chaud/chaude', 'pâle'], p: ['Quand on était petits', 'Souviens-toi de nous', 'Les étés d’avant', 'Retour au village', 'Ce que le temps a pris', 'Mes premiers pas', 'Chez grand-mère', 'La maison au bout du chemin', 'Avant que tout change', 'On riait pour rien', 'Photo jaunie', 'Je me souviens encore', 'Les soirs de veillée', 'Le temps d’avant', 'Mon enfance chante', 'Vieux disque', 'Là où tout a commencé', 'Si je pouvais revenir', 'Hier encore', 'Une dernière fois chez nous'] },
+  Voyage: { n: ['Voyage|m', 'Avion|m', 'Frontière|f', 'Route|f', 'Horizon|m', 'Aéroport|m', 'Passeport|m', 'Escale|f', 'Boussole|f', 'Valise|f', 'Traversée|f', 'Port|m', 'Nuage|m', 'Train|m', 'Carte|f', 'Départ|m', 'Destination|f', 'Sillage|m', 'Désert|m', 'Océan|m', 'Île|f', 'Vent|m', 'Pirogue|f', 'Visa|m', 'Pont|m'], a: ['lointain/lointaine', 'sans', 'retour', 'infini/infinie', 'doré/dorée', 'sauvage', 'libre', 'perdu/perdue', 'nomade', 'lent/lente', 'bleu/bleue', 'clair/claire', 'immense', 'inconnu/inconnue', 'discret/discrète', 'rapide', 'ouvert/ouverte'], p: ['Bagages légers', 'Direction le soleil', 'Je pars demain', 'Un aller simple', 'Loin de tout', 'Là où le vent m’emmène', 'Cap sur l’autre rive', 'Tous les chemins mènent à toi', 'Carnet de route', 'Ville après ville', 'De Lagos à Paris', 'La route est longue', 'Je reviendrai', 'Ailleurs', 'Vol de nuit', 'Sans billet de retour', 'Passeport pour la nuit', 'Escale au bout du monde', 'Le monde est petit', 'Les yeux sur la carte'] },
+  Argent: { n: ['Billet|m', 'Liasse|f', 'Coffre|m', 'Business|m', 'Contrat|m', 'Poche|f', 'Monnaie|f', 'Gain|m', 'Fortune|f', 'Bijou|m', 'Chaîne|f', 'Compte|m', 'Marché|m', 'Or|m', 'Diamant|m', 'Banque|f', 'Commerce|m', 'Dette|f', 'Affaire|f', 'Jackpot|m', 'Réussite|f', 'Prix|m', 'Dollar|m', 'Cauri|m', 'Richesse|f'], a: ['facile', 'en', 'or', 'sale', 'propre', 'rapide', 'solide', 'gros/grosse', 'brillant/brillante', 'nouveau/nouvelle', 'froid/froide', 'blanc/blanche', 'épais/épaisse', 'léger/légère', 'double', 'rare'], p: ['Le billet ne dort pas', 'Tout se négocie', 'Je compte mes victoires', 'Pas de dettes ce soir', 'L’or dans les poches', 'Ça rentre, ça sort', 'Business is business', 'Je paye cash', 'La fortune sourit', 'Mes poches chantent', 'On fait des affaires', 'Prix fort', 'Contrat signé', 'Rien n’est gratuit', 'De l’argent et des rêves', 'Les chiffres parlent', 'Je roule sur l’or', 'Pas de crédit', 'Qui paie commande', 'Le coffre est plein'] },
+  Spiritualité: { n: ['Prière|f', 'Lumière|f', 'Esprit|m', 'Ciel|m', 'Bénédiction|f', 'Foi|f', 'Ancêtre|m', 'Chant|m', 'Sagesse|f', 'Miracle|m', 'Âme|f', 'Pardon|m', 'Cérémonie|f', 'Souffle|m', 'Rivière|f', 'Étoile|f', 'Témoin|m', 'Offrande|f', 'Grâce|f', 'Silence|m', 'Messager|m', 'Autel|m', 'Aube|f', 'Racine|f'], a: ['sacré/sacrée', 'divin/divine', 'pur/pure', 'éternel/éternelle', 'sage', 'doux/douce', 'calme', 'béni/bénie', 'lointain/lointaine', 'invisible', 'profond/profonde', 'ancien/ancienne', 'protecteur/protectrice', 'léger/légère', 'vivant/vivante'], p: ['Que Dieu me garde', 'Les ancêtres veillent', 'Je prie pour nous', 'Une lumière dans la nuit', 'Bénis nos chemins', 'Je crois encore', 'Paix sur la ville', 'Mon âme chante', 'La grâce m’accompagne', 'Que le ciel m’entende', 'Merci pour hier', 'Écoute le vent', 'Le sacré en nous', 'La voix des anciens', 'Garde ma famille', 'Tout est écrit', 'Je me relève', 'Au nom de la paix', 'Sous la protection du ciel', 'Pardonne-moi'] },
 }
 const EN: Record<string, { n: string[]; a: string[]; p: string[] }> = {
-  Amour: { n: ['Heart', 'Kiss', 'Promise', 'Embrace', 'Glance'], a: ['of Gold', 'Forbidden', 'Wild', 'Eternal', 'Burning'], p: ['Stay With Me', 'You and I', 'Say Yes Tonight', 'My Sunshine'] },
-  Fête: { n: ['Night', 'Party', 'Dance Floor', 'Weekend', 'Vibe'], a: ['Electric', 'On Fire', 'Golden', 'Endless', 'Crazy'], p: ['Dance Till Morning', 'Turn It Up', 'Light Up the City', 'Everybody Move'] },
-  Ambition: { n: ['Crown', 'Summit', 'Empire', 'Roots', 'Legacy'], a: ['of Diamonds', 'Unbroken', 'Royal', 'Unstoppable', 'Fearless'], p: ['I Never Let Go', 'Higher Than Rooftops', 'Become a Legend', 'The World Is Waiting'] },
-  Société: { n: ['Streets', 'Youth', 'Voice', 'Border', 'Mirror'], a: ['Awake', 'Forgotten', 'United', 'Free', 'Loud'], p: ['Hear the Streets', 'We Are Still Here', 'Tomorrow Is Ours', 'Same Sky'] },
+  Amour: { n: ['Heart', 'Kiss', 'Promise', 'Embrace', 'Glance', 'Letter', 'Rose', 'Whisper', 'Touch', 'Vow', 'Smile', 'Moonlight', 'Secret', 'Valentine', 'Fever', 'Memory', 'Desire', 'Lover', 'Sunrise', 'Rendezvous', 'Feeling', 'Echo', 'Ring'], a: ['of Gold', 'Forbidden', 'Wild', 'Eternal', 'Burning', 'Tender', 'Lost', 'First', 'Fragile', 'Stolen', 'Sweet', 'Silent', 'Endless', 'Midnight', 'Hidden', 'Golden', 'Gentle'], p: ['Stay With Me', 'You and I', 'Say Yes Tonight', 'My Sunshine', 'Hold Me Closer', 'Never Let You Go', 'Call Me Back', 'Be Mine Tonight', 'Your Name in the Wind', 'One More Dance', 'Right Here With You', 'Love Is Loud', 'Fall for You', 'Meet Me Halfway', 'Take My Hand', 'Always You', 'Come Back to Me', 'Kiss Me Slowly', 'All I Want Is You', 'You Are My Home'] },
+  Fête: { n: ['Night', 'Party', 'Dance Floor', 'Weekend', 'Vibe', 'Rhythm', 'Spotlight', 'Carnival', 'Fire', 'Bass', 'Friday', 'Saturday', 'Midnight', 'Confetti', 'Sound', 'Crowd', 'Festival', 'Groove', 'Tempo', 'Rooftop', 'Beat', 'Streetlight', 'Summer'], a: ['Electric', 'On Fire', 'Golden', 'Endless', 'Crazy', 'Wild', 'Neon', 'Loud', 'Tropical', 'Unstoppable', 'Burning', 'Bright', 'Dizzy', 'Alive', 'Feverish'], p: ['Dance Till Morning', 'Turn It Up', 'Light Up the City', 'Everybody Move', 'Hands in the Air', 'Live for Tonight', 'No Sleep Tonight', 'Bring the Bass', 'Party Never Stops', 'Move Your Body', 'One More Round', 'Take Me to the Floor', 'Lights Out Music Up', 'Out All Night', 'Make Some Noise', 'Feel the Rhythm', 'This Is Our Night', 'Let the Night Begin', 'Don’t Stop the Music', 'Sunrise on the Dance Floor'] },
+  Ambition: { n: ['Crown', 'Summit', 'Empire', 'Roots', 'Legacy', 'Throne', 'Fire', 'Destiny', 'Hustle', 'Climb', 'Victory', 'Dream', 'Mountain', 'Horizon', 'Legend', 'Storm', 'Mission', 'Marathon', 'Glory', 'Rise', 'Kingdom', 'Journey', 'Ladder'], a: ['of Diamonds', 'Unbroken', 'Royal', 'Unstoppable', 'Fearless', 'Relentless', 'Hungry', 'Golden', 'Immortal', 'Rising', 'Untouchable', 'Bold', 'Fierce', 'Undefeated', 'Limitless'], p: ['I Never Let Go', 'Higher Than Rooftops', 'Become a Legend', 'From Nothing to Everything', 'Watch Me Rise', 'Nothing Can Stop Me', 'The World Is Mine', 'Built This Myself', 'Rise Up', 'Born to Win', 'Always Climbing', 'No Limits Tonight', 'Chasing Glory', 'My Name in Lights', 'Counting on Me', 'Top of the World', 'Never Looking Back', 'I Came Far', 'Reach for the Sky', 'Dream Bigger'] },
+  Société: { n: ['Streets', 'Youth', 'Voice', 'Border', 'Mirror', 'Neighborhood', 'Generation', 'Market', 'Alley', 'Silence', 'Rumor', 'Wall', 'Hope', 'Truth', 'Anger', 'Crowd', 'Station', 'Boulevard', 'Radio', 'People', 'Courtyard', 'Smoke', 'Fight'], a: ['Awake', 'Forgotten', 'United', 'Free', 'Loud', 'Tired', 'Alive', 'Rising', 'Burning', 'Nameless', 'Rebel', 'Clear', 'Distant', 'Deaf', 'Unheard'], p: ['Hear the Streets', 'We Are Still Here', 'Tomorrow Is Ours', 'Same Sky', 'Voices Rising', 'Listen to the Block', 'We Won’t Be Quiet', 'Open Your Eyes', 'The Block Speaks', 'Stand Up Together', 'From the Bottom Up', 'Dreams Without Permission', 'Kids of the Neighborhood', 'The Walls Can Talk', 'One Generation Louder', 'Hold the Line', 'People Over Everything', 'Another Day Another Fight', 'Truth From Below', 'This Is Home'] },
+  Nostalgie: { n: ['Memory', 'Childhood', 'Photograph', 'Summer', 'Cassette', 'Village', 'Grandmother', 'Rain', 'Album', 'Clock', 'Lullaby', 'Shadow', 'House', 'Spring', 'Vinyl', 'Lamp', 'Garden', 'Road', 'Farewell', 'Return', 'Yesterday', 'Playground', 'Radio'], a: ['Faded', 'Golden', 'Lost', 'Tender', 'Ancient', 'Blurry', 'Eternal', 'Yellowed', 'Sweet', 'Silent', 'Familiar', 'Secret', 'Gone', 'Quiet', 'Warm'], p: ['When We Were Young', 'Remember Us', 'Summers Before', 'Back to the Village', 'What Time Took', 'My First Steps', 'At Grandma’s House', 'The House at the End of the Road', 'Before Everything Changed', 'We Laughed for Nothing', 'Old Photograph', 'I Still Remember', 'Evenings by the Fire', 'The Way It Was', 'Childhood Sings', 'Old Record', 'Where It All Began', 'If I Could Go Back', 'Yesterday Again', 'One Last Time at Home'] },
+  Voyage: { n: ['Journey', 'Airplane', 'Border', 'Road', 'Horizon', 'Airport', 'Passport', 'Layover', 'Compass', 'Suitcase', 'Crossing', 'Harbor', 'Cloud', 'Train', 'Map', 'Departure', 'Destination', 'Wake', 'Desert', 'Ocean', 'Island', 'Wind', 'Canoe', 'Bridge'], a: ['Faraway', 'One-Way', 'Endless', 'Golden', 'Wild', 'Free', 'Lost', 'Nomad', 'Slow', 'Blue', 'Clear', 'Vast', 'Unknown', 'Quiet', 'Open'], p: ['Travel Light', 'Chasing the Sun', 'Leaving Tomorrow', 'One Way Ticket', 'Far From Everything', 'Where the Wind Takes Me', 'To the Other Shore', 'All Roads Lead to You', 'Road Notes', 'City After City', 'From Lagos to Paris', 'Long Road Home', 'I’ll Be Back', 'Somewhere Else', 'Night Flight', 'No Return Ticket', 'Passport to the Night', 'Layover at the End of the World', 'The World Is Small', 'Eyes on the Map'] },
+  Argent: { n: ['Cash', 'Bill', 'Stack', 'Vault', 'Business', 'Contract', 'Pocket', 'Coin', 'Gain', 'Fortune', 'Jewel', 'Chain', 'Account', 'Market', 'Gold', 'Diamond', 'Bank', 'Trade', 'Debt', 'Deal', 'Jackpot', 'Success', 'Prize', 'Dollar', 'Wealth'], a: ['Easy', 'Golden', 'Dirty', 'Clean', 'Fast', 'Solid', 'Heavy', 'Bright', 'New', 'Cold', 'White', 'Thick', 'Light', 'Double', 'Rare'], p: ['The Money Never Sleeps', 'Everything Is a Deal', 'Counting My Wins', 'No Debts Tonight', 'Gold in My Pockets', 'In and Out', 'Business Is Business', 'Paying Cash', 'Fortune Smiles', 'My Pockets Sing', 'Making Deals', 'Premium Price', 'Contract Signed', 'Nothing Is Free', 'Money and Dreams', 'Numbers Talk', 'Rolling in Gold', 'No Credit', 'Who Pays Decides', 'The Vault Is Full'] },
+  Spiritualité: { n: ['Prayer', 'Light', 'Spirit', 'Sky', 'Blessing', 'Faith', 'Ancestor', 'Chant', 'Wisdom', 'Miracle', 'Soul', 'Forgiveness', 'Ceremony', 'Breath', 'River', 'Star', 'Witness', 'Offering', 'Grace', 'Silence', 'Messenger', 'Altar', 'Dawn', 'Roots'], a: ['Sacred', 'Divine', 'Pure', 'Eternal', 'Wise', 'Gentle', 'Calm', 'Blessed', 'Distant', 'Unseen', 'Deep', 'Ancient', 'Protective', 'Light', 'Alive'], p: ['God Keep Me', 'The Ancestors Watch', 'I Pray for Us', 'A Light in the Night', 'Bless Our Roads', 'I Still Believe', 'Peace on the City', 'My Soul Sings', 'Grace Walks With Me', 'Let the Sky Hear Me', 'Thank You for Yesterday', 'Listen to the Wind', 'The Sacred Within', 'Voice of the Elders', 'Protect My Family', 'It Is All Written', 'I Rise Again', 'In the Name of Peace', 'Under the Sky’s Protection', 'Forgive Me'] },
 }
-const MOOD_TAIL: Record<string, string[]> = { Mélancolique: ['sous la pluie', 'à minuit', 'sans toi'], Solaire: ['au soleil', 'en plein jour', 'sur la plage'], Intense: ['à fond', 'sans pitié', 'en feu'] }
-const MOOD_TAIL_EN: Record<string, string[]> = { Mélancolique: ['in the Rain', 'at Midnight', 'Without You'], Solaire: ['in the Sun', 'by the Sea', 'All Day'], Intense: ['No Mercy', 'Full Blast', 'on Fire'] }
-const NOUCHI = ['Gbê', 'Djê', 'Zangbê', 'Môgô', 'Gnangnan', 'Warba']
+
+const MOOD_TAIL: Record<string, string[]> = {
+  Mélancolique: ['sous la pluie', 'à minuit', 'sans toi', 'dans le noir', 'au bord du fleuve', 'quand tu pars', 'en silence', 'sans retour', 'dans la brume', 'un soir de décembre'],
+  Solaire: ['au soleil', 'en plein jour', 'sur la plage', 'à midi', 'sous les palmiers', 'au petit matin', 'en été', 'au bord de la lagune', 'sur la terrasse', 'dans la lumière'],
+  Intense: ['à fond', 'sans pitié', 'en feu', 'sans freins', 'à cent à l’heure', 'jusqu’au bout', 'sans filtre', 'sous tension', 'cœur battant', 'sans peur'],
+}
+const MOOD_TAIL_EN: Record<string, string[]> = {
+  Mélancolique: ['in the Rain', 'at Midnight', 'Without You', 'in the Dark', 'by the River', 'When You Leave', 'in Silence', 'No Return', 'in the Fog', 'One December Night'],
+  Solaire: ['in the Sun', 'by the Sea', 'All Day', 'at Noon', 'Under the Palms', 'at Sunrise', 'in Summer', 'by the Lagoon', 'on the Terrace', 'in the Light'],
+  Intense: ['No Mercy', 'Full Blast', 'on Fire', 'No Brakes', 'at Full Speed', 'to the End', 'No Filter', 'Under Pressure', 'Heart Pounding', 'No Fear'],
+}
+const NOUCHI = ['Gbê', 'Djê', 'Zangbê', 'Môgô', 'Gnangnan', 'Warba', 'Enjaillé', 'Go', 'Ya foi', 'Dêh', 'Bobaraba', 'Gaou', 'Yêrê', 'Kpakpato', 'Bolo']
 
 const startsVowel = (w: string) => /^[aeiouyhéèêœâî]/i.test(w)
 function frNoun(entry: string, adj?: string): string {
@@ -28,22 +46,65 @@ function frNoun(entry: string, adj?: string): string {
   return `${art}${low} ${g === 'f' ? f ?? m : m}`
 }
 
-/** Propose un titre. `taken` : titres déjà utilisés, évités. */
-export function generateTitle(rng: Rng, o: { theme: string; mood: string; lang: string; genre?: string }, taken: string[] = []): string {
+const key = (t: string) => t.toLowerCase().replace(/[^a-zàâçéèêëîïôûùüÿœ0-9]+/g, ' ').trim()
+
+/** Nombre approximatif de titres distincts qu'on peut produire pour un thème : sert à vérifier la richesse des banques. */
+export function titleCapacity(theme: string, lang: 'français' | 'anglais' = 'français'): number {
+  const b = (lang === 'anglais' ? EN : FR)[theme]
+  return b ? b.p.length + b.n.length * b.a.length + b.n.length * 10 : 0
+}
+
+/** Propose un titre. `taken` : titres déjà utilisés (les nôtres et ceux des rivaux), évités. */
+export function generateTitle(rng: Rng, o: { theme: string; mood: string; lang: string; genre?: string }, taken: Iterable<string> = []): string {
   const english = o.lang === 'anglais'
   const bank = (english ? EN : FR)[o.theme] ?? (english ? EN : FR).Amour
   const tails = (english ? MOOD_TAIL_EN : MOOD_TAIL)[o.mood] ?? []
-  const used = new Set(taken.map((t) => t.toLowerCase()))
-  for (let i = 0; i < 24; i++) {
+  const used = new Set([...taken].map(key))
+  for (let i = 0; i < 80; i++) {
     const r = rng.next()
     let t: string
-    if (english) t = r < 0.4 ? rng.pick(bank.p) : r < 0.85 ? `${rng.pick(bank.n)} ${rng.pick(bank.a)}` : `${rng.pick(bank.p)} ${rng.pick(tails.length ? tails : bank.a)}`
+    if (english) t = r < 0.35 ? rng.pick(bank.p) : r < 0.8 ? `${rng.pick(bank.n)} ${rng.pick(bank.a)}` : r < 0.92 ? `${rng.pick(bank.p)} ${rng.pick(tails.length ? tails : bank.a)}` : `${rng.pick(bank.n)} ${rng.pick(tails.length ? tails : bank.a)}`
     else if (o.lang === 'nouchi' && r < 0.45) t = r < 0.22 ? `${rng.pick(NOUCHI)} ${rng.pick(bank.p)}` : `${rng.pick(NOUCHI)} ${rng.pick(bank.n).split('|')[0]}`
-    else if (r < 0.3) t = rng.pick(bank.p)
-    else if (r < 0.75) t = frNoun(rng.pick(bank.n), rng.pick(bank.a))
-    else if (tails.length) { const [w] = rng.pick(bank.n).split('|'); t = `${w} ${rng.pick(tails)}` }
+    else if (r < 0.28) t = rng.pick(bank.p)
+    else if (r < 0.7) t = frNoun(rng.pick(bank.n), rng.pick(bank.a))
+    else if (tails.length && r < 0.9) { const [w] = rng.pick(bank.n).split('|'); t = `${w} ${rng.pick(tails)}` }
     else t = frNoun(rng.pick(bank.n))
-    if (!used.has(t.toLowerCase())) return t
+    if (!used.has(key(t))) return t
   }
-  return `${rng.pick(bank.p)} ${rng.int(2, 99)}`
+  // Dernier recours : combinaison inter-thèmes, puis numéro romain (très improbable).
+  const other = (english ? EN : FR)[rng.pick(Object.keys(english ? EN : FR))]
+  for (let i = 0; i < 40; i++) { const t = english ? `${rng.pick(other.n)} ${rng.pick(bank.a)}` : frNoun(rng.pick(other.n), rng.pick(bank.a)); if (!used.has(key(t))) return t }
+  return `${rng.pick(bank.p)} II`
+}
+
+// ---------- Noms d'EP et d'albums ----------
+const PROJECT_FR = [
+  'Chroniques', 'Saison', 'Horizons', 'Racines', 'Lumières', 'Cité', 'Fièvre', 'Territoires', 'Mémoires', 'Vol de nuit', 'Carnet de route', 'Les Années-lumière', 'Cœur de ville', 'Sur la corde', 'Nuits blanches', 'Mélodies du quartier', 'Terre rouge', 'Marée haute', 'Après la pluie', 'Rêves éveillés', 'La Maison dorée', 'Soleil levant', 'Heure bleue', 'Les Sentiers', 'Premier acte', 'Même ciel', 'Pays réel', 'Chants de rivière', 'Les Invisibles', 'Lagune', 'Le Retour du roi', 'Âme sœur', 'Sous les néons', 'Gratte-ciel', 'Voix du peuple', 'Les Fils du vent', 'Étoiles filantes', 'Jardin secret', 'Les Veilleurs', 'Tout recommencer', 'La Traversée', 'Sang neuf', 'Plein soleil', 'Vers l’aube', 'Notre histoire', 'Murmures', 'Les Marcheurs', 'Radio nocturne', 'Cap sur demain', 'Baobab',
+]
+const PROJECT_EN = [
+  'Chronicles', 'Season', 'Horizons', 'Roots', 'Lights', 'City Lights', 'Fever Dreams', 'Territories', 'Memoirs', 'Night Flight', 'Road Notes', 'Light Years', 'Heart of the City', 'On the Wire', 'Sleepless', 'Neighborhood Melodies', 'Red Earth', 'High Tide', 'After the Rain', 'Waking Dreams', 'The Golden House', 'Rising Sun', 'Blue Hour', 'The Paths', 'Act One', 'Same Sky', 'True Country', 'River Songs', 'The Unseen', 'Lagoon', 'Return of the King', 'Soulmate', 'Under the Neon', 'Skyscraper', 'Voice of the People', 'Children of the Wind', 'Shooting Stars', 'Secret Garden', 'The Watchers', 'Start Over', 'The Crossing', 'New Blood', 'Full Sun', 'Toward the Dawn', 'Our Story', 'Whispers', 'The Walkers', 'Night Radio', 'Heading Tomorrow', 'Baobab',
+]
+const PROJECT_FR_MODS = ['Vol. 1', 'Vol. 2', 'Deluxe', 'Réédition', 'Acte II', 'Saison 2', 'Chapitre II', 'Face B']
+const PROJECT_EN_MODS = ['Vol. 1', 'Vol. 2', 'Deluxe', 'Reloaded', 'Act II', 'Season 2', 'Chapter II', 'B-Sides']
+
+/** Nom d'EP ou d'album : liste de noms + combinaisons thématiques, jamais deux fois le même pour un même artiste/label. */
+export function generateProjectName(rng: Rng, o: { kind: 'EP' | 'Album'; lang?: string; artist?: string }, taken: Iterable<string> = []): string {
+  const english = o.lang === 'anglais'
+  const base = english ? PROJECT_EN : PROJECT_FR
+  const mods = english ? PROJECT_EN_MODS : PROJECT_FR_MODS
+  const bank = (english ? EN : FR)[rng.pick(TITLE_THEMES)]
+  const used = new Set([...taken].map(key))
+  const first = (o.artist ?? '').split(' ')[0]
+  for (let i = 0; i < 80; i++) {
+    const r = rng.next()
+    let t: string
+    if (r < 0.4) t = rng.pick(base)
+    else if (r < 0.65) t = english ? `${rng.pick(bank.n)} ${rng.pick(bank.a)}` : frNoun(rng.pick(bank.n), rng.pick(bank.a))
+    else if (r < 0.8) t = rng.pick(bank.p)
+    else if (r < 0.9 && first) t = english ? `${first}’s ${rng.pick(base)}` : `${rng.pick(base)} de ${first}`
+    else t = `${rng.pick(base)} ${rng.pick(mods)}`
+    if (o.kind === 'EP' && r > 0.97) t += ' EP'
+    if (!used.has(key(t))) return t
+  }
+  return `${rng.pick(base)} ${rng.int(2, 9)}`
 }

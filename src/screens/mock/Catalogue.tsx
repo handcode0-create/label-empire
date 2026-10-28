@@ -2,6 +2,9 @@ import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import Avatar from '../../components/Avatar'
+import { generateProjectName } from '../../data/titles'
+import { createRng } from '../../engine/rng'
+import { rivalProjectNames } from '../../engine/rivals'
 import { PROJECT_RULES, assignSong, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong, setStandby } from '../../engine/projects'
 import type { Project, ProjectKind } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
@@ -26,6 +29,7 @@ export default function Catalogue() {
   const standby = free.filter((s) => s.standby && s.stage === 'mixed')
   const singles = mine.filter((s) => !projectOf(g, s.id) && (s.stage === 'released' || s.stage === 'scheduled'))
   const mixedFree = free.filter((s) => s.stage === 'mixed' && !s.standby)
+  const suggest = () => setName(generateProjectName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { kind, artist: a.stageName }, [...g.projects.map((p) => p.name), ...rivalProjectNames()]))
   const create = () => { if (run((s) => createProject(s, name, kind, a.id))) setName('') }
   const cover = (p: Project) => (
     <div style={{height: 120, borderRadius: 12, background: 'linear-gradient(135deg,#F43F9D,#8B5CF6)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', padding: 12}}>
@@ -61,6 +65,7 @@ export default function Catalogue() {
             <b style={{fontSize: 18}}>Projets de {a.stageName}</b>
             <span className="sp" />
             <input className="in" style={{width: 260, fontWeight: 700}} aria-label="Nom du projet" placeholder="Nom de l'EP ou de l'album" value={name} onChange={(e) => setName(e.target.value)} />
+            <button type="button" className="btn g sm" aria-label="Suggérer un nom" title="Suggérer un nom d'EP ou d'album" onClick={suggest}>🎲</button>
             {(['EP', 'Album'] as ProjectKind[]).map((k) => <span key={k} className={'chip' + (kind === k ? ' on' : '')} role="button" onClick={() => setKind(k)}>{k}</span>)}
             <button type="button" className="btn sm" onClick={create}>Créer</button>
           </div>

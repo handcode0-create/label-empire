@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
+import { generateProjectName } from '../../data/titles'
+import { createRng } from '../../engine/rng'
+import { rivalProjectNames } from '../../engine/rivals'
 import Slider from '../../components/Slider'
 import { CITIES } from '../../data/world'
 import { PROJECT_RULES, assignSong, createProject, deleteProject, projectOf, projectQuality, projectSongs, projectStreams, releaseProject, removeSong } from '../../engine/projects'
@@ -37,6 +40,7 @@ export default function Projets() {
               <div className="lbl">Nouveau projet</div>
               <div style={{display: 'flex', gap: 8, marginTop: 10}}>
                 <input className="in" style={{fontWeight: 700}} aria-label="Nom du projet" placeholder="Nom de l'EP ou de l'album" value={name} onChange={(e) => setName(e.target.value)} />
+                <button type="button" className="btn g sm" aria-label="Suggérer un nom" title="Suggérer un nom" style={{height: 48, flex: 'none'}} onClick={() => setName(generateProjectName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { kind, artist: g.artists.find((a) => a.id === artistId)?.stageName }, [...g.projects.map((p) => p.name), ...rivalProjectNames()]))}>🎲</button>
                 <button type="button" className="btn" style={{height: 48, flex: 'none'}} onClick={create}>Créer</button>
               </div>
               <div style={{display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap'}}>

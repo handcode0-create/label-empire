@@ -37,6 +37,7 @@ export function writeSong(s0: GameState, d: SongDraft): Result {
   if (!d.title.trim()) return fail(s0, 'Donnez un titre à la chanson.')
   const a = s.artists.find((x) => x.id === d.artistId)
   if (!a) return fail(s0, 'Choisissez un artiste (signez-en un ou cochez « artiste » à la création).')
+  if (s.songs.some((x) => x.title.trim().toLowerCase() === d.title.trim().toLowerCase())) return fail(s0, 'Un de vos titres porte déjà ce nom : choisissez-en un autre (le bouton dé en propose).')
   if (words(d.lyrics) < 8) return fail(s0, 'Écrivez au moins quelques lignes de paroles (8 mots minimum).')
   const e = useAp(s)
   if (e) return fail(s0, e)

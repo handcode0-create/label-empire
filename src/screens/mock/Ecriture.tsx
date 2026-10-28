@@ -2,7 +2,8 @@ import Avatar from '../../components/Avatar'
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
-import { generateTitle } from '../../data/titles'
+import { TITLE_THEMES, generateTitle } from '../../data/titles'
+import { rivalTitles } from '../../engine/rivals'
 import { GENRES, cityById } from '../../data/world'
 import { createRng } from '../../engine/rng'
 import { featBonus, featFee } from '../../engine/production'
@@ -40,7 +41,7 @@ export default function Ecriture() {
   const externals = visibleCandidates(g).filter((a) => a.id !== artistId).slice(0, 8)
   const featArtist = feat ? (feat.kind === 'label' ? g.artists : g.pool).find((a) => a.id === feat.id) : undefined
   const featCost = featArtist && feat?.kind === 'externe' ? featFee(featArtist) : 0
-  const autoTitle = () => setTitle(generateTitle(createRng((Date.now() ^ (title.length * 7919)) >>> 0), { theme, mood, lang, genre }, g.songs.map((x) => x.title)))
+  const autoTitle = () => setTitle(generateTitle(createRng((Date.now() ^ (title.length * 7919)) >>> 0), { theme, mood, lang, genre }, [...g.songs.map((x) => x.title), ...rivalTitles()]))
   const saturated = g.songs.slice(-4).filter((s) => s.theme === theme).length >= 2
   const submit = () => {
     const ok = run((s) => writeSong(s, { title, artistId, genre, theme, lang, mood, lyrics, writer, feat: feat ?? undefined }))
@@ -61,7 +62,7 @@ export default function Ecriture() {
               <button type="button" className="btn g sm" aria-label="Générer un titre automatiquement" title="Générer un titre selon le thème, la langue et l'ambiance" style={{height: 48, padding: '0 14px', flex: 'none'}} onClick={autoTitle}>✦ Auto</button>
             </div>
             <div className="lbl" style={{marginTop: 14}}>Genre</div><Chips list={genres} v={genre} set={setGenre} />
-            <div className="lbl" style={{marginTop: 14}}>Thème</div><Chips list={['Amour', 'Fête', 'Ambition', 'Société']} v={theme} set={setTheme} />
+            <div className="lbl" style={{marginTop: 14}}>Thème</div><Chips list={TITLE_THEMES} v={theme} set={setTheme} />
             <div className="lbl" style={{marginTop: 14}}>Langue</div><Chips list={['français', 'nouchi', 'anglais']} v={lang} set={setLang} />
             <div className="lbl" style={{marginTop: 14}}>Ambiance</div><Chips list={['Mélancolique', 'Solaire', 'Intense']} v={mood} set={setMood} />
           </div>
