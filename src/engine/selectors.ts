@@ -6,6 +6,16 @@ import type { GameState } from './types'
 export interface AgendaItem { day: string; title: string; detail: string; tag: string; tone: 'g' | 'e' | 'c' | 'r'; link?: string }
 
 /** Événements de la semaine en cours (Hub). */
+export type ArtistStatus = 'tournee' | 'enregistrement' | 'promo' | 'inactif'
+export const STATUS_LABELS: Record<ArtistStatus, string> = { tournee: 'En tournée', enregistrement: 'Enregistrement', promo: 'Promo', inactif: 'Inactif' }
+export function artistStatus(s: GameState, artistId: string): ArtistStatus {
+  if (s.tours.some((t) => t.artistId === artistId && t.status !== 'done' && t.stops.some((x) => x.sold === undefined))) return 'tournee'
+  const mine = s.songs.filter((x) => x.artistId === artistId)
+  if (mine.some((x) => x.stage === 'written' || x.stage === 'recorded' || x.stage === 'mixed')) return 'enregistrement'
+  if (mine.some((x) => x.stage === 'scheduled' || (x.stage === 'released' && (x.release?.week ?? 0) >= s.week - 4))) return 'promo'
+  return 'inactif'
+}
+
 export function agenda(s: GameState): AgendaItem[] {
   const out: AgendaItem[] = []
   const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']

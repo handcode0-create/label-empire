@@ -36,6 +36,17 @@ export default function Actualites() {
               </div>
             )
           })}
+          {(g.awards ?? []).length > 0 && (
+            <div className="pn cut">
+              <div className="lbl">Palmarès des cérémonies</div>
+              {[...g.awards].reverse().slice(0, 6).map((w, i) => (
+                <div key={i} className="row" style={{gridTemplateColumns: '60px 1fr auto'}}>
+                  <span className="mut">An {w.year}</span><span>{w.category === 'titre' ? 'Titre' : 'Artiste'} : <b>{w.winner}</b></span>
+                  <span className={'tag ' + (w.mine ? 'tg' : w.nominated ? 'te' : 'ti')}>{w.mine ? 'Gagné' : w.nominated ? 'Nominé' : '—'}</span>
+                </div>
+              ))}
+            </div>
+          )}
           {past.length > 0 && (
             <div className="pn cut">
               <div className="lbl">Dernières missions</div>

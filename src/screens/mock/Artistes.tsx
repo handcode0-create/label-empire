@@ -3,6 +3,8 @@ import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { ARTIST_LABELS, cityById } from '../../data/world'
 import { artistSlots, signedCount, sum } from '../../engine/util'
+import { STATUS_LABELS, artistStatus, type ArtistStatus } from '../../engine/selectors'
+import { useState } from 'react'
 import { useGame } from '../../store/gameStore'
 import {compact, stars} from '../../lib'
 
@@ -20,6 +22,8 @@ function wish(g: ReturnType<typeof useGame.getState>['game'], a: NonNullable<Ret
 export default function Artistes() {
   const g = useGame((s) => s.game)!
   const { sel, select } = useGame()
+  const [filter, setFilter] = useState<ArtistStatus | 'tous'>('tous')
+  const shown = g.artists.filter((x) => filter === 'tous' || artistStatus(g, x.id) === filter)
   const a = g.artists.find((x) => x.id === sel.artistId) ?? g.artists[0]
   const [mood, line] = a ? wish(g, a) : ['', '']
   const fansList = a ? Object.entries(a.fans).sort((x, y) => y[1] - x[1]).slice(0, 5) : []
@@ -33,11 +37,18 @@ export default function Artistes() {
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 430, display: 'flex', flexDirection: 'column', gap: 12}}>
           <div style={{display: 'flex', alignItems: 'center'}}><h1 className="h1">Mes artistes</h1><span className="sp" /><span className="tag ti">{signedCount(g)} sur {artistSlots(g)} places</span></div>
-          {g.artists.map((x) => (
+          <div style={{display: 'flex', gap: 6, flexWrap: 'wrap'}}>
+            {(['tous', 'tournee', 'enregistrement', 'promo', 'inactif'] as const).map((f) => {
+              const n = f === 'tous' ? g.artists.length : g.artists.filter((x) => artistStatus(g, x.id) === f).length
+              return <button key={f} className={'tag ' + (filter === f ? 'tc' : 'ti')} style={{cursor: 'pointer', border: 0}} onClick={() => setFilter(f)}>{f === 'tous' ? 'Tous' : STATUS_LABELS[f]} · {n}</button>
+            })}
+          </div>
+          {shown.length === 0 && <div className="pn cut mut" style={{fontSize: 14}}>Aucun artiste dans cet état.</div>}
+          {shown.map((x) => (
             <div key={x.id} className={'pn' + (a && x.id === a.id ? ' sel' : '')} role="button" tabIndex={0} onClick={() => select({ artistId: x.id })} style={{display: 'flex', gap: 14, alignItems: 'center', padding: '14px 16px', cursor: 'pointer'}}>
               <Avatar artist={x} size={56} />
               <div style={{flex: 1}}><b style={{fontSize: 17}}>{x.stageName}</b><div className="mut" style={{fontSize: 13}}>{cityById(x.originCityId).name} · {x.genre.toLowerCase()}{x.isFounder ? ' · fondateur' : ''}</div><div className={'mt ' + barc(x.morale)} style={{marginTop: 8}}><i style={{width: Math.round(x.morale) + '%'}} /></div></div>
-              <span className={'tag ' + tone(x.morale)}>Moral {Math.round(x.morale)}</span>
+              <div style={{display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end'}}><span className={'tag ' + tone(x.morale)}>Moral {Math.round(x.morale)}</span><span className="tag ti">{STATUS_LABELS[artistStatus(g, x.id)]}</span></div>
             </div>
           ))}
           <a href="Decouverte.dc.html" className="pn" style={{display: 'flex', alignItems: 'center', gap: 14, padding: 16, borderRadius: 14, boxShadow: 'inset 0 0 0 2px var(--ln)', background: 'transparent'}}>

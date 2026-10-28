@@ -172,6 +172,7 @@ export interface GameState {
   objectives: string[] // objectifs accomplis
   deal: { kind: 'offre' | 'sauvetage'; weeksLeft: number; levy: number } | null // accord avec Meridian Group
   bailouts: number
+  awards: Award[] // palmarès des cérémonies
   missions: Mission[] // missions à échéance
   news: NewsItem[] // fil d'actualités
   certs: { id: string; kind: 'titre' | 'projet'; level: 'or' | 'platine' | 'diamant'; week: number }[] // disques certifiés
@@ -205,3 +206,5 @@ export interface Mission {
   status: 'actif' | 'reussi' | 'echoue'; endWeek?: number
 }
 export interface NewsItem { id: string; week: number; tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }
+
+export interface Award { year: number; week: number; category: 'titre' | 'artiste'; winner: string; artistId?: string; mine: boolean; nominated: boolean }
