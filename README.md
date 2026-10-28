@@ -50,3 +50,7 @@ Un fil rouge : devenir le premier label mondial face à **Meridian Group** (Tom�
 
 ## Certifications
 Disques d'or, de platine et de diamant (`src/engine/certifications.ts`, écran Certifications depuis le Hub). Seuils d'écoutes cumulées : titre 3 M / 10 M / 30 M, EP et album 8 M / 25 M / 80 M. Chaque certification verse une prime (5 k$ / 20 k$ / 100 k$) et de la réputation, et alimente trois objectifs.
+
+
+## Missions et actualités
+Missions à échéance (classement, sorties, fans, recettes, écoutes) : récompense en cash et réputation si réussies, perte de réputation si manquées (max 3 actives). Fil d'actualités : événements du label, vie de l'industrie et manœuvres de Meridian. Écran `Actualites`, accessible depuis le Hub.

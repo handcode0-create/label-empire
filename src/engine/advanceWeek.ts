@@ -1,4 +1,5 @@
 import { CITIES, cityById, palierFor } from '../data/world'
+import { updateMissions, updateNews } from './missions'
 import { checkCertifications } from './certifications'
 import { OBJECTIVES, applyBailout, applyDealLevy, checkObjectives } from './objectives'
 import { createRng } from './rng'
@@ -154,6 +155,8 @@ export function advanceWeek(s0: GameState): GameState {
   s.cashHistory = [...s.cashHistory, Math.round(s.cash)].slice(-60)
   s.week = W + 1
   s.ap = 6
+  updateMissions(s, notes)
+  updateNews(s, notes)
   s.spent = 0
   s.log = [`Semaine ${W} : ${money(revenue)} de recettes`]
   return s
