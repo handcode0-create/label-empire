@@ -11,7 +11,7 @@ export interface Season { id: string; label: string; weeks: [number, number]; ge
 export const SEASONS: Season[] = [
   { id: 'ete', label: 'Saison des festivals', weeks: [22, 36], genres: { 'Afro-pop': 1.08, Amapiano: 1.1, Dancehall: 1.1, 'Coupé-décalé': 1.06, Électro: 1.06 }, text: 'Les festivals tournent : les rythmes dansants dominent.' },
   { id: 'rentree', label: 'Rentrée', weeks: [37, 44], genres: { 'Hip-hop': 1.06, Drill: 1.08, Rock: 1.04, 'R&B': 1.04 }, text: 'La rentrée relance le hip-hop et les sorties ambitieuses.' },
-  { id: 'fetes', label: 'Fêtes de fin d’année', weeks: [45, 52], genres: { Gospel: 1.16, Pop: 1.08, Zouk: 1.08, Rumba: 1.06, Zouk_: 1 }, text: 'Les fêtes favorisent le gospel, la pop et les slows.' },
+  { id: 'fetes', label: 'Fêtes de fin d’année', weeks: [45, 52], genres: { Gospel: 1.16, Pop: 1.08, Zouk: 1.08, Rumba: 1.06}, text: 'Les fêtes favorisent le gospel, la pop et les slows.' },
   { id: 'hiver', label: 'Creux de janvier', weeks: [1, 6], genres: { Pop: 0.96, Électro: 0.95 }, text: 'Janvier est calme : le public écoute moins.' },
 ]
 export const seasonOf = (week: number): Season | undefined => SEASONS.find((x) => weekNo(week) >= x.weeks[0] && weekNo(week) <= x.weeks[1])
