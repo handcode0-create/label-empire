@@ -23,8 +23,10 @@ export function agenda(s: GameState): AgendaItem[] {
   const day = () => days[d++ % days.length]
   for (const song of s.songs) {
     if (song.release?.week === s.week && song.stage === 'scheduled') out.push({ day: day(), title: 'Sortie du single', detail: `« ${song.title} » · ${song.release.cityIds.length} territoire(s)`, tag: 'Prêt', tone: 'g', link: 'Sortie' })
+    if (song.stage === 'recorded' && song.readyWeek <= s.week) out.push({ day: day(), title: 'Enregistrement terminé', detail: `« ${song.title} » attend son mixage`, tag: 'À faire', tone: 'e', link: 'Mixage' })
     if (song.stage === 'mixed' && !song.standby && song.readyWeek <= s.week) out.push({ day: day(), title: 'Titre prêt à sortir', detail: `« ${song.title} » attend une date de sortie`, tag: 'À faire', tone: 'e', link: 'Mixage' })
   }
+  for (const d of s.drafts ?? []) if (s.week - d.week >= 1) out.push({ day: day(), title: 'Brouillon à finir', detail: `« ${d.title || 'Sans titre'} » · ${d.lyrics.trim().split(/\s+/).filter(Boolean).length} mots`, tag: 'Reprendre', tone: 'c', link: 'Ecriture' })
   for (const t of s.tours) for (const st of t.stops) if (st.week === s.week && st.sold === undefined) out.push({ day: day(), title: `Concert à ${cityById(st.cityId).name}`, detail: `${s.artists.find((a) => a.id === t.artistId)?.stageName} · ${st.venue}`, tag: cityById(st.cityId).visa ? 'Visa OK' : 'Prévu', tone: 'c', link: 'Tournee' })
   for (const k of s.contests) if (k.status === 'ouvert') out.push({ day: day(), title: `Concours ${k.name}`, detail: k.endWeek <= s.week ? 'Finale cette semaine' : `Finale en semaine ${k.endWeek}`, tag: 'En cours', tone: 'e', link: 'Concours' })
   for (const m of s.missions ?? []) if (m.status === 'actif' && m.deadline - s.week <= 1) out.push({ day: day(), title: `Mission : ${m.title}`, detail: m.deadline < s.week ? 'Échéance cette semaine' : `Échéance en semaine ${m.deadline}`, tag: 'Urgent', tone: 'r', link: 'Actualites' })

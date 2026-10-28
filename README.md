@@ -66,6 +66,7 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 ## Pochettes, inédits et scènes de tournée
 - **Pochettes** : chaque single, EP et album a une pochette SVG générée (8 styles × 8 palettes), modifiable via « Pochette » dans Sorties › Catalogue ; visible aussi sur la fiche titre et l'écran de programmation.
 - **Inédits** : les titres écrits, enregistrés ou mixés peuvent être mis en standby puis ajoutés à un EP/album ; à la sortie du projet ils sont marqués « Inédit » (+ léger buzz).
+- **Brouillons** : les paroles sont sauvegardées automatiquement et survivent au passage de semaine ; liste « Sons en cours » pour reprendre à n’importe quelle étape ; rappels dans l’agenda.
 - **15 genres** : Afro-pop, Coupé-décalé, Hip-hop, R&B, Amapiano, Pop, Électro, Rock, Mbalax, Kuduro, Dancehall, Drill, Rumba, Zouk, Gospel (affinités par ville, studios et médias).
 - **Certifications SNEP** : barème de référence SNEP (depuis avril 2018 : singles 15 M/30 M/50 M ; albums 50 k/100 k/200 k/300 k/500 k unités, piste principale comptée pour moitié, ÷ 1 000) ×0,2 pour Bakoma ; accessibles depuis Sorties et l’accueil.
 - **Scènes de tournée** : scènes cinématiques déclenchées par les concerts (salle, billets, taux de remplissage), avec choix repos / prime pour l'artiste.

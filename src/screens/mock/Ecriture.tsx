@@ -1,5 +1,6 @@
 import Avatar from '../../components/Avatar'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { deleteDraft, saveDraft } from '../../engine/drafts'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { TITLE_THEMES, generateTitle } from '../../data/titles'
@@ -21,16 +22,18 @@ export default function Ecriture() {
   const g = useGame((s) => s.game)!
   const { sel, run, select, go } = useGame()
   const first = g.artists.find((a) => a.id === sel.artistId) ?? g.artists[0]
-  const [artistId, setArtistId] = useState(first?.id ?? '')
+  const startDraft = g.drafts?.find((d) => d.id === sel.draftId)
+  const [draftId, setDraftId] = useState<string | null>(startDraft?.id ?? null)
+  const [artistId, setArtistId] = useState(startDraft?.artistId ?? first?.id ?? '')
   const artist = g.artists.find((a) => a.id === artistId) ?? first
-  const [title, setTitle] = useState('')
-  const [genre, setGenre] = useState(artist?.genre ?? 'Afro-pop')
-  const [theme, setTheme] = useState('Amour')
-  const [lang, setLang] = useState('français')
-  const [mood, setMood] = useState('Solaire')
-  const [writer, setWriter] = useState<'artiste' | 'externe'>('artiste')
-  const [lyrics, setLyrics] = useState('')
-  const [feat, setFeat] = useState<{ kind: 'label' | 'externe'; id: string } | null>(null)
+  const [title, setTitle] = useState(startDraft?.title ?? '')
+  const [genre, setGenre] = useState(startDraft?.genre ?? artist?.genre ?? 'Afro-pop')
+  const [theme, setTheme] = useState(startDraft?.theme ?? 'Amour')
+  const [lang, setLang] = useState(startDraft?.lang ?? 'français')
+  const [mood, setMood] = useState(startDraft?.mood ?? 'Solaire')
+  const [writer, setWriter] = useState<'artiste' | 'externe'>(startDraft?.writer ?? 'artiste')
+  const [lyrics, setLyrics] = useState(startDraft?.lyrics ?? '')
+  const [feat, setFeat] = useState<{ kind: 'label' | 'externe'; id: string } | null>(startDraft?.feat ?? null)
   const [featOpen, setFeatOpen] = useState(false)
   const genres = [...new Set([artist?.genre ?? 'Afro-pop', ...GENRES])]
   const est = lyricsEstimate(g, { artistId, lyrics, writer, theme })
@@ -43,9 +46,32 @@ export default function Ecriture() {
   const featCost = featArtist && feat?.kind === 'externe' ? featFee(featArtist) : 0
   const autoTitle = () => setTitle(generateTitle(createRng((Date.now() ^ (title.length * 7919)) >>> 0), { theme, mood, lang, genre }, [...g.songs.map((x) => x.title), ...rivalTitles()]))
   const saturated = g.songs.slice(-4).filter((s) => s.theme === theme).length >= 2
+  // Brouillon : enregistré automatiquement, il survit au passage de semaine et à la navigation.
+  const lastSaved = useRef('')
+  useEffect(() => {
+    if (!title.trim() && !lyrics.trim()) return
+    const id = draftId ?? 'd-' + Date.now().toString(36)
+    const payload = { id, title, artistId, genre, theme, lang, mood, lyrics, writer, feat: feat ?? undefined }
+    const key = JSON.stringify(payload)
+    if (key === lastSaved.current) return
+    const t = setTimeout(() => { lastSaved.current = key; if (!draftId) { setDraftId(id); select({ draftId: id }) } run((s) => saveDraft(s, payload)) }, 500)
+    return () => clearTimeout(t)
+  }, [title, lyrics, artistId, genre, theme, lang, mood, writer, feat, draftId])
+  const loadDraft = (id: string) => {
+    const d = g.drafts.find((x) => x.id === id); if (!d) return
+    lastSaved.current = ''
+    setDraftId(d.id); select({ draftId: d.id }); setTitle(d.title); setArtistId(d.artistId); setGenre(d.genre); setTheme(d.theme); setLang(d.lang); setMood(d.mood); setWriter(d.writer); setLyrics(d.lyrics); setFeat(d.feat ?? null)
+  }
+  const newDraft = () => { lastSaved.current = ''; setDraftId(null); select({ draftId: null }); setTitle(''); setLyrics(''); setFeat(null) }
+  const dropDraft = (id: string) => { run((s) => deleteDraft(s, id)); if (id === draftId) newDraft() }
+  const inProgress = g.songs.filter((x) => x.stage === 'written' || x.stage === 'recorded' || (x.stage === 'mixed' && !x.standby))
+  const NEXT: Record<string, [string, string]> = { written: ['Studio', 'Enregistrer'], recorded: ['Mixage', 'Mixer'], mixed: ['Sortie', 'Sortir'] }
   const submit = () => {
     const ok = run((s) => writeSong(s, { title, artistId, genre, theme, lang, mood, lyrics, writer, feat: feat ?? undefined }))
-    if (ok) { const id = useGame.getState().game!.songs.slice(-1)[0].id; select({ songId: id, artistId }); go('Studio') }
+    if (ok) {
+      if (draftId) run((s) => deleteDraft(s, draftId))
+      select({ draftId: null })
+      const id = useGame.getState().game!.songs.slice(-1)[0].id; select({ songId: id, artistId }); go('Studio') }
   }
   const Chips = ({ list, v, set }: { list: string[]; v: string; set: (x: string) => void }) => <div style={{display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8}}>{list.map((x) => <span key={x} className={'chip' + (x === v ? ' on' : '')} style={{cursor: 'pointer'}} onClick={() => set(x)}>{x}</span>)}</div>
   return (
@@ -82,7 +108,23 @@ export default function Ecriture() {
           </div>
           <div style={{display: 'flex', gap: 10, marginTop: 12}}><a href="Ecriture.dc.html" className="btn s sm" onClick={(e) => { e.preventDefault(); idea() }}>Générer une idée</a><a href="Ecriture.dc.html" className="btn s sm" onClick={(e) => { e.preventDefault(); add('[refrain]\n' + IDEAS[Math.floor(Math.random() * IDEAS.length)]) }}>Ajouter un refrain</a><a href="Ecriture.dc.html" className="btn s sm" onClick={(e) => { e.preventDefault(); add(IDEAS[Math.floor(Math.random() * IDEAS.length)] + '\n' + IDEAS[Math.floor(Math.random() * IDEAS.length)]) }}>Ajouter un couplet</a><div className="sp" /><span className="mut" style={{fontSize: 13, alignSelf: 'center'}}>{words(lyrics)} mots · {lyrics.split('\n').filter((l) => l.trim()).length} lignes</span></div>
         </div>
-        <div style={{width: 330, display: 'flex', flexDirection: 'column', gap: 12}}>
+        <div style={{width: 330, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', maxHeight: 800, paddingRight: 4}}>
+          <div className="pn">
+            <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Sons en cours</span><span className="sp" /><span className="chip" role="button" style={{whiteSpace: "nowrap"}} onClick={newDraft}>+ Nouveau</span></div>
+            {g.drafts.length + inProgress.length === 0 && <div className="mut" style={{fontSize: 13, marginTop: 8}}>Vos paroles sont enregistrées automatiquement : vous pouvez passer la semaine et reprendre plus tard.</div>}
+            {g.drafts.map((d) => (
+              <div key={d.id} className={'row' + (d.id === draftId ? ' sel' : '')} style={{gridTemplateColumns: '1fr auto auto', gap: 8, cursor: 'pointer'}} onClick={() => loadDraft(d.id)}>
+                <div style={{minWidth: 0}}><b style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'}}>{d.title || 'Sans titre'}</b><div className="mut" style={{fontSize: 12}}>Brouillon · {words(d.lyrics)} mots · sem. {d.week}</div></div>
+                <span className="tag te">{d.id === draftId ? 'Ouvert' : 'Reprendre'}</span>
+                <span className="chip" role="button" aria-label="Supprimer le brouillon" onClick={(e) => { e.stopPropagation(); dropDraft(d.id) }}>✕</span>
+              </div>
+            ))}
+            {inProgress.map((x) => { const [scr, label] = NEXT[x.stage]; const wait = x.stage !== 'written' && x.readyWeek > g.week; return (
+              <div key={x.id} className="row" style={{gridTemplateColumns: '1fr auto', gap: 8, cursor: 'pointer'}} onClick={() => { select({ songId: x.id, artistId: x.artistId }); go(scr) }}>
+                <div style={{minWidth: 0}}><b style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'}}>{x.title}</b><div className="mut" style={{fontSize: 12}}>{x.stage === 'written' ? 'Écrit' : x.stage === 'recorded' ? 'Enregistré' : 'Mixé'}{wait ? ` · prêt en sem. ${x.readyWeek}` : ''}</div></div>
+                <span className={'tag ' + (wait ? 'ti' : 'tg')}>{label}</span>
+              </div>) })}
+          </div>
           <div className="pn"><div className="lbl">Qualité du texte</div><div style={{display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12}}>
             {([['Écriture', est.ecriture], ['Originalité', est.originalite], ['Cohérence', est.coherence], ['Potentiel refrain', est.refrain]] as const).map(([l, v]) => <div key={l} style={{display: 'grid', gridTemplateColumns: '120px 1fr 34px', gap: 10, alignItems: 'center', fontSize: 14}}><span>{l}</span><div className={'mt ' + col(v)}><i style={{width: v + '%'}} /></div><b>{v}</b></div>)}
           </div></div>
@@ -99,7 +141,7 @@ export default function Ecriture() {
             )}
           </div>
           <div className="pn"><div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 14}}>
-              <div><span className="tag tc">Certain</span><div style={{marginTop: 6}}>Durée : 1 semaine{writer === 'externe' || featCost ? ' · ' + usd((writer === 'externe' ? EXTERNAL_WRITER_COST : 0) + featCost) : ''}</div></div>
+              <div><span className="tag tc">Certain</span><div style={{marginTop: 6}}>Durée : 1 semaine · brouillon sauvegardé{writer === 'externe' || featCost ? ' · ' + usd((writer === 'externe' ? EXTERNAL_WRITER_COST : 0) + featCost) : ''}</div></div>
               <div><span className="tag te">Estimé</span><div style={{marginTop: 6}}>Qualité du texte {est.ecriture}</div></div>
               <div><span className="tag ti">Incertain</span><div style={{marginTop: 6}}>Effet sur le public</div></div>
               <div><span className="tag tr_">Risque</span><div style={{marginTop: 6}}>{saturated ? 'Thème déjà saturé' : 'Faible'}</div></div></div></div>

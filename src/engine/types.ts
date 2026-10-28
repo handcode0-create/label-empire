@@ -179,6 +179,7 @@ export interface GameState {
   bailouts: number
   pitches: Pitch[] // démarchages de playlists
   awards: Award[] // palmarès des cérémonies
+  drafts: Draft[] // brouillons de chansons (reprise possible après plusieurs semaines)
   missions: Mission[] // missions à échéance
   news: NewsItem[] // fil d'actualités
   certs: { id: string; kind: 'titre' | 'projet'; level: 'or' | 'platine' | 'platine2' | 'platine3' | 'diamant'; week: number }[] // disques certifiés
@@ -215,6 +216,7 @@ export interface NewsItem { id: string; week: number; tag: string; text: string;
 
 export interface Award { year: number; week: number; category: 'titre' | 'artiste'; winner: string; artistId?: string; mine: boolean; nominated: boolean }
 
+export interface Draft { id: string; title: string; artistId: string; genre: string; theme: string; lang: string; mood: string; lyrics: string; writer: 'artiste' | 'externe'; feat?: { kind: 'label' | 'externe'; id: string }; week: number }
 export interface Clip { tier: 'lofi' | 'standard' | 'cine'; cost: number; quality: number; startWeek: number; readyWeek: number; status: 'tournage' | 'sorti'; views: number; revenue: number }
 export interface Pitch { songId: string; platformId: string; week: number; accepted: boolean }
 
