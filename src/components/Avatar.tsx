@@ -31,7 +31,7 @@ interface Props {
 export default function Avatar({ artist, keyName, name, gradient, size = 64, style, src: forced }: Props) {
   const label = useGame((st) => st.game?.label)
   const founder = !!artist?.isFounder
-  const key = keyName ?? (founder ? (label?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur') : artist ? avatarKey(artist) : '')
+  const key = keyName ?? (founder ? (label?.founderAvatar ?? (label?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur')) : artist ? avatarKey(artist) : '')
   const file = useAvatarFile(key)
   const src = forced ?? (founder ? label?.photo : undefined) ?? file
   const text = name ?? artist?.stageName ?? '?'

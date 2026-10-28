@@ -52,8 +52,8 @@ export default function NouvellePartie() {
       <div className="pn cut" style={{position: 'absolute', left: 510, top: 112, width: 470, height: 676}}>
         <div className="lbl">Fondateur du label</div>
         <div style={{display: 'flex', alignItems: 'center', gap: 18, marginTop: 14}}>
-          <Avatar keyName={c.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur'} src={c.founderPhoto} name={c.founderName} gradient="#FF3D9A,#8B5CF6" size={112} style={{boxShadow: '0 0 0 4px var(--ln), 0 0 30px rgba(255,61,154,0.4)', fontSize: 40}} />
-          <div style={{display: 'flex', flexDirection: 'column', gap: 8}}><label className="btn s sm" style={{cursor: 'pointer'}}>Choisir une photo<input type="file" accept="image/*" hidden onChange={(e) => readFile(e.target.files?.[0], (d) => patch({ founderPhoto: d }))} /></label><div style={{display: 'flex', gap: 6}}><Chip on={(c.founderLook ?? 'f') === 'f'} onClick={() => patch({ founderLook: 'f' })}>Portrait femme</Chip><Chip on={c.founderLook === 'm'} onClick={() => patch({ founderLook: 'm' })}>Portrait homme</Chip></div><span className="mut" style={{fontSize: 12}}>Photo facultative, sinon portrait illustré.</span></div>
+          <Avatar keyName={c.founderAvatar ?? (c.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur')} src={c.founderPhoto} name={c.founderName} gradient="#FF3D9A,#8B5CF6" size={112} style={{boxShadow: '0 0 0 4px var(--ln), 0 0 30px rgba(255,61,154,0.4)', fontSize: 40}} />
+          <div style={{display: 'flex', flexDirection: 'column', gap: 8}}><label className="btn s sm" style={{cursor: 'pointer'}}>Choisir une photo<input type="file" accept="image/*" hidden onChange={(e) => readFile(e.target.files?.[0], (d) => patch({ founderPhoto: d }))} /></label><span className="mut" style={{fontSize: 12}}>Choisissez un avatar dans la liste à droite, ou importez votre photo.</span></div>
         </div>
         <label htmlFor="fn" className="mut" style={{fontSize: 13, display: 'block', marginTop: 18}}>Nom complet</label>
         <input id="fn" className="in" style={{marginTop: 6}} value={c.founderName} onChange={(e) => patch({ founderName: e.target.value })} />
@@ -78,6 +78,20 @@ export default function NouvellePartie() {
           </div>
           <div style={{display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap'}}><span className="tag ti">Réputation {c.startReputation}</span>{c.alsoArtist && <span className="tag te">Artiste fondateur</span>}<span className="tag tg">Cash {compactUsd(cash)}</span></div>
         </div>
+        <div className="pn cut">
+          <div className="lbl">Votre avatar</div>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8, marginTop: 12}}>
+            {FOUNDER_AVATARS.map((k) => {
+              const on = (c.founderAvatar ?? (c.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur')) === k && !c.founderPhoto
+              return (
+                <button key={k} type="button" aria-label={'Avatar ' + k} aria-pressed={on} onClick={() => patch({ founderAvatar: k, founderLook: k.endsWith('m') || /-m\d$/.test(k) ? 'm' : 'f', founderPhoto: undefined })} style={{padding: 0, border: 'none', background: 'none', cursor: 'pointer', borderRadius: '50%', boxShadow: on ? '0 0 0 3px #FF3D9A, 0 0 14px rgba(255,61,154,0.6)' : '0 0 0 2px var(--ln)'}}>
+                  <Avatar keyName={k} name={k} gradient="#FF3D9A,#8B5CF6" size={48} />
+                </button>
+              )
+            })}
+          </div>
+          <div className="mut" style={{fontSize: 12, marginTop: 10}}>Cet avatar vous représente dans les scènes, sur le Hub et dans les classements.</div>
+        </div>
         <div className="sp" />
       </div>
       <div style={{position: 'absolute', left: 56, right: 56, bottom: 30, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 20}}>
@@ -88,4 +102,5 @@ export default function NouvellePartie() {
   )
 }
 
+const FOUNDER_AVATARS = ['story-joueur', 'story-joueur-m', ...['afrique-ouest', 'amerique-nord', 'amerique-latine'].flatMap((r) => ['f1', 'f2', 'm1', 'm2'].map((v) => `${r}-${v}`))]
 const compactUsd = (n: number) => n >= 1e9 ? '$1 Md' : n >= 1e6 ? '$' + n / 1e6 + ' M' : '$' + n / 1000 + ' k'

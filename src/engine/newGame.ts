@@ -49,7 +49,7 @@ export function createGame(c: NewGameConfig): GameState {
     week: 1, ap: 6,
     cash: startingCash(c.startReputation, c.difficulty, c.capital),
     reputation: c.capital ? startingReputation(c.capital) : c.startReputation,
-    label: { name: c.labelName, logoId: c.logoId, photo: c.founderPhoto, founderLook: c.founderLook ?? 'f', hqCityId: c.hqCityId, currency: c.currency, difficulty: c.difficulty, founder: c.founderName, nationality: c.nationality, mainGenre: c.mainGenre },
+    label: { name: c.labelName, logoId: c.logoId, photo: c.founderPhoto, founderLook: c.founderLook ?? 'f', founderAvatar: c.founderAvatar, hqCityId: c.hqCityId, currency: c.currency, difficulty: c.difficulty, founder: c.founderName, nationality: c.nationality, mainGenre: c.mainGenre },
     staffSkills: full(STAFF_SKILLS, c.staffSkills),
     artists, pool: [], contests: [], tournament: null, seenScenes: [], objectives: [], deal: null, bailouts: 0, songs: [], projects: [], tours: [], staff,
     offices: [{ cityId: c.hqCityId, kind: 'siege', since: 1 }],

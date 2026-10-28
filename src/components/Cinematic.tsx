@@ -63,7 +63,7 @@ export default function Cinematic() {
   const [picked, setPicked] = useState(false)
   const slots = useRef<{ left?: string; right?: string }>({})
   const founderLabel = useGame((st) => st.game?.label)
-  const founderKey = founderLabel?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur'
+  const founderKey = founderLabel?.founderAvatar ?? (founderLabel?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur')
   const founderPhoto = founderLabel?.photo
 
   useEffect(() => { if (scene) { setQueue([...scene.lines, { who: 'narrateur', text: 'Objectif · {goal}' }]); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
