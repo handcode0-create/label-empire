@@ -18,11 +18,14 @@ export default function Equipe() {
   const vacant = RECRUITS.filter((r) => !g.staff.some((m) => m.id === r.id))
   const low = [...g.staff].sort((a, b) => a.morale - b.morale)[0]
   const candidates = CITIES.filter((c) => !g.offices.some((o) => o.cityId === c.id))
-  const [target, setTarget] = useState(candidates.find((c) => c.minRep <= g.reputation + 10)?.id ?? candidates[0].id)
+  const [pick, setTarget] = useState(candidates.find((c) => c.minRep <= g.reputation + 10)?.id ?? candidates[0]?.id ?? '')
+  // Après l'ouverture d'un bureau, la ville choisie n'est plus candidate : on passe à la suivante (ou à rien si le label est présent partout).
+  const target = candidates.some((c) => c.id === pick) ? pick : (candidates.find((c) => c.minRep <= g.reputation + 10) ?? candidates[0])?.id ?? ''
+  const everywhere = candidates.length === 0
   const [kind, setKind] = useState<'bureau' | 'partenaire'>('partenaire')
-  const tc = cityById(target)
-  const req = officeRequirement(g, target, kind)
-  const fans = fansInCity(g, target)
+  const tc = cityById(target || g.label.hqCityId)
+  const req = officeRequirement(g, tc.id, kind)
+  const fans = fansInCity(g, tc.id)
   const missing = Math.max(0, req.fans - fans)
   const rows = [...g.offices.map((o) => ({ id: o.cityId, o })), ...candidates.filter((c) => c.minRep <= g.reputation + 10).slice(0, 4).map((c) => ({ id: c.id, o: null }))]
   return (
@@ -54,6 +57,13 @@ export default function Equipe() {
                 <div><b>{c.name}</b><div className="mut" style={{fontSize: 13}}>{o ? (o.kind === 'siege' ? `Siège · loyer ${usd(rentFor(g, c.id))} / mois` : o.kind === 'bureau' ? `${usd(c.rent)} / mois` : 'Revenus locaux +5 %') : 'Aucune présence'}{o && o.since > g.week ? ` · prêt en S${o.since}` : ''}</div></div>
                 <span className={'tag ' + (o ? (o.kind === 'partenaire' ? 'tc' : 'tg') : locked ? 'tr_' : 'te')}>{o ? (o.kind === 'siege' ? 'Bureau complet' : o.kind === 'bureau' ? 'Bureau' : 'Partenaire distribution') : locked ? `Rép. ${c.minRep}` : 'Disponible'}</span></div>) })}
           </div>
+          {everywhere ? (
+            <div className="pn cut sel">
+              <div className="lbl">Ouvrir un bureau</div>
+              <div className="h2" style={{marginTop: 6, fontSize: 28}}>Présent partout</div>
+              <p className="mut" style={{fontSize: 14}}>Votre label a un bureau ou un partenaire dans chaque ville du jeu. Il ne reste plus qu'à les faire rayonner.</p>
+            </div>
+          ) : (
           <div className="pn cut sel">
             <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Ouvrir un bureau</span><span className="sp" />
               <span className={'chip' + (kind === 'partenaire' ? ' on' : '')} style={{...pill, height: 28}} onClick={() => setKind('partenaire')}>Partenaire</span>&nbsp;<span className={'chip' + (kind === 'bureau' ? ' on' : '')} style={{...pill, height: 28}} onClick={() => setKind('bureau')}>Bureau</span></div>
@@ -67,6 +77,7 @@ export default function Equipe() {
             <div className="mt" style={{marginTop: 14}}><i style={{width: Math.min(100, Math.round((fans / Math.max(1, req.fans)) * 100)) + '%'}} /></div>
             <a href="Equipe.dc.html" className={'btn' + (missing ? ' s' : '')} style={{marginTop: 14, width: '100%'}} onClick={(e) => { e.preventDefault(); run((s) => openOffice(s, target, kind)) }}>{missing ? `Fans insuffisants : encore ${compact(missing)}` : g.reputation < tc.minRep ? `Réputation ${tc.minRep} requise` : `Ouvrir à ${tc.name}`}</a>
           </div>
+          )}
         </div>
       </div>
     </div>

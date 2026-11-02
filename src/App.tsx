@@ -1,3 +1,4 @@
+import ScreenBoundary from './components/ScreenBoundary'
 import { useEffect, useRef, useState, type ComponentType, type MouseEvent } from 'react'
 import { SCREENS } from './screens/registry'
 import { useGame } from './store/gameStore'
@@ -80,7 +81,7 @@ export default function App() {
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: 'radial-gradient(900px 600px at 82% -8%,rgba(139,92,246,.30),transparent 60%),radial-gradient(700px 520px at 0% 100%,rgba(255,61,154,.15),transparent 60%),#120B24' }}>
       <div ref={ref} onClick={onClick} style={{ width: vw, height: vh, overflow: 'hidden' }}>
         <div style={{ position: 'relative', width: sw, height: sh, transform: `scale(${scale})`, transformOrigin: 'top left', ['--sw' as string]: sw + 'px', ['--sh' as string]: sh + 'px' }}>
-          <Screen />
+          <ScreenBoundary resetKey={screen} onHome={() => useGame.getState().go('Hub')}><Screen /></ScreenBoundary>
           {error && <div role="alert" style={{ position: 'absolute', left: 0, right: 0, bottom: 110, textAlign: 'center', color: '#FF5470', fontWeight: 700, fontSize: 16 }}>{error}</div>}
         </div>
       </div>
