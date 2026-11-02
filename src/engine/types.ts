@@ -101,6 +101,7 @@ export interface Song {
   mixQ?: number
   quality?: number
   clip?: Clip // clip vidéo
+  platforms?: string[] // plateformes où le titre est disponible (distribution automatique dès la sortie)
   cover?: Cover // pochette personnalisée
   exclusive?: boolean // inédit sorti avec un EP / album
   standby?: boolean // titre mixé mis en réserve (pour un EP / album)

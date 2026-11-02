@@ -3,7 +3,7 @@ import { pitchCost } from '../../engine/prices'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
 import { CONTINENTS } from '../../data/world'
-import { PITCH_COOLDOWN, PLATFORMS, lastPitch, pitchChance, pitchPlaylist, platformSplit } from '../../engine/platforms'
+import { PITCH_COOLDOWN, PLATFORMS, isOnPlatform, lastPitch, pitchChance, pitchPlaylist, platformSplit } from '../../engine/platforms'
 import { useGame } from '../../store/gameStore'
 import { compact, songName, usd } from '../../lib'
 
@@ -50,7 +50,8 @@ export default function Plateformes() {
                   <div><span className="mut">Rémunération</span><div><b>{Math.round(p.rate * 100)} %</b> du tarif de base</div></div>
                 </div>
                 <div className="mut" style={{fontSize: 12}}>Part de marché : {CONTINENTS.filter((c) => p.share[c] >= 0.15).map((c) => `${c} ${Math.round(p.share[c] * 100)} %`).join(' · ') || '—'}</div>
-                {locked ? <span className="tag tr_">Réputation {p.minRep} requise</span> : (
+                {song && <span className={'tag ' + (isOnPlatform(song, p.id) ? 'tg' : 'tr_')}>{isOnPlatform(song, p.id) ? 'Titre en ligne' : p.kind === 'video' && song.clip?.status !== 'sorti' ? 'Clip requis' : 'Pas encore référencé'}</span>}
+                {locked ? <span className="tag tr_">Réputation {p.minRep} requise</span> : song && !isOnPlatform(song, p.id) ? null : (
                   <button type="button" className="btn sm" disabled={!song || wait > 0} onClick={() => song && run((st) => pitchPlaylist(st, song.id, p.id))}>
                     {wait > 0 ? `Réessayer dans ${wait} sem.` : `Proposer en playlist · ${usd(pitchCost(g, p))}`}
                   </button>

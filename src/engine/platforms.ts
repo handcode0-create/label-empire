@@ -1,5 +1,5 @@
 import { CITIES, type Continent } from '../data/world'
-import type { GameState, Result } from './types'
+import type { GameState, Result, Song } from './types'
 import { pitchCost } from './prices'
 import { addRep, clone, drawRng, fail, ok, spend, useAp } from './util'
 
@@ -17,15 +17,38 @@ export const PLATFORMS: Platform[] = [
 export const platformById = (id: string) => PLATFORMS.find((p) => p.id === id)!
 export const PITCH_COOLDOWN = 8
 
-/** Écoutes d'un titre ou du label par plateforme, d'après la répartition des écoutes par continent. */
+/** Une plateforme référence un titre sorti si la réputation du label est suffisante (et, pour la vidéo, si un clip est sorti). */
+export function eligiblePlatforms(s: GameState, song: Song): string[] {
+  return PLATFORMS.filter((p) => s.reputation >= p.minRep && (p.kind !== 'video' || song.clip?.status === 'sorti')).map((p) => p.id)
+}
+/** Distribution automatique : dès la sortie (et chaque semaine ensuite), le titre est mis en ligne sur toutes les plateformes accessibles. */
+export function syncPlatforms(s: GameState, notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]) {
+  for (const song of s.songs) {
+    if (song.stage !== 'released') continue
+    const have = new Set(song.platforms ?? [])
+    const fresh = eligiblePlatforms(s, song).filter((id) => !have.has(id))
+    if (!fresh.length) continue
+    const first = !song.platforms
+    song.platforms = [...have, ...fresh]
+    const names = fresh.map((id) => platformById(id).name).join(', ')
+    if (first && song.release && s.week - song.release.week > 1) continue // ancienne sauvegarde : mise à jour silencieuse
+    notes.push({ tag: 'Plateformes', text: first ? `« ${song.title} » est en ligne sur ${names}.` : `« ${song.title} » arrive aussi sur ${names}.`, tone: first ? 'g' : 'c' })
+  }
+}
+export const isOnPlatform = (song: Song, platformId: string) => (song.platforms ? song.platforms.includes(platformId) : true)
+
+/** Écoutes d'un titre ou du label par plateforme, d'après la répartition des écoutes par continent (seules les plateformes où le titre est en ligne comptent). */
 export function platformSplit(s: GameState, songs = s.songs): Record<string, number> {
-  const byCont: Record<string, number> = {}
-  for (const song of songs) for (const [cid, v] of Object.entries(song.stats.byCity)) { const c = CITIES.find((x) => x.id === cid); if (c) byCont[c.continent] = (byCont[c.continent] ?? 0) + v }
   const out: Record<string, number> = {}
-  for (const [cont, v] of Object.entries(byCont)) {
-    const shares = PLATFORMS.map((p) => p.share[cont as Continent] ?? 0)
-    const tot = shares.reduce((a, b) => a + b, 0) || 1
-    PLATFORMS.forEach((p, i) => { out[p.id] = (out[p.id] ?? 0) + v * (shares[i] / tot) })
+  for (const song of songs) {
+    const on = PLATFORMS.filter((p) => isOnPlatform(song, p.id))
+    const byCont: Record<string, number> = {}
+    for (const [cid, v] of Object.entries(song.stats.byCity)) { const c = CITIES.find((x) => x.id === cid); if (c) byCont[c.continent] = (byCont[c.continent] ?? 0) + v }
+    for (const [cont, v] of Object.entries(byCont)) {
+      const shares = on.map((p) => p.share[cont as Continent] ?? 0)
+      const tot = shares.reduce((a, b) => a + b, 0) || 1
+      on.forEach((p, i) => { out[p.id] = (out[p.id] ?? 0) + v * (shares[i] / tot) })
+    }
   }
   return out
 }
@@ -47,6 +70,7 @@ export function pitchPlaylist(s0: GameState, songId: string, platformId: string)
   const p = PLATFORMS.find((x) => x.id === platformId)
   if (!song || !p) return fail(s0, 'Titre ou plateforme introuvable.')
   if (song.stage !== 'released') return fail(s0, 'Le titre doit être sorti pour être proposé aux playlists.')
+  if (!isOnPlatform(song, platformId)) return fail(s0, `« ${song.title} » n’est pas encore référencé sur ${p.name}.`)
   if (s.reputation < p.minRep) return fail(s0, `${p.name} exige ${p.minRep} de réputation.`)
   const prev = lastPitch(s, songId, platformId)
   if (prev && s.week - prev.week < PITCH_COOLDOWN) return fail(s0, `Déjà démarché : réessayez dans ${PITCH_COOLDOWN - (s.week - prev.week)} semaine(s).`)

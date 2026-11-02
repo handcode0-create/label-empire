@@ -17,6 +17,7 @@ import { rivalsTick } from './rivalLife'
 import { rivalsAndRefresh, resolveContests } from './scouting'
 import { runTourStops } from './tour'
 import { worldTick } from './dynamics'
+import { syncPlatforms } from './platforms'
 import type { GameState, Report } from './types'
 import { addRep, clamp, clone, drawRng, money, totalFans } from './util'
 
@@ -105,6 +106,7 @@ export function advanceWeek(s0: GameState): GameState {
   // 3. tournées, concours, rivaux
   receipts += runTourStops(s, notes)
   resolveContests(s, notes)
+  syncPlatforms(s, notes)
   rivalsAndRefresh(s, notes)
   worldTick(s, notes)
   echoesTick(s, notes)
