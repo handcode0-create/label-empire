@@ -208,6 +208,19 @@ export function departToRival(s: GameState, a: Artist, label?: string) {
 }
 
 /* ───────────── Tick hebdomadaire ───────────── */
+/** Titres du joueur qui cartonnent en ce moment (sortis depuis peu, dans le top 10 quelque part) : genre → villes où ils dominent. */
+export function hotGenres(s: GameState): Record<string, string[]> {
+  const out: Record<string, string[]> = {}
+  for (const song of s.songs) {
+    if (song.stage !== 'released' || !song.release || s.week - song.release.week > 6) continue
+    const last = song.stats.hist?.[song.stats.hist.length - 1]
+    if (!last || last.rk > 10) continue
+    const cities = Object.entries(song.stats.lastByCity ?? {}).filter(([, v]) => v > 0).sort((x, y) => y[1] - x[1]).slice(0, 2).map(([id]) => id)
+    out[song.genre] = [...new Set([...(out[song.genre] ?? []), ...cities])].slice(0, 3)
+  }
+  return out
+}
+
 export function rivalsTick(s: GameState, notes: Notes) {
   s.rivals ??= makeRivals(s)
   const R = s.rivals
@@ -216,6 +229,7 @@ export function rivalsTick(s: GameState, notes: Notes) {
   const rng = drawRng(s)
   const arts = allRivalArtists(s)
   let announced = 0
+  const hot = hotGenres(s)
   R.prev = R.chart
   for (const a of arts) {
     const d = (R.dyn[a.id] ??= seedDyn(a))
@@ -231,7 +245,7 @@ export function rivalsTick(s: GameState, notes: Notes) {
     }
     const feuding = R.feud && (R.feud.artistA === a.id || R.feud.artistB === a.id)
     let due = d.planned !== undefined && W >= d.planned
-    if (d.planned === undefined && W - d.last >= 4 && rng.chance(0.04 + 0.1 * d.pop + (feuding ? 0.15 : 0))) { d.planned = W + rng.int(0, 3); due = d.planned <= W }
+    if (d.planned === undefined && W - d.last >= 4 && rng.chance(0.04 + 0.1 * d.pop + (feuding ? 0.15 : 0) + (hot[a.genre] && d.pop >= 0.5 ? 0.12 : 0))) { d.planned = W + rng.int(0, 3); due = d.planned <= W }
     if (due) {
       d.planned = undefined
       const song = releaseSong(s, rng, a, d)
@@ -253,10 +267,12 @@ export function rivalsTick(s: GameState, notes: Notes) {
         const origin = cityById(a.originCityId)
         const cands = CITIES.filter((c) => c.minRep <= s.reputation + 20)
         const scored = cands.map((c) => ({ c, k: (mine.has(c.id) ? 1 : 0) + (c.region === origin.region ? 0.6 : 0) + rng.next() })).sort((x, y) => y.k - x.k)
-        const cityIds = scored.slice(0, rng.int(1, 3)).map((x) => x.c.id)
-        const strength = Math.round((0.06 + d.pop * 0.2) * 100) / 100
+        const riposte = hot[a.genre] && d.pop >= 0.5
+        const cityIds = riposte ? [...new Set([...hot[a.genre], ...scored.slice(0, 1).map((x) => x.c.id)])].slice(0, 3) : scored.slice(0, rng.int(1, 3)).map((x) => x.c.id)
+        const strength = Math.round((0.06 + d.pop * 0.2) * (riposte ? 1.25 : 1) * 100) / 100
         s.rivalMoves.push({ id: `rm-${W}-${s.rivalMoves.length}`, week: W, until: W + rng.int(3, 5), label: d.label, artist: a.stageName, title: song.title, genre: a.genre, cityIds, strength })
-        notes.push({ tag: 'Rival', text: `${d.label} lâche « ${song.title} » (${a.stageName}, ${a.genre}) à ${cityIds.map((id) => cityById(id).name).join(', ')} : vos titres de ce genre y perdent du terrain.`, tone: 'r' })
+        if (riposte) notes.push({ tag: 'Riposte', text: `${d.label} riposte à votre succès ${a.genre} : « ${song.title} » (${a.stageName}) cible ${cityIds.map((id) => cityById(id).name).join(', ')}.`, tone: 'r' })
+        else notes.push({ tag: 'Rival', text: `${d.label} lâche « ${song.title} » (${a.stageName}, ${a.genre}) à ${cityIds.map((id) => cityById(id).name).join(', ')} : vos titres de ce genre y perdent du terrain.`, tone: 'r' })
       }
       if (d.pop >= 0.75 && q > 0.85 && rng.chance(0.25)) {
         addTrend(s, { genre: a.genre, mult: 1 + rng.int(8, 18) / 100, start: W, until: W + 5, kind: 'viral', cause: `« ${song.title} » de ${a.stageName} entraîne le genre` })

@@ -76,7 +76,7 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 ## Monde dynamique (événements, tendances, rivaux, artistes)
 - **Événements** (`src/engine/events.ts`) : 17 types avec choix, coûts et issues incertaines (sponsor, scandale, burn-out, fuite, playlist en exclusivité, censure, festival, contrôle fiscal, concert caritatif, vague de genre, change, tension entre artistes, débauchage par un rival, offre de rachat Meridian…). Cooldown par type, résultat affiché dans le rapport.
 - **Tendances & saisons** (`src/engine/dynamics.ts`) : genres en hausse / en baisse pendant 6–11 semaines, effet viral, saisons (festivals, rentrée, fêtes, creux de janvier). Écran **Marché** (bouton sur l’accueil).
-- **Rivaux** : sorties rivales actives qui réduisent vos écoutes dans les villes ciblées (plus fort si même genre) ; contre-campagne possible en événement.
+- **Rivaux** : sorties rivales actives qui réduisent vos écoutes dans les villes ciblées (plus fort si même genre) ; contre-campagne possible en événement. **Riposte** : quand un de vos titres cartonne (sorti depuis moins de 6 semaines, top 10), les rivaux du même genre sortent plus souvent un titre, ciblent les villes où vous dominez (+25 % d’impact) et la presse l’annonce (étiquette « Riposte »).
 - **Meridian** : offensives de 6 à 9 semaines sur une région (−10 % d’écoutes), rachat d’artiste, partenariat si la négociation réussit.
 - **Artistes** : fidélité (moral, sorties, hits, ego), relations entre artistes (feats, médiations, conflits), départ possible ; jauges sur la fiche artiste.
 

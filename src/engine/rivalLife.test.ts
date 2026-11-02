@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { advanceWeek } from './advanceWeek'
 import { chartFor, rankInCity } from './market'
 import { createGame } from './newGame'
-import { departToRival, makeRivals, rivalArtistIn, rivalLabelsIn, rivalSongIn, signToRival } from './rivalLife'
+import { hotGenres, departToRival, makeRivals, rivalArtistIn, rivalLabelsIn, rivalSongIn, signToRival } from './rivalLife'
 import { SIM_CFG } from './simBot'
 
 const fresh = () => createGame({ ...SIM_CFG, seed: 5 })
@@ -80,4 +80,21 @@ describe('projets rivaux dynamiques', () => {
     for (const kind of ['eps', 'albums'] as const) for (const r of chartFor(g, 'monde', 'abidjan', kind)) if (r.projectId) ids.add(r.projectId)
     expect([...ids].some((id) => g.rivals.projects.some((x) => x.id === id))).toBe(true)
   }, 60_000)
+})
+
+describe('riposte des rivaux', () => {
+  it('un titre qui cartonne désigne son genre et ses villes comme cibles', () => {
+    const g = fresh()
+    expect(hotGenres(g)).toEqual({})
+    const song = { id: 'x1', title: 'Hit', genre: 'Afro-pop', stage: 'released', release: { week: g.week - 1, cityIds: ['abidjan'] }, stats: { hist: [{ w: g.week - 1, st: 900_000, rk: 2 }], lastByCity: { abidjan: 800_000, lagos: 100_000 } } } as never
+    g.songs.push(song)
+    const hot = hotGenres(g)
+    expect(hot['Afro-pop']).toEqual(['abidjan', 'lagos'])
+  })
+  it('un titre hors du top 10 ou trop ancien ne déclenche rien', () => {
+    const g = fresh()
+    g.songs.push({ id: 'x2', genre: 'Rock', stage: 'released', release: { week: g.week - 1 }, stats: { hist: [{ w: 1, st: 10, rk: 40 }], lastByCity: { abidjan: 10 } } } as never)
+    g.songs.push({ id: 'x3', genre: 'Jazz', stage: 'released', release: { week: g.week - 20 }, stats: { hist: [{ w: 1, st: 10, rk: 1 }], lastByCity: { abidjan: 10 } } } as never)
+    expect(hotGenres(g)).toEqual({})
+  })
 })
