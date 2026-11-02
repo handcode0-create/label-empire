@@ -41,6 +41,9 @@ function officeBoost(s: GameState, city: City) {
   return b
 }
 
+/** Écoutes hebdomadaires maximales de l'ensemble du label dans une ville : le marché se sature (réputation 0 → 1,1 × la taille du marché, 100 → 2 ×). */
+export const cityCapacity = (s: GameState, city: City) => city.base * (1.1 + 0.9 * Math.min(1, s.reputation / 100))
+
 /** E = B · Q · A · (1+M) · D(t) · (1+F) : écoutes d'un titre sur une ville, pour une semaine donnée. */
 export function weeklyStreams(s: GameState, song: Song, city0: City, week: number): number {
   const city = liveCity(s, city0)

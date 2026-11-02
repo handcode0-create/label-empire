@@ -6,8 +6,8 @@ import { updateMissions, updateNews } from './missions'
 import { checkCertifications } from './certifications'
 import { OBJECTIVES, applyBailout, applyDealLevy, checkObjectives } from './objectives'
 import { createRng } from './rng'
-import { STREAM_VALUE, rankInCity, royaltyShare, weeklyStreams } from './market'
-import { makeEvent, resolveEvent, weeklyFixedCosts } from './economy'
+import { STREAM_VALUE, cityCapacity, rankInCity, royaltyShare, weeklyStreams } from './market'
+import { makeEvent, resolveEvent, weeklyFixedCosts, weeklyTax } from './economy'
 import { dueEchoEvent, echoesTick } from './events'
 import { fanTick, releaseReaction, saturation } from './fans'
 import { fxRate, fxTick, liveCity, marketTick, streamValueMult } from './prices'
@@ -59,6 +59,15 @@ export function advanceWeek(s0: GameState): GameState {
   const weekStreams: Record<string, number> = {}
   const byContinent: Record<string, number> = {}
   let repGain = 0
+  // saturation : l'ensemble du catalogue ne peut pas dépasser la capacité d'écoute d'une ville
+  const citySat: Record<string, number> = {}
+  for (const c0 of CITIES) {
+    const c = liveCity(s, c0)
+    let raw = 0
+    for (const song of s.songs) if (song.stage === 'released') raw += weeklyStreams(s, song, c0, W)
+    const cap = cityCapacity(s, c)
+    citySat[c.id] = raw > cap ? cap / raw : 1
+  }
   for (const song of s.songs) {
     if (song.stage !== 'released') continue
     const artist = s.artists.find((a) => a.id === song.artistId)
@@ -68,7 +77,7 @@ export function advanceWeek(s0: GameState): GameState {
     let weekRk = 99
     for (const c0 of CITIES) {
       const c = liveCity(s, c0)
-      const st = Math.round(weeklyStreams(s, song, c0, W) * (0.93 + rng.next() * 0.14))
+      const st = Math.round(weeklyStreams(s, song, c0, W) * (citySat[c.id] ?? 1) * (0.93 + rng.next() * 0.14))
       song.stats.prevByCity[c.id] = song.stats.lastByCity[c.id] ?? 0
       song.stats.lastByCity[c.id] = st
       if (st <= 0) continue
@@ -129,6 +138,10 @@ export function advanceWeek(s0: GameState): GameState {
   if (fixed.salaries) items.push({ label: 'Salaires', amount: -fixed.salaries })
   if (fixed.rent) items.push({ label: 'Loyers des bureaux', amount: -fixed.rent })
   if (fixed.overhead) items.push({ label: 'Frais de structure', amount: -fixed.overhead })
+  // impôt sur les bénéfices de la semaine
+  const profit = arrived - fixed.total - (s.spent ?? 0) - (s.loan?.weekly ?? 0)
+  const tax = weeklyTax(profit)
+  if (tax > 0) { s.cash -= tax; items.push({ label: 'Impôt sur les bénéfices', amount: -tax }) }
   if (s.loan) {
     s.loan.remaining -= s.loan.weekly; s.loan.weeksLeft--
     items.push({ label: 'Remboursement du prêt', amount: -s.loan.weekly })

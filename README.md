@@ -88,3 +88,8 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 - **Économie** (`prices.ts`) : prix des studios, médias, démarchages et loyers (saison, inflation, réputation), taux de change par devise (`fx`), clips, mixages et tournées indexés sur l'inflation ; marchés vivants (`markets` : taille, taxes et piratage par ville évoluent, `payout` : rémunération des plateformes).
 - **Presse et rumeurs** (`rumors.ts`) : rumeurs sur des faits réels, confirmées ou démenties ; actualités dérivées de l'état du monde ; saisons décalées dans l'hémisphère sud ; calendrier de sorties avec les vraies sorties rivales annoncées.
 - **Calibrage** : `VITE_SIM_LOG=1 npx vitest run src/engine/sim.test.ts` joue 260 semaines avec un joueur automatique ; réputation 100 entre les semaines 214 et 231 (cible 208 à 260).
+
+## Économie du succès
+- **Saturation des marchés** (`cityCapacity`, `advanceWeek`) : l'ensemble du catalogue d'un label ne peut pas dépasser 1,1 à 2 fois la taille d'une ville par semaine (selon la réputation) ; au-delà, les écoutes sont réduites proportionnellement.
+- **Impôt sur les bénéfices** (`weeklyTax`, ligne « Impôt sur les bénéfices » du rapport et des Finances) : 20 % entre 40 k$ et 120 k$ de bénéfice hebdomadaire, 35 % jusqu'à 300 k$, 50 % au-delà.
+- **Coût du succès** (`prestige`, `prices.ts`) : studios, médias, démarchage de playlists, clips, mixages et tournées coûtent plus cher quand la réputation monte (×1,6 à 50, ×2,8 à 100) ; les salaires suivent (+80 % à 100).

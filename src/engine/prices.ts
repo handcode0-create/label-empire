@@ -12,6 +12,8 @@ type Notes = { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]
 /** Inflation lente des prix (cachets, studios, promo, loyers). */
 export const INFLATION_PER_WEEK = 0.0008
 export const inflation = (week: number) => 1 + INFLATION_PER_WEEK * Math.max(0, week - 1)
+/** Coût du succès : plus le label est grand, plus les prestataires facturent cher (réputation 50 → ×1,6, 100 → ×2,8). */
+export const prestige = (s: { reputation: number }) => 1 + Math.pow(Math.max(0, s.reputation) / 100, 1.5) * 1.8
 
 /** Bruit lisse déterministe propre à une clé (un studio, une ville) : varie lentement d'une semaine à l'autre. */
 const wave = (key: string, week: number, period: number, amp: number) => 1 + amp * Math.sin((2 * Math.PI * (week + (hash(key) % period))) / period)
@@ -30,16 +32,16 @@ export function streamValueMult(week: number): number {
 /** Tarif journalier d'un studio : saison, inflation, popularité du studio et notoriété du label (les grands studios facturent plus cher les labels connus). */
 export function studioPrice(s: GameState, st: Studio): number {
   const fame = 1 + s.reputation / 400 + (st.stars >= 4 ? s.reputation / 500 : 0)
-  return Math.round((st.pricePerDay * inflation(s.week) * seasonDemand(s.week) * wave(st.id, s.week, 17, 0.07) * fame) / 10) * 10
+  return Math.round((st.pricePerDay * inflation(s.week) * seasonDemand(s.week) * wave(st.id, s.week, 17, 0.07) * fame * Math.sqrt(prestige(s))) / 10) * 10
 }
 /** Variation (en %) du tarif par rapport au tarif de base. */
 export const priceDelta = (now: number, base: number) => Math.round((now / base - 1) * 100)
 
 export function mediaCost(s: GameState, m: Media): number {
-  return Math.round((m.cost * inflation(s.week) * (0.92 + 0.16 * seasonDemand(s.week)) * (1 + s.reputation / 300)) / 50) * 50
+  return Math.round((m.cost * inflation(s.week) * (0.92 + 0.16 * seasonDemand(s.week)) * prestige(s)) / 50) * 50
 }
 export function pitchCost(s: GameState, p: Platform): number {
-  return Math.round((p.pitchCost * inflation(s.week) * (1 + s.reputation / 300)) / 50) * 50
+  return Math.round((p.pitchCost * inflation(s.week) * prestige(s)) / 50) * 50
 }
 /** Loyer mensuel d'un bureau : cycle immobilier propre à chaque ville, plus l'inflation. */
 export function rentFor(s: GameState, cityId: string): number {
@@ -70,7 +72,7 @@ export function fxTick(s: GameState, notes: Notes) {
 
 /** Coût d'une prestation (clip, mixage, tournée) : inflation et légère tension saisonnière. */
 export function opCost(s: GameState, base: number): number {
-  return Math.round((base * inflation(s.week) * (0.95 + 0.05 * seasonDemand(s.week))) / 10) * 10
+  return Math.round((base * inflation(s.week) * (0.95 + 0.05 * seasonDemand(s.week)) * prestige(s)) / 10) * 10
 }
 
 /* ───────────── Marchés vivants ───────────── */

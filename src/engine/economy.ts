@@ -82,8 +82,21 @@ export function weeklyFixedCosts(s: GameState) {
   const rent = s.offices.filter((o) => o.since <= s.week).reduce((t, o) => t + (o.kind === 'partenaire' ? 0 : rentFor(s, o.cityId) / 4.33), 0)
   const overhead = Math.round(s.reputation * 30 + s.reputation * s.reputation * 1.2) // frais de structure : croissent plus vite que la réputation (50 → 4 500 $/sem, 100 → 15 000 $/sem)
   const k = modsOf(s).costs
-  const sal = Math.round(salaries * k), rt = Math.round(rent * k), ov = Math.round(overhead * k)
+  // les salaires suivent le succès du label
+  const sal = Math.round(salaries * k * (1 + (s.reputation / 100) * 0.8)), rt = Math.round(rent * k), ov = Math.round(overhead * k)
   return { salaries: sal, rent: rt, overhead: ov, loan: s.loan?.weekly ?? 0, total: sal + rt + ov + (s.loan?.weekly ?? 0) }
+}
+
+/** Impôt sur les bénéfices hebdomadaires : tranches progressives au-dessus de 40 000 $ par semaine. */
+export const TAX_BRACKETS: { from: number; to: number; rate: number }[] = [
+  { from: 40_000, to: 120_000, rate: 0.2 },
+  { from: 120_000, to: 300_000, rate: 0.35 },
+  { from: 300_000, to: Infinity, rate: 0.5 },
+]
+export function weeklyTax(profit: number): number {
+  let tax = 0
+  for (const b of TAX_BRACKETS) if (profit > b.from) tax += (Math.min(profit, b.to) - b.from) * b.rate
+  return Math.round(tax)
 }
 
 // ---------- événements : voir events.ts ----------
