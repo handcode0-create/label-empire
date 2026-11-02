@@ -1,3 +1,4 @@
+import { placeLabels } from '../../data/mapLabels'
 import { useMemo, useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -32,6 +33,7 @@ export default function Hub() {
   const path = pts.map((v, i) => `${i ? 'L' : 'M'}${Math.round((i / (pts.length - 1)) * 320)} ${Math.round(y(v))}`).join(' ')
   const openCity = (id: string) => { select({ cityId: id }); go('Pays') }
   const shown = CITIES.filter((c) => !zoom || c.continent === zoom)
+  const labels = placeLabels(shown.map((c) => { const o = g.offices.find((x) => x.cityId === c.id); return { id: c.id, x: c.x, y: c.y, text: c.name + (o?.kind === 'siege' ? ' · siège' : ''), priority: (o?.kind === 'siege' ? 3e6 : o ? 2e6 : 0) + c.base } }), 900, 450)
 
   return (
     <div className="scr">
@@ -49,16 +51,16 @@ export default function Hub() {
               const locked = c.minRep > g.reputation
               const cls = office ? (office.kind === 'partenaire' ? 'c' : 'g') : locked ? 'd' : ''
               const fans = cities[c.id] ?? 0
-              const nameY = ({ abidjan: 4, lagos: -4.4, london: -4, berlin: -3, paris: 2.5, mumbai: 4 } as Record<string, number>)[c.id] ?? 0
+              const lb = labels[c.id]
               return (
                 <div key={c.id}>
                   <div className={'mk ' + cls} role="button" tabIndex={0} aria-label={c.name} onClick={() => openCity(c.id)} style={{left: c.x + '%', top: c.y + '%', cursor: 'pointer', opacity: !office && !fans && !locked ? 0.65 : 1}} />
-                  <div className="mn" onClick={() => openCity(c.id)} style={{left: c.x + '%', top: c.y + nameY + '%', cursor: 'pointer', color: office?.kind === 'siege' ? '#FFC63D' : locked ? '#9C90CC' : undefined}}>{c.name}{office?.kind === 'siege' ? ' · siège' : ''}</div>
+                  <div className="mn" onClick={() => openCity(c.id)} style={{left: lb.left, top: lb.top, transform: 'none', lineHeight: lb.h + 'px', cursor: 'pointer', color: office?.kind === 'siege' ? '#FFC63D' : locked ? '#9C90CC' : undefined}}>{c.name}{office?.kind === 'siege' ? ' · siège' : ''}</div>
                 </div>
               )
             })}
           </div>
-          <div style={{position: 'absolute', left: 20, bottom: 16, right: 20, display: 'flex', gap: 22, fontSize: 13, color: '#B3A6D9', alignItems: 'center'}}>
+          <div style={{position: 'absolute', left: 20, top: 506, right: 20, display: 'flex', gap: 22, fontSize: 13, color: '#B3A6D9', alignItems: 'center'}}>
             <span><i className="mk g" style={{position: 'static', display: 'inline-block', verticalAlign: '-3px', margin: '0 8px 0 0'}} />Siège / bureau</span>
             <span><i className="mk c" style={{position: 'static', display: 'inline-block', verticalAlign: '-3px', margin: '0 8px 0 0'}} />Partenaire local</span>
             <span><i className="mk" style={{position: 'static', display: 'inline-block', verticalAlign: '-3px', margin: '0 8px 0 0'}} />Fans présents</span>
@@ -69,7 +71,7 @@ export default function Hub() {
               <div key={c}><div className="lbl">{c === 'Amérique du Nord' ? 'Amér. Nord' : c === 'Amérique latine' ? 'Amér. latine' : c}</div><div className="disp" style={{fontSize: 22}}>{compact(conts[c] ?? 0)}</div><div className="mt" style={{marginTop: 6}}><i style={{width: Math.round(((conts[c] ?? 0) / maxCont) * 100) + '%'}} /></div></div>
             ))}
           </div>
-          <div style={{position: 'absolute', left: 20, right: 20, bottom: 48, top: 626}} title="Cliquez un continent pour filtrer, puis une ville pour ouvrir sa fiche.">
+          <div style={{position: 'absolute', left: 20, right: 20, bottom: 14, top: 626}} title="Cliquez un continent pour filtrer, puis une ville pour ouvrir sa fiche.">
             <div style={{display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6}}>
               <span className="lbl">Actualités de la semaine</span><span className="sp" />
               <a href="Actualites.dc.html" className="chip" onClick={(e) => { e.preventDefault(); go('Actualites') }}>Tout voir</a>

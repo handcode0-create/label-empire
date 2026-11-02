@@ -1,3 +1,4 @@
+import { placeLabels } from '../../data/mapLabels'
 import { useState } from 'react'
 import Hud from '../../components/Hud'
 import Dock from '../../components/Dock'
@@ -21,6 +22,7 @@ export default function Tournee() {
   const [picker, setPicker] = useState(false)
   const [openVenue, setOpenVenue] = useState<number | null>(null)
   const unlocked = CITIES.filter((c) => c.minRep <= g.reputation)
+  const tourLabels = placeLabels(unlocked.map((c) => { const n = stops.findIndex((x) => x.cityId === c.id); return { id: c.id, x: c.x, y: c.y, text: n >= 0 ? `${n + 1}. ${c.name}` : '', priority: n >= 0 ? 1e6 : 0 } }), 700, 190)
   const patch = (i: number, p: Partial<TourStop>) => setStops(stops.map((s, j) => (j === i ? { ...s, ...p } : s)))
   const addStop = (cityId: string) => { if (!cityId) return; const lastW = stops.length ? stops[stops.length - 1].week : g.week + 1; setStops([...stops, newStop(cityId, lastW + 1)]) }
   const togglePartner = (id: string, minRep: number) => {
@@ -44,10 +46,10 @@ export default function Tournee() {
           <div className="pn cut" style={{padding: '14px 18px'}}><label htmlFor="tn" className="lbl">Nom de la tournée</label><input id="tn" className="in" style={{marginTop: 8, fontSize: 20, fontWeight: 700}} value={name} onChange={(e) => setName(e.target.value)} /></div>
           <div className="map" style={{height: 190, position: 'relative'}}>
             <div className="mk g" style={{left: cityById(artist.originCityId).x + '%', top: cityById(artist.originCityId).y + '%'}} />
-            {unlocked.map((c) => { const n = stops.findIndex((x) => x.cityId === c.id); return (
+            {unlocked.map((c) => { const n = stops.findIndex((x) => x.cityId === c.id); const lb = tourLabels[c.id]; return (
               <div key={c.id}>
                 <div className={'mk' + (n >= 0 ? ' c' : ' d')} role="button" tabIndex={0} aria-label={(n >= 0 ? 'Retirer ' : 'Ajouter ') + c.name} title={c.name} onClick={() => (n >= 0 ? setStops(stops.filter((_, j) => j !== n)) : addStop(c.id))} style={{left: c.x + '%', top: c.y + '%', cursor: 'pointer', opacity: n >= 0 ? 1 : 0.7}} />
-                {n >= 0 && <div className="mn" style={{left: c.x + '%', top: c.y + '%', pointerEvents: 'none'}}>{n + 1}. {c.name}</div>}
+                {n >= 0 && lb && <div className="mn" style={{left: lb.left, top: lb.top, transform: 'none', lineHeight: lb.h + 'px', pointerEvents: 'none'}}>{n + 1}. {c.name}</div>}
               </div>) })}
           </div>
           <div style={{display: 'flex', alignItems: 'center', gap: 10}}><span className="lbl">Étapes et prix des billets</span><span className="sp" />
