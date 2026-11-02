@@ -33,6 +33,7 @@ export interface RivalState {
   chart: RivalCharts // semaine `week`
   prev: RivalCharts // semaine précédente
   week: number
+  signed?: string[] // artistes rivaux rachetés par le joueur (ils quittent le monde rival)
 }
 
 /** Échelle des classements rivaux (réglage d'équilibrage) et croissance du marché au fil des semaines. */
@@ -48,7 +49,7 @@ const decay = (t: number) => (t === 0 ? 0.9 : t === 1 ? 1 : Math.max(0.03, Math.
 const growth = (W: number) => 1 + RIVAL_GROWTH * Math.max(0, W - 1)
 
 export const projectsOf = (s: GameState, a: RivalArtist): RivalProject[] => [...a.projects, ...(s.rivals?.projects ?? []).filter((p) => p.artistId === a.id)]
-export const allRivalArtists = (s: GameState): RivalArtist[] => [...rivalWorld().artists, ...(s.rivals?.extra ?? [])]
+export const allRivalArtists = (s: GameState): RivalArtist[] => { const gone = s.rivals?.signed; const all = [...rivalWorld().artists, ...(s.rivals?.extra ?? [])]; return gone?.length ? all.filter((a) => !gone.includes(a.id)) : all }
 
 function homeFactor(a: RivalArtist, cityId: string) {
   const c = cityById(cityId), o = cityById(a.originCityId)

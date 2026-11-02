@@ -8,6 +8,8 @@ import { rivalTitles } from '../../engine/rivals'
 import { GENRES, cityById } from '../../data/world'
 import { createRng } from '../../engine/rng'
 import { featBonus, featFee } from '../../engine/production'
+import { rivalArtistIn } from '../../engine/rivalLife'
+import { rivalFeatQuote } from '../../engine/rivalDeals'
 import { visibleCandidates } from '../../engine/scouting'
 import { EXTERNAL_WRITER_COST, lyricsEstimate, words, writeSong } from '../../engine/production'
 import { useGame } from '../../store/gameStore'
@@ -33,7 +35,7 @@ export default function Ecriture() {
   const [mood, setMood] = useState(startDraft?.mood ?? 'Solaire')
   const [writer, setWriter] = useState<'artiste' | 'externe'>(startDraft?.writer ?? 'artiste')
   const [lyrics, setLyrics] = useState(startDraft?.lyrics ?? '')
-  const [feat, setFeat] = useState<{ kind: 'label' | 'externe'; id: string } | null>(startDraft?.feat ?? null)
+  const [feat, setFeat] = useState<{ kind: 'label' | 'externe' | 'rival'; id: string } | null>(startDraft?.feat ?? (sel.featRivalId ? { kind: 'rival', id: sel.featRivalId } : null))
   const [featOpen, setFeatOpen] = useState(false)
   const genres = [...new Set([artist?.genre ?? 'Afro-pop', ...GENRES])]
   const est = lyricsEstimate(g, { artistId, lyrics, writer, theme })
@@ -42,8 +44,10 @@ export default function Ecriture() {
   const idea = () => add(IDEAS[Math.floor(Math.random() * IDEAS.length)])
   const partners = g.artists.filter((a) => a.id !== artistId)
   const externals = visibleCandidates(g).filter((a) => a.id !== artistId).slice(0, 8)
-  const featArtist = feat ? (feat.kind === 'label' ? g.artists : g.pool).find((a) => a.id === feat.id) : undefined
-  const featCost = featArtist && feat?.kind === 'externe' ? featFee(featArtist) : 0
+  const featRival = feat?.kind === 'rival' ? rivalArtistIn(g, feat.id) : undefined
+  const rivalQ = featRival ? rivalFeatQuote(g, featRival) : undefined
+  const featArtist = feat && feat.kind !== 'rival' ? (feat.kind === 'label' ? g.artists : g.pool).find((a) => a.id === feat.id) : undefined
+  const featCost = rivalQ ? rivalQ.fee : featArtist && feat?.kind === 'externe' ? featFee(featArtist) : 0
   const autoTitle = () => setTitle(generateTitle(createRng((Date.now() ^ (title.length * 7919)) >>> 0), { theme, mood, lang, genre }, [...g.songs.map((x) => x.title), ...rivalTitles()]))
   const saturated = g.songs.slice(-4).filter((s) => s.theme === theme).length >= 2
   // Brouillon : enregistré automatiquement, il survit au passage de semaine et à la navigation.
@@ -131,7 +135,8 @@ export default function Ecriture() {
           <div className="pn">
             <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Featuring</span><span className="sp" />{feat ? <span className="chip on" onClick={() => setFeat(null)}>Retirer</span> : <span className="chip" onClick={() => setFeatOpen(!featOpen)}>{featOpen ? 'Fermer' : 'Ajouter un feat'}</span>}</div>
             {featArtist && <div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 10}}><Avatar artist={featArtist} size={40} /><div style={{flex: 1}}><b>{featArtist.stageName}</b><div className="mut" style={{fontSize: 12}}>{cityLabel(featArtist.originCityId)} · +{featBonus(featArtist)} qualité · {feat?.kind === 'externe' ? `${usd(featCost)} + 12 % des revenus` : 'artiste du label'}</div></div></div>}
-            {!featArtist && !featOpen && <div className="mut" style={{fontSize: 13, marginTop: 8}}>Un duo apporte de la qualité et l'audience du partenaire dans sa ville.</div>}
+            {featRival && rivalQ && <div style={{display: 'flex', alignItems: 'center', gap: 10, marginTop: 10}}><Avatar artist={featRival as never} size={40} /><div style={{flex: 1}}><b>{featRival.stageName}</b><div className="mut" style={{fontSize: 12}}>{featRival.labelName} · {cityLabel(featRival.originCityId)} · +{rivalQ.bonus} qualité · {usd(rivalQ.fee)} + {Math.round(rivalQ.share * 100)} % des revenus</div>{!rivalQ.ok && <div className="dn" style={{fontSize: 12}}>Refuse : réputation {rivalQ.minRep} requise</div>}</div></div>}
+            {!featArtist && !featRival && !featOpen && <div className="mut" style={{fontSize: 13, marginTop: 8}}>Un duo apporte de la qualité et l'audience du partenaire dans sa ville.</div>}
             {featOpen && !feat && (
               <div style={{marginTop: 8, maxHeight: 190, overflow: 'auto'}}>
                 {partners.map((a) => <div key={a.id} className="row" style={{gridTemplateColumns: '1fr auto', cursor: 'pointer'}} onClick={() => { setFeat({ kind: 'label', id: a.id }); setFeatOpen(false) }}><div><b>{a.stageName}</b><div className="mut" style={{fontSize: 12}}>Label · +{featBonus(a)} qualité · gratuit</div></div><span className="tag tg">Choisir</span></div>)}

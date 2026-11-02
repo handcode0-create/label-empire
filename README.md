@@ -97,3 +97,8 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 ## Page Enregistrer (Studio) et images manquantes
 - La page Studio a été refaite (choix du morceau, de l'artiste, du studio et du budget, avec le total affiché sur le bouton « Enregistrer »).
 - Six décors de scène (`plateau`, `redaction`, `ceremonie`, `agence`, `terrasse`, `tour`) et le portrait `story-awa` sont facultatifs : un décor de secours est utilisé tant qu'ils sont absents. Prompts dans `docs/images/PROMPTS_MANQUANTS.md`.
+
+## Artistes rivaux : interactions
+Depuis les classements, un clic sur n'importe quel artiste ouvre sa fiche. Pour un artiste d'un label concurrent, le panneau « Interagir » propose :
+- **Featuring** : cachet selon sa popularité et votre prestige, 15 % des revenus du titre, bonus de qualité et audience dans sa ville. Réputation minimale requise (`rivalFeatQuote`). Le duo s'écrit dans l'écran Écriture.
+- **Rachat de contrat** : prix selon sa popularité et les années restantes (`buyoutQuote`), réputation minimale, place libre et une action. L'artiste quitte le monde rival (`rivals.signed`) et rejoint votre label.

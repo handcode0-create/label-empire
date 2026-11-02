@@ -8,6 +8,8 @@ import { chartFor } from "../../engine/market";
 import { projectOf, projectSongs, projectStreams } from "../../engine/projects";
 import { rivalOrigin, rivalTotalPlays } from "../../engine/rivals";
 import { rivalArtistIn } from "../../engine/rivalLife";
+import { buyoutQuote, buyoutRival, isSignedByMe, rivalFeatQuote } from "../../engine/rivalDeals";
+import { artistSlots, signedCount } from "../../engine/util";
 import { sum } from "../../engine/util";
 import { egoOf, loyaltyOf, relKey } from "../../engine/dynamics";
 import { heatOf } from "../../engine/fans";
@@ -34,6 +36,9 @@ export default function Artiste() {
   const g = useGame((s) => s.game)!;
   const sel = useGame((s) => s.sel);
   const open = useOpen();
+  const run = useGame((s) => s.run);
+  const select = useGame((s) => s.select);
+  const go = useGame((s) => s.go);
   const mine = g.artists.find((a) => a.id === sel.artistId);
   const rival = !mine ? rivalArtistIn(g, sel.rivalId ?? "") : undefined;
   if (!mine && !rival)
@@ -627,12 +632,60 @@ export default function Artiste() {
                     className="mut"
                     style={{ gridColumn: "1 / -1", fontSize: 12 }}
                   >
-                    Sous contrat avec un label rival : il ne peut pas être
-                    recruté avant la fin de ce contrat.
+                    Sous contrat avec un label rival : vous pouvez racheter son
+                    contrat ou lui proposer un featuring (voir « Interagir »).
                   </div>
                 </div>
               )}
             </div>
+            {rival && (() => {
+              const fq = rivalFeatQuote(g, rival);
+              const bq = buyoutQuote(g, rival);
+              const mineNow = isSignedByMe(g, rival.id);
+              const slots = g.artists.length > 0;
+              return (
+                <div className="pn" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div className="lbl">Interagir avec {rival.stageName}</div>
+                  {mineNow ? (
+                    <div>
+                      <span className="tag tg">Dans votre label</span>
+                      <div style={{ marginTop: 10 }}>
+                        <span className="btn" role="button" onClick={() => { select({ artistId: `rb-${rival.id}`, rivalId: null }); go("Artiste"); }}>Ouvrir sa fiche</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <b>Proposer un featuring</b>
+                          <span className="sp" />
+                          <span className={"tag " + (fq.ok ? "tc" : "tr_")}>{fq.ok ? "Possible" : `Réputation ${fq.minRep}`}</span>
+                        </div>
+                        <div className="mut" style={{ fontSize: 13, margin: "4px 0 8px" }}>
+                          {usd(fq.fee)} + {Math.round(fq.share * 100)} % des revenus · +{fq.bonus} qualité · son audience à {city.name}
+                        </div>
+                        <span className={"btn s" + (fq.ok && slots ? "" : " off")} role="button" aria-disabled={!(fq.ok && slots)} style={fq.ok && slots ? undefined : { opacity: 0.45, cursor: "not-allowed" }} onClick={() => { if (!slots) return; if (!fq.ok) return; select({ featRivalId: rival.id, artistId: g.artists[0].id, draftId: null }); go("Ecriture"); }}>
+                          {slots ? "Écrire un titre en duo" : "Signez d'abord un artiste"}
+                        </span>
+                      </div>
+                      <div style={{ borderTop: "1px solid var(--ln)", paddingTop: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <b>Racheter son contrat</b>
+                          <span className="sp" />
+                          <span className={"tag " + (bq.ok ? "tg" : "tr_")}>{g.reputation < bq.minRep ? `Réputation ${bq.minRep}` : g.cash < bq.price ? "Trésorerie" : "Possible"}</span>
+                        </div>
+                        <div className="mut" style={{ fontSize: 13, margin: "4px 0 8px" }}>
+                          {usd(bq.price)} versés à {rival.labelName} · contrat de {Math.max(2, rival.contract.yearsLeft)} ans ou plus · {signedCount(g)}/{artistSlots(g)} places
+                        </div>
+                        <span className="btn" role="button" aria-disabled={!bq.ok} style={bq.ok ? undefined : { opacity: 0.45 }} onClick={() => { const ok = run((s) => buyoutRival(s, rival.id)); if (ok) { select({ artistId: `rb-${rival.id}`, rivalId: null }); go("Artiste"); } }}>
+                          Racheter · {usd(bq.price)}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
             <div className="pn" style={{ maxHeight: 330, overflow: "auto" }}>
               <div className="lbl">Discographie</div>
               {projects.length === 0 && (

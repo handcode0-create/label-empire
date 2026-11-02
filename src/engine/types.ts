@@ -75,6 +75,7 @@ export interface Feat {
   name: string
   artistId?: string // artiste du label
   poolId?: string // artiste externe
+  rivalId?: string // artiste d'un label concurrent
   cityId: string
   fee: number
   share: number // part des revenus reversée au partenaire

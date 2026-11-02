@@ -4,14 +4,15 @@ import { LOC_OPTIONS, MASTERING, MIX_OPTIONS, SESSION_OPTIONS, studioById, STUDI
 import { CITIES, cityById } from '../data/world'
 import { hash } from './rng'
 import { seasonOf } from './dynamics'
-import { plannedReleases } from './rivalLife'
+import { plannedReleases, rivalArtistIn } from './rivalLife'
+import { makeRivalFeat, rivalFeatQuote } from './rivalDeals'
 import { mediaCost, opCost, studioPrice } from './prices'
 import { train } from './artistLife'
 import { songQuality } from './quality'
 import type { Artist, Feat, GameState, Result, Song, SongRelease } from './types'
 import { clamp, clone, drawRng, fail, money, ok, spend, staffSkill, useAp } from './util'
 
-export interface SongDraft { title: string; artistId: string; genre: string; theme: string; lang: string; mood: string; lyrics: string; writer: 'artiste' | 'externe'; feat?: { kind: 'label' | 'externe'; id: string } }
+export interface SongDraft { title: string; artistId: string; genre: string; theme: string; lang: string; mood: string; lyrics: string; writer: 'artiste' | 'externe'; feat?: { kind: 'label' | 'externe' | 'rival'; id: string } }
 export const EXTERNAL_WRITER_COST = 2000
 /** Cachet d'un artiste externe pour un feat : selon le potentiel et la notoriété. */
 export const featFee = (a: Artist) => Math.max(1500, Math.round((a.potential * a.potential * 500 + Object.values(a.fans).reduce((t, v) => t + v, 0) * 0.02) / 100) * 100)
@@ -48,10 +49,18 @@ export function writeSong(s0: GameState, d: SongDraft): Result {
   if (e) return fail(s0, e)
   let feat: Feat | undefined
   if (d.feat) {
+    if (d.feat.kind === 'rival') {
+      const r = rivalArtistIn(s, d.feat.id)
+      if (!r) return fail(s0, 'Partenaire du feat introuvable.')
+      const q = rivalFeatQuote(s, r)
+      if (!q.ok) return fail(s0, `${r.stageName} refuse : réputation ${q.minRep} requise pour un featuring.`)
+      feat = makeRivalFeat(s, r)
+    } else {
     const partner = d.feat.kind === 'label' ? s.artists.find((x) => x.id === d.feat!.id) : s.pool.find((x) => x.id === d.feat!.id)
     if (!partner) return fail(s0, 'Partenaire du feat introuvable.')
     if (partner.id === d.artistId) return fail(s0, 'Un artiste ne peut pas faire un feat avec lui-même.')
     feat = makeFeat(partner, d.feat.kind === 'externe')
+    }
     if (d.feat.kind === 'label') { const k = [d.artistId, partner.id].sort().join('|'); s.relations ??= {}; s.relations[k] = Math.min(100, (s.relations[k] ?? 0) + 6) }
   }
   if (d.writer === 'externe') { const e2 = spend(s, EXTERNAL_WRITER_COST, 'Auteur externe'); if (e2) return fail(s0, e2) }
