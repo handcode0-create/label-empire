@@ -4,6 +4,7 @@ import type { GameState } from '../engine/types'
 import { signedCount } from '../engine/util'
 import { entrantOf } from '../engine/tournament'
 import { lastPlayed } from '../engine/tour'
+import { rivalArtistIn } from '../engine/rivalLife'
 
 export type CharId = 'narrateur' | 'ines' | 'kwame' | 'tomas' | 'joueur' | 'awa'
 export interface Char { name: string; role: string; gradient: string; side: 'left' | 'right'; portrait?: string }
@@ -16,21 +17,24 @@ export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
   joueur: { name: 'Vous', role: 'Fondateur', gradient: '#FFC63D,#FF3D9A', side: 'right', portrait: 'story-joueur' },
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
-export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' }[] }
+export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' | 'roster-diner' | 'awa-exclusif' }[] }
 export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport' | 'plateau' | 'redaction' | 'ceremonie' | 'agence' | 'terrasse' | 'tour'
 /** Décors à générer (voir docs/images/PROMPTS_MANQUANTS.md) : tant que l'image n'existe pas, le décor de secours est utilisé. */
 export const BG_FALLBACK: Partial<Record<Bg, Bg>> = { plateau: 'studio', redaction: 'bureau', ceremonie: 'scene', agence: 'ville', terrasse: 'nuit', tour: 'finale' }
 export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean }
 
-export interface Ctx { bureau: string; cash: string; palier: string; goal: string; label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string; artiste: string; villeTournee: string; salle: string; billets: string; capacite: string; taux: string; tournee: string }
+export interface Ctx { bureau: string; cash: string; palier: string; goal: string; label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string; artiste: string; villeTournee: string; salle: string; rival: string; rivalLabel: string; billets: string; capacite: string; taux: string; tournee: string }
 export function contextFor(g: GameState): Ctx {
   const t = g.tournament
   const winner = t?.winnerId ? entrantOf(t, t.winnerId).stageName : ''
   const lp = lastPlayed(g)
   const lpArtist = lp ? g.artists.find((a) => a.id === lp.tour.artistId) : undefined
+  const signedId = g.rivals?.signed?.[g.rivals.signed.length - 1]
+  const lastRival = signedId ? rivalArtistIn(g, signedId) : undefined
   return {
     bureau: g.offices.length ? cityById(g.offices[g.offices.length - 1].cityId).name : '', cash: usd(g.cash), palier: palierFor(g.reputation).name, goal: goalFor(g).text,
     label: g.label.name, founder: g.label.founder, city: cityById(g.label.hqCityId).name,
+    rival: lastRival?.stageName ?? 'cet artiste', rivalLabel: lastRival?.labelName ?? 'son ancien label',
     artiste: lpArtist?.stageName ?? 'Votre artiste', villeTournee: lp ? cityById(lp.stop.cityId).name : '', salle: lp?.stop.venue ?? '', billets: lp ? (lp.stop.sold ?? 0).toLocaleString('fr-FR') : '', capacite: lp ? lp.stop.capacity.toLocaleString('fr-FR') : '', taux: lp ? String(Math.round(((lp.stop.sold ?? 0) / lp.stop.capacity) * 100)) : '', tournee: lp?.tour.name ?? '',
     tournoi: t?.name ?? '', ville: t ? cityById(t.cityId).name : '', winner,
     verdict: t?.winnerId && t.winnerId === t.favoriteId ? 'Le public avait voté pour lui : la salle explose.' : 'Le public attendait l’autre nom : un murmure traverse la salle.',
@@ -203,6 +207,15 @@ export const SCENES: Scene[] = [
 
 /** Épilogues affichés sur l'écran de fin. */
 export const EPILOGUE_WIN = 'Tomás Reyes a quitté son bureau ce matin-là sans un mot. Meridian Group a plié, et le plan Horizon avec lui. Inès a ouvert une bouteille ; Kwame a annoncé votre nom devant des milliers de voix.'
+/** Épilogue de victoire : le texte de base, complété selon les choix faits pendant la partie. */
+export function epilogueWin(g: GameState): string {
+  const bits = [EPILOGUE_WIN]
+  if (g.eventSeen?.['dossier-publier'] !== undefined) bits.push('Awa Sylla a signé la dernière page de son enquête : « Le dossier Horizon n’était que le début. »')
+  else if (g.eventSeen?.['dossier-negocier'] !== undefined) bits.push('Awa Sylla a rouvert son coffre. Elle n’a pas eu besoin de publier : Meridian s’est effondré seul.')
+  if (g.deal === null) bits.push('Pas un dollar de Meridian dans vos comptes : le label n’a jamais appartenu qu’à ceux qui l’ont construit.')
+  if ((g.rivals?.signed?.length ?? 0) > 0) bits.push('Les artistes rachetés à la concurrence ont ouvert la voie : on dit désormais que votre adresse est celle où l’on est écouté.')
+  return bits.slice(0, 3).join(' ')
+}
 export const EPILOGUE_LOSE = 'Meridian Group a racheté le catalogue de {label} pour presque rien. Tomás n’est même pas venu à la signature. Inès a rangé ses dossiers en silence : l’histoire n’est pas finie, elle attend un nouveau fondateur.'
 
 const played = (g: GameState) => g.tours.flatMap((t) => t.stops.filter((s) => s.sold !== undefined).map((stop) => ({ t, stop })))
@@ -391,6 +404,124 @@ const ARC_SCENES: Scene[] = [
   },
 ]
 SCENES.push(...ARC_SCENES)
+
+const seenAt = (g: GameState, k: string) => g.eventSeen?.[k]
+/** Suite de l'histoire : passé de Kwame, enquête d'Awa, roster, rachat d'un artiste rival et chemin vers le sommet. */
+const ARC_SCENES_2: Scene[] = [
+  {
+    id: 'kwame-passe', bg: 'scene', title: 'Acte 2 · Ce que Kwame n’a jamais dit', when: (g) => done(g, 'tournoi'),
+    lines: [
+      N('La salle du Grand Tournoi est vide. Les projecteurs refroidissent, les chaises restent en désordre. Kwame range lui-même son micro.'),
+      K('Quinze ans que je présente les autres, {founder}. Vous ne vous êtes jamais demandé pourquoi je n’annonçais jamais mon propre nom ?', 'neutre'),
+      K('J’ai eu un label, avant. Griot Records. Douze artistes, un studio qui sentait le café et le tabac. Meridian l’a racheté en une nuit.', 'tension'),
+      I('Ça ressemble au premier chapitre du plan Horizon, patron. Ils commencent toujours par ceux qui ont une belle équipe et un mauvais mois.', 'tension'),
+      K('Je ne suis pas là pour la revanche. Je suis là pour voir quelqu’un dire non plus longtemps que moi.', 'confiance'),
+      P('Alors restez au premier rang, Kwame. Vous verrez jusqu’où va mon « non ».', 'confiance'),
+    ],
+  },
+  {
+    id: 'cinq-villes', bg: 'ville', title: 'Acte 2 · Cinq villes, un message', when: (g) => done(g, 'pays-3'),
+    lines: [
+      N('Sur la carte du bureau, cinq épingles roses. Hier, il n’y en avait que deux.'),
+      I('Le public de ces villes ne vous connaissait pas il y a un an, patron. Aujourd’hui, il chante vos refrains avant la fin du morceau.', 'joie'),
+      N('Le téléphone sonne. Un numéro masqué, une voix calme, très posée.'),
+      T('Cinq villes. Vous commencez à m’intéresser, {founder}. Pas assez pour que je m’inquiète. Assez pour que je regarde.', 'confiance'),
+      P('Regardez bien, Tomás. Je n’ai encore rien montré.', 'confiance'),
+      I('Il vient de nous donner son rythme : il observe, il compte, puis il frappe. On a le temps de se préparer.', 'tension'),
+    ],
+  },
+  {
+    id: 'roster-diner', bg: 'nuit', title: 'Acte 3 · Un roster, une famille', when: (g) => done(g, 'trois-artistes'),
+    lines: [
+      N('Trois artistes, trois humeurs, et un seul couloir pour s’éviter. Ce soir, personne ne parle à personne.'),
+      I('Un roster, ça ne se gère pas avec des tableaux, patron. Il y a de la jalousie, de la fatigue, des gens qui comparent leurs écoutes dans les toilettes.', 'tension'),
+      { who: 'joueur', text: 'Qu’est-ce que tu me conseilles, Inès ?', mood: 'neutre', choices: [
+        { label: 'Offrir un dîner à tout le roster (3 000 $, moral +8)', effect: 'roster-diner', reply: [I('Une grande table, des plats à partager, personne ne parle de chiffres. Je réserve ça pour samedi.', 'joie'), P('Que chacun sache qu’ici, on gagne ensemble ou pas du tout.', 'confiance')] },
+        { label: 'Les laisser régler ça entre eux', reply: [I('C’est votre choix, patron. Mais les silences coûtent plus cher que les dîners.', 'neutre')] },
+      ] },
+      N('Dans le couloir, une porte s’entrouvre. Quelqu’un a tout entendu, et sourit.'),
+    ],
+  },
+  {
+    id: 'awa-une', bg: 'redaction', title: 'Acte 3 · À la une', when: (g) => seenAt(g, 'dossier-publier') !== undefined && g.week > (seenAt(g, 'dossier-publier') ?? 0),
+    lines: [
+      N('Le journal est encore chaud. Le titre de la une tient sur trois lignes, et personne ne l’a corrigé.'),
+      A('Trois cent douze mille partages en une nuit. Meridian a démenti avant midi, ce qui est toujours bon signe : on ne dément pas ce qui est faux.', 'joie'),
+      I('Leurs avocats ont déjà écrit à la rédaction. Awa a tout classé dans un tiroir marqué « Plus tard ».', 'confiance'),
+      { who: 'awa', text: 'Je prépare une suite. Il me manque une voix : la vôtre.', mood: 'confiance', choices: [
+        { label: 'Accorder une interview exclusive (+0,6 de réputation)', effect: 'awa-exclusif', reply: [A('Une page entière, sans question piège. Vous dites ce que vous avez construit, pas ce que Meridian a détruit.', 'confiance'), P('Alors je commencerai par ceux qui ont écouté nos disques avant de savoir notre nom.', 'joie')] },
+        { label: 'Rester sobre, laisser les faits parler', reply: [A('Une réponse d’adulte. Les faits tiendront leurs promesses.', 'neutre')] },
+      ] },
+    ],
+  },
+  {
+    id: 'awa-silence', bg: 'redaction', title: 'Acte 3 · Le silence d’Awa', when: (g) => seenAt(g, 'dossier-negocier') !== undefined && g.week > (seenAt(g, 'dossier-negocier') ?? 0) + 2,
+    lines: [
+      N('La rédaction est calme. Un peu trop. Awa Sylla ne lève pas les yeux de son écran.'),
+      A('J’ai tenu parole. Les originaux dorment dans un coffre, à mon nom, avec la date du jour.', 'tension'),
+      P('Vous me jugez.', 'tension'),
+      A('Je constate. Une trêve, c’est un répit qu’on offre à l’autre. Si Tomás recommence, je n’aurai pas besoin de votre accord.', 'tension'),
+      I('Elle n’est pas fâchée, patron. Elle est prudente. C’est pire, et c’est plus utile.', 'neutre'),
+    ],
+  },
+  {
+    id: 'top10-monde-scene', bg: 'nuit', title: 'Acte 3 · Dans le top mondial', when: (g) => done(g, 'top10-monde'),
+    lines: [
+      N('Un écran géant, un classement mondial, et pour la première fois un nom que tout le monde connaît dans le haut de la liste : le vôtre.'),
+      K('Dix places. Il y en a cent mille qui rêvent d’y entrer, {founder}. Vous n’y êtes pas arrivé par chance.', 'joie'),
+      I('Meridian a relevé ses budgets promo dans trois villes ce matin. Ils savent que vous êtes là, patron.', 'tension'),
+      P('Qu’ils dépensent. Un classement, ça se mérite chaque semaine.', 'confiance'),
+    ],
+  },
+  {
+    id: 'rachat-rival', bg: 'bureau', title: 'Acte 3 · Un contrat qui change de main', when: (g) => (g.rivals?.signed?.length ?? 0) >= 1,
+    lines: [
+      N('Un coup de fil, avant même que le café soit chaud. Tomás n’a pas pris la peine de se présenter.'),
+      T('Vous avez racheté {rival} à {rivalLabel}. Je n’aime pas qu’on ouvre le catalogue des autres comme un tiroir.', 'tension'),
+      P('Ce n’est pas un tiroir, Tomás. C’est un artiste qui voulait une maison où on l’écoute.', 'confiance'),
+      T('Une maison qui coûte cher, {founder}. Je compte vos factures aussi bien que vos disques.', 'tension'),
+      I('Un rachat de contrat, patron, c’est une déclaration de guerre polie. Attendez-vous à ce que les autres labels referment leurs portes.', 'tension'),
+      K('Et à ce que tous les artistes mal payés de la planète regardent désormais votre adresse.', 'joie'),
+    ],
+  },
+  {
+    id: 'cinq-continents', bg: 'finale', title: 'Acte 4 · Il fait toujours jour quelque part', when: (g) => done(g, 'continents-4'),
+    lines: [
+      N('Cinq continents. Sur l’écran du bureau, un chronomètre indique l’heure de chaque ville : il y a toujours quelqu’un qui écoute {label}.'),
+      I('Il n’y a pas un fuseau horaire où le label dort, patron. C’est une victoire, et c’est une fatigue.', 'joie'),
+      K('Un jour, un gamin entendra votre nom sans savoir d’où il vient. C’est ça, un label mondial.', 'confiance'),
+      P('Alors continuons, Kwame. Il reste une dernière tour à traverser.', 'confiance'),
+    ],
+  },
+  {
+    id: 'diamant', bg: 'ceremonie', title: 'Acte 4 · Le diamant', when: (g) => done(g, 'disque-diamant'),
+    lines: [
+      K('Le diamant ! Il n’y a plus de salle assez grande pour contenir ça, {founder}.', 'joie'),
+      N('Le cadre pèse plus lourd que les autres. Personne n’ose le toucher le premier.'),
+      I('Meridian en a eu un, il y a six ans. Un seul, et ils l’ont exposé à l’entrée de leur tour.', 'confiance'),
+      P('Le nôtre reste au bureau, Inès. Pour que chaque matin, on se souvienne de qui l’a rendu possible.', 'joie'),
+    ],
+  },
+  {
+    id: 'numero-un-scene', bg: 'finale', title: 'Acte 4 · Numéro un', when: (g) => done(g, 'numero-un'),
+    lines: [
+      N('Quelque part dans le monde, un titre de {label} vient de passer en tête du classement. Personne ne l’a vu venir, sauf ceux qui l’ont écrit.'),
+      A('Le monde a changé de ton ce matin. Je n’ai jamais autant écrit sur une chanson, {founder}.', 'joie'),
+      T('Un classement n’est pas un trône. Vous le saurez bientôt, et à vos frais.', 'tension'),
+      P('Alors venez me le dire en face, Tomás.', 'confiance'),
+    ],
+  },
+  {
+    id: 'independance-scene', bg: 'tour', title: 'Acte 4 · Sans un dollar de Meridian', when: (g) => done(g, 'independance'),
+    lines: [
+      N('Un message arrive sur la messagerie privée. Pas de formule de politesse, juste un chiffre : 90.'),
+      T('Quatre-vingt-dix points, et pas un centime de chez moi. Je n’ai connu que deux labels capables de ça. Je les ai rachetés tous les deux.', 'surprise'),
+      I('Il vient de reconnaître que vous êtes différent, patron. Ne lui donnez pas l’occasion de se reprendre.', 'tension'),
+      P('Je n’ai pas besoin de lui. Mais il m’aura appris à ne jamais dépendre de personne.', 'confiance'),
+    ],
+  },
+]
+SCENES.push(...ARC_SCENES_2)
 
 export function nextStoryScene(g: GameState): Scene | undefined {
   const seen = g.seenScenes ?? []

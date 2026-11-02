@@ -1,14 +1,31 @@
 import type { GameState, Result } from './types'
-import { addRep, clone, fail, ok } from './util'
+import { addRep, clone, fail, ok, spend } from './util'
 
 /** Choix faits pendant les scènes de l'histoire qui ont des conséquences réelles sur la partie. */
-export type StoryEffect = 'dossier-publier' | 'dossier-negocier'
+export type StoryEffect = 'dossier-publier' | 'dossier-negocier' | 'roster-diner' | 'awa-exclusif'
 
 export function applyStoryEffect(s0: GameState, effect: StoryEffect): Result {
   const s = clone(s0)
   s.eventSeen ??= {}
+  if (effect === 'roster-diner') {
+    if (s.eventSeen['roster-diner']) return fail(s0, 'Ce choix a déjà été fait.')
+    const e = spend(s, 3000, 'Dîner du roster')
+    if (e) return fail(s0, e)
+    s.eventSeen['roster-diner'] = s.week
+    for (const a of s.artists) if (!a.isFounder) a.morale = Math.min(100, a.morale + 8)
+    return ok(s, 'Un dîner pour tout le roster : le moral des artistes remonte de 8 points (−3 000 $).')
+  }
+  if (effect === 'awa-exclusif') {
+    if (s.eventSeen['awa-exclusif']) return fail(s0, 'Ce choix a déjà été fait.')
+    s.eventSeen['awa-exclusif'] = s.week
+    addRep(s, 0.6)
+    s.news ??= []
+    s.news.unshift({ id: `awa-${s.week}`, week: s.week, tag: 'Presse', text: `Interview exclusive de ${s.label.founder} dans « Écho des Marchés » : une page entière sur le label.`, tone: 'c' })
+    return ok(s, 'Interview exclusive publiée : +0,6 de réputation.')
+  }
   if (s.eventSeen['dossier']) return fail(s0, 'Ce choix a déjà été fait.')
   s.eventSeen['dossier'] = s.week
+  s.eventSeen[effect] = s.week // mémorise le choix pour les scènes et l'épilogue
   if (effect === 'dossier-publier') {
     // Awa publie : le public est scandalisé, la réputation grimpe, Meridian contre-attaque plusieurs semaines.
     addRep(s, 2.5)

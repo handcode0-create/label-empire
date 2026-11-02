@@ -102,3 +102,6 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 Depuis les classements, un clic sur n'importe quel artiste ouvre sa fiche. Pour un artiste d'un label concurrent, le panneau « Interagir » propose :
 - **Featuring** : cachet selon sa popularité et votre prestige, 15 % des revenus du titre, bonus de qualité et audience dans sa ville. Réputation minimale requise (`rivalFeatQuote`). Le duo s'écrit dans l'écran Écriture.
 - **Rachat de contrat** : prix selon sa popularité et les années restantes (`buyoutQuote`), réputation minimale, place libre et une action. L'artiste quitte le monde rival (`rivals.signed`) et rejoint votre label.
+
+## Histoire : suite (actes 2 à 4)
+11 scènes de plus, accrochées aux objectifs et aux événements réels : le passé de Kwame (Griot Records, racheté par Meridian), les cinq villes, le dîner du roster (choix : -3 000 $, moral +8), la une d'Awa après la publication du dossier (choix : interview exclusive, +0,6 de réputation) ou son silence après la trêve, le top 10 mondial, la réaction de Tomás quand vous rachetez un artiste rival, les cinq continents, le diamant, le numéro un mondial et l'indépendance vis-à-vis de Meridian. L'épilogue de victoire (`epilogueWin`) se complète selon vos choix (dossier publié ou trêve, aucun accord avec Meridian, artistes rachetés).

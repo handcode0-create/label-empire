@@ -100,7 +100,7 @@ export default function Cinematic() {
   const choose = (reply: Line[], effect?: string) => {
     if (effect === 'accept-meridian') run(acceptMeridianOffer)
     if (effect === 'repos' || effect === 'prime') run((s) => careForTourArtist(s, effect))
-    if (effect === 'dossier-publier' || effect === 'dossier-negocier') run((s) => applyStoryEffect(s, effect))
+    if (effect === 'dossier-publier' || effect === 'dossier-negocier' || effect === 'roster-diner' || effect === 'awa-exclusif') run((s) => applyStoryEffect(s, effect))
     setQueue([...queue.slice(0, i + 1), ...reply, ...queue.slice(i + 1)]); setPicked(true); setI(i + 1); setPicked(false) }
 
   useEffect(() => {

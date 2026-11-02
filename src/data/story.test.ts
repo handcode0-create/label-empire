@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SCENES, CHARS, nextStoryScene } from './story'
+import { SCENES, CHARS, nextStoryScene, epilogueWin } from './story'
 import { OBJECTIVES } from '../engine/objectives'
 import { applyStoryEffect } from '../engine/storyEffects'
 import { createGame } from '../engine/newGame'
@@ -49,5 +49,36 @@ describe('histoire', () => {
     expect([...acts].sort()).toEqual(acts)
     expect(OBJECTIVES.find((o) => o.id === 'rep-100')?.act).toBe(4)
     expect(OBJECTIVES.filter((o) => o.id.startsWith('rep-')).map((o) => o.id)).toEqual(['rep-25', 'rep-50', 'rep-65', 'rep-75', 'rep-90', 'rep-100'])
+  })
+})
+
+
+describe('suite de l\'histoire', () => {
+  it('les identifiants de scène sont uniques et chaque scène a des répliques', () => {
+    const ids = SCENES.map((s) => s.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const s of SCENES) expect(s.lines.length).toBeGreaterThan(2)
+  })
+  it('le dîner du roster et l\'interview d\'Awa ont un effet réel, une seule fois', () => {
+    const g = createGame({ ...SIM_CFG, seed: 3 })
+    g.cash = 50_000
+    const a = g.artists.find((x) => !x.isFounder) ?? g.artists[0]
+    a.morale = 50
+    const r = applyStoryEffect(g, 'roster-diner')
+    expect(r.error).toBeUndefined()
+    expect(r.state.cash).toBe(47_000)
+    expect(r.state.artists.find((x) => x.id === a.id)!.morale).toBe(a.isFounder ? 50 : 58)
+    expect(applyStoryEffect(r.state, 'roster-diner').error).toBeTruthy()
+    const w = applyStoryEffect(g, 'awa-exclusif')
+    expect(w.state.reputation).toBeGreaterThan(g.reputation)
+    expect(applyStoryEffect(w.state, 'awa-exclusif').error).toBeTruthy()
+  })
+  it('le choix du dossier est mémorisé et change l\'épilogue', () => {
+    const g = createGame({ ...SIM_CFG, seed: 3 })
+    const pub = applyStoryEffect(g, 'dossier-publier').state
+    expect(pub.eventSeen['dossier-publier']).toBeDefined()
+    expect(epilogueWin(pub)).toContain('Awa Sylla')
+    const neg = applyStoryEffect(g, 'dossier-negocier').state
+    expect(epilogueWin(neg)).toContain('coffre')
   })
 })
