@@ -93,3 +93,7 @@ Filtres de statut sur l'écran Artistes (tournée, enregistrement, promo, inacti
 - **Saturation des marchés** (`cityCapacity`, `advanceWeek`) : l'ensemble du catalogue d'un label ne peut pas dépasser 1,1 à 2 fois la taille d'une ville par semaine (selon la réputation) ; au-delà, les écoutes sont réduites proportionnellement.
 - **Impôt sur les bénéfices** (`weeklyTax`, ligne « Impôt sur les bénéfices » du rapport et des Finances) : 20 % entre 40 k$ et 120 k$ de bénéfice hebdomadaire, 35 % jusqu'à 300 k$, 50 % au-delà.
 - **Coût du succès** (`prestige`, `prices.ts`) : studios, médias, démarchage de playlists, clips, mixages et tournées coûtent plus cher quand la réputation monte (×1,6 à 50, ×2,8 à 100) ; les salaires suivent (+80 % à 100).
+
+## Page Enregistrer (Studio) et images manquantes
+- La page Studio a été refaite (choix du morceau, de l'artiste, du studio et du budget, avec le total affiché sur le bouton « Enregistrer »).
+- Six décors de scène (`plateau`, `redaction`, `ceremonie`, `agence`, `terrasse`, `tour`) et le portrait `story-awa` sont facultatifs : un décor de secours est utilisé tant qu'ils sont absents. Prompts dans `docs/images/PROMPTS_MANQUANTS.md`.

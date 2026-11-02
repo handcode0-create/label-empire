@@ -12,12 +12,14 @@ export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
   ines: { name: 'Inès Marchetti', role: 'Directrice des opérations', gradient: '#FF3D9A,#FFC63D', side: 'left', portrait: 'story-ines' },
   kwame: { name: 'Kwame Baro', role: 'Maître de cérémonie', gradient: '#35D3F0,#8B5CF6', side: 'left', portrait: 'story-kwame' },
   tomas: { name: 'Tomás Reyes', role: 'Directeur de Meridian Group', gradient: '#8B5CF6,#FF5470', side: 'left', portrait: 'story-tomas' },
-  awa: { name: 'Awa Sylla', role: 'Journaliste d’investigation', gradient: '#3DDC97,#35D3F0', side: 'left' },
+  awa: { name: 'Awa Sylla', role: 'Journaliste d’investigation', gradient: '#3DDC97,#35D3F0', side: 'left', portrait: 'story-awa' },
   joueur: { name: 'Vous', role: 'Fondateur', gradient: '#FFC63D,#FF3D9A', side: 'right', portrait: 'story-joueur' },
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
 export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' }[] }
-export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport'
+export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport' | 'plateau' | 'redaction' | 'ceremonie' | 'agence' | 'terrasse' | 'tour'
+/** Décors à générer (voir docs/images/PROMPTS_MANQUANTS.md) : tant que l'image n'existe pas, le décor de secours est utilisé. */
+export const BG_FALLBACK: Partial<Record<Bg, Bg>> = { plateau: 'studio', redaction: 'bureau', ceremonie: 'scene', agence: 'ville', terrasse: 'nuit', tour: 'finale' }
 export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean }
 
 export interface Ctx { bureau: string; cash: string; palier: string; goal: string; label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string; artiste: string; villeTournee: string; salle: string; billets: string; capacite: string; taux: string; tournee: string }
@@ -288,7 +290,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'premier-clip', bg: 'studio', title: 'Acte 1 · Mise en images', when: (g) => g.songs.some((s) => s.clip?.status === 'sorti'),
+    id: 'premier-clip', bg: 'plateau', title: 'Acte 1 · Mise en images', when: (g) => g.songs.some((s) => s.clip?.status === 'sorti'),
     lines: [
       N('Un plateau de tournage, des câbles partout, un réalisateur qui crie « coupez ! » pour la onzième fois.'),
       I('Le clip est sorti, patron. Les gens ne se contentent plus d’écouter : ils regardent, ils partagent, ils reconnaissent.', 'joie'),
@@ -305,7 +307,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'presse-awa', bg: 'bureau', title: 'Acte 2 · La presse s’en mêle', when: (g) => done(g, 'fans-100k'),
+    id: 'presse-awa', bg: 'redaction', title: 'Acte 2 · La presse s’en mêle', when: (g) => done(g, 'fans-100k'),
     lines: [
       N('Une journaliste attend à l’accueil depuis une heure. Elle a refusé le café, accepté le silence.'),
       A('Awa Sylla, pour « Écho des Marchés ». Cent mille fans en si peu de temps, c’est rare. Ça ne s’achète pas, d’habitude.', 'confiance'),
@@ -316,7 +318,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'disque-or', bg: 'scene', title: 'Acte 2 · Le premier disque d’or', when: (g) => (g.certs ?? []).length >= 1,
+    id: 'disque-or', bg: 'ceremonie', title: 'Acte 2 · Le premier disque d’or', when: (g) => (g.certs ?? []).length >= 1,
     lines: [
       K('Mesdames et messieurs, un instant de silence : le label reçoit sa toute première certification !', 'joie'),
       N('Le cadre doré passe de main en main. Dans la salle, quelqu’un pleure sans oser l’admettre.'),
@@ -325,7 +327,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'bureau-etranger', bg: 'ville', title: 'Acte 2 · Une adresse à l’étranger', when: (g) => done(g, 'bureau'),
+    id: 'bureau-etranger', bg: 'agence', title: 'Acte 2 · Une adresse à l’étranger', when: (g) => done(g, 'bureau'),
     lines: [
       N('{bureau}, un matin de pluie fine. Au rez-de-chaussée d’un immeuble ordinaire, une plaque neuve : {label}.'),
       I('Un bureau local change tout, patron : des relais radio, des promoteurs qui décrochent, des contrats négociés sans passer par un fuseau horaire.', 'confiance'),
@@ -334,7 +336,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'album-premiere', bg: 'nuit', title: 'Acte 3 · Écoute privée', when: (g) => done(g, 'album'),
+    id: 'album-premiere', bg: 'terrasse', title: 'Acte 3 · Écoute privée', when: (g) => done(g, 'album'),
     lines: [
       N('Un toit-terrasse, quelques bougies, des enceintes posées sur une table pliante. Les premiers invités arrivent en silence.'),
       K('Je n’ai pas besoin de lire les chiffres. Je regarde les visages : ils savent déjà que c’est un grand disque.', 'confiance'),
@@ -343,7 +345,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'dossier-horizon', bg: 'bureau', title: 'Acte 3 · Le dossier Horizon', when: (g) => g.reputation >= 62 && (done(g, 'album') || done(g, 'top3-pays')),
+    id: 'dossier-horizon', bg: 'redaction', title: 'Acte 3 · Le dossier Horizon', when: (g) => g.reputation >= 62 && (done(g, 'album') || done(g, 'top3-pays')),
     lines: [
       N('Une enveloppe kraft glisse sous la porte, un mardi à la tombée de la nuit. Pas de nom, juste un numéro de téléphone.'),
       A('Je vous l’avais promis. Ce que Meridian ne veut pas qu’on lise : des factures, des virements, des « campagnes d’écoute » programmées avant chaque sortie.', 'tension'),
@@ -357,7 +359,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'platine-scene', bg: 'scene', title: 'Acte 3 · Au-delà de l’or', when: (g) => (g.certs ?? []).some((c) => c.level !== 'or'),
+    id: 'platine-scene', bg: 'ceremonie', title: 'Acte 3 · Au-delà de l’or', when: (g) => (g.certs ?? []).some((c) => c.level !== 'or'),
     lines: [
       K('Platine ! Le disque qui ne s’obtient pas par hasard, ni par quelques bons soirs de chance.', 'joie'),
       I('Selon le barème de la SNEP, c’est une marque que seuls des artistes installés atteignent. Les majors le savent.', 'confiance'),
@@ -365,7 +367,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'veille-sommet', bg: 'nuit', title: 'Acte 4 · La veille', when: (g) => g.reputation >= 92,
+    id: 'veille-sommet', bg: 'tour', title: 'Acte 4 · La veille', when: (g) => g.reputation >= 92,
     lines: [
       N('Dernier étage, la ville en bas, la lumière du bureau allumée tard. {label} n’a jamais été aussi proche du sommet.'),
       I('Tomás a quitté son bureau cet après-midi. Il n’a laissé qu’une phrase à son assistante : « Dites-leur que je viendrai en personne. »', 'tension'),
@@ -374,7 +376,7 @@ const ARC_SCENES: Scene[] = [
     ],
   },
   {
-    id: 'duel-final', bg: 'finale', title: 'Acte 4 · Face à Tomás', when: (g) => g.reputation >= 98,
+    id: 'duel-final', bg: 'tour', title: 'Acte 4 · Face à Tomás', when: (g) => g.reputation >= 98,
     lines: [
       N('Un salon vide au sommet d’une tour. Une baie vitrée, une seule lumière, et un homme debout face à la ville.'),
       T('Cent points de réputation, {founder}. Je ne pensais pas voir ça de mon vivant.', 'tension'),

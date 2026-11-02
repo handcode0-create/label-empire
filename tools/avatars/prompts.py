@@ -92,6 +92,7 @@ STORY = {
     "story-ines": "Inès Marchetti, 30s woman, label operations director, European, sleek dark bob haircut, tailored magenta blazer, tablet in hand, warm and organized expression",
     "story-kwame": "Kwame Baro, 40s man, master of ceremonies, West African, charismatic, sparkling gold jacket, headset microphone, big showman smile",
     "story-tomas": "Tomás Reyes, 50s man, rival record executive, Latin American, silver-streaked hair, dark navy suit with violet tie, calculating confident half-smile",
+    "story-awa": "Awa Sylla, 30s woman, investigative journalist, West African, deep brown skin, short natural hair with a gold hair pin, oversized beige trench coat over a teal turtleneck, press badge on a lanyard, small notebook and pen, sharp curious expression with a slight knowing smile",
     "story-joueur": "Young label founder, neutral and welcoming, modern smart-casual jacket in violet and gold, determined optimistic expression, unisex friendly look",
     "story-joueur-m": "Young man, label founder in his late 20s, West African, deep brown skin, short neat fade haircut with a subtle shaved line, short trimmed beard, violet tailored jacket with gold embroidery over a black tee, thin gold chain, determined optimistic half-smile, entrepreneur energy",
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { applyStoryEffect } from '../engine/storyEffects'
-import { CHARS, SCENES, contextFor, fillText, type Bg, type Line } from '../data/story'
+import { BG_FALLBACK, CHARS, SCENES, contextFor, fillText, type Bg, type Line } from '../data/story'
 import { useGame } from '../store/gameStore'
 import Avatar from './Avatar'
 import { acceptMeridianOffer } from '../engine/objectives'
@@ -15,14 +15,22 @@ const SKY: Record<Bg, string> = {
   arene: 'linear-gradient(180deg,#05030F,#2A1B4D)',
   finale: 'linear-gradient(180deg,#0C0719,#5A2A6B)',
   aeroport: 'linear-gradient(180deg,#1C1236,#FF7A59 160%)',
+  plateau: 'linear-gradient(180deg,#0C0820,#2A1B4D)',
+  redaction: 'linear-gradient(180deg,#1C1236 0%,#3A2570 70%,#FF3D9A 160%)',
+  ceremonie: 'radial-gradient(900px 500px at 50% 110%,rgba(255,198,61,.55),transparent),linear-gradient(180deg,#0C0719,#2A1B4D)',
+  agence: 'linear-gradient(180deg,#0B0720 0%,#2A1B4D 55%,#FF7A59 130%)',
+  terrasse: 'linear-gradient(180deg,#05030F 0%,#1A1040 70%,#35D3F0 190%)',
+  tour: 'linear-gradient(180deg,#0C0719,#5A2A6B)',
 }
 
 /** Décor illustré (public/scenes/<bg>.webp) ; si l'image manque, le décor dessiné prend le relais. */
 function Backdrop({ bg }: { bg: Bg }) {
-  const [failed, setFailed] = useState(false)
-  useEffect(() => setFailed(false), [bg])
-  if (failed) return <Skyline bg={bg} />
-  return <img src={`/scenes/${bg}.webp`} alt="" onError={() => setFailed(true)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', animation: 'kenburns 24s ease-in-out infinite alternate' }} />
+  // image dédiée, puis décor de secours (ex. « tour » → « finale »), puis décor dessiné
+  const [level, setLevel] = useState(0)
+  useEffect(() => setLevel(0), [bg])
+  const chain: Bg[] = [bg, ...(BG_FALLBACK[bg] ? [BG_FALLBACK[bg] as Bg] : [])]
+  if (level >= chain.length) return <Skyline bg={chain[chain.length - 1]} />
+  return <img key={chain[level]} src={`/scenes/${chain[level]}.webp`} alt="" onError={() => setLevel((n) => n + 1)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', animation: 'kenburns 24s ease-in-out infinite alternate' }} />
 }
 
 function Skyline({ bg }: { bg: Bg }) {
