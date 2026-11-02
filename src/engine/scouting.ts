@@ -2,6 +2,7 @@ import { wk } from '../lib'
 import { AGENCIES, FIRST, GRADIENTS, LAST, SIGNATURE, STAGE_WORDS, TRAITS } from '../data/people'
 import { CITIES, GENRES, cityById, type City } from '../data/world'
 import { signToRival } from './rivalLife'
+import { signingBonus } from './credibility'
 import type { Rng } from './rng'
 import type { Artist, Contest, GameState, Result } from './types'
 import { ARTIST_SKILLS } from './types'
@@ -72,7 +73,7 @@ export function evaluateOffer(s: GameState, c: Artist, o: Offer): Evaluation {
   const ask = c.asking!
   const repF = 0.65 + (s.reputation / 100) * 0.9 + staffSkill(s, 'negociation') * 0.03
   const scopeF = o.scope === 'monde' ? 1.08 : o.scope === 'region' ? 1.02 : 0.96
-  const score = (0.5 * (o.advance / Math.max(ask.advance, 1)) + 0.5 * (o.royalty / ask.royalty)) * Math.min(1.3, repF) * scopeF * (o.weeks >= 104 ? 1.02 : 0.98)
+  const score = (0.5 * (o.advance / Math.max(ask.advance, 1)) + 0.5 * (o.royalty / ask.royalty)) * Math.min(1.3, repF) * scopeF * (o.weeks >= 104 ? 1.02 : 0.98) * (1 + signingBonus(s))
   const need = c.rivalInterest ? 0.95 : 0.8
   const chance = score >= need + 0.15 ? 'Probable' : score >= need ? 'Incertain' : 'Improbable'
   const labelShare = Math.round((1 - o.royalty) * 100)

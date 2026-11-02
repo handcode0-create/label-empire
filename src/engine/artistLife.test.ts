@@ -7,7 +7,7 @@ import { bookStudio, writeSong } from './production'
 import { SIM_CFG } from './simBot'
 import type { Artist, GameState } from './types'
 
-const NO_EVENTS = Object.fromEntries(['fx', 'raise', 'viral', 'gig', 'rival', 'sponsor', 'scandal', 'burnout', 'leak', 'playlist', 'festival', 'censure', 'poach', 'meridian', 'clash', 'audit', 'charity', 'wave'].map((k) => [k, 99999]))
+const NO_EVENTS = Object.fromEntries(['fx', 'raise', 'viral', 'gig', 'rival', 'sponsor', 'scandal', 'burnout', 'leak', 'playlist', 'festival', 'censure', 'poach', 'meridian', 'clash', 'audit', 'charity', 'wave', 'brand', 'payola', 'quartier', 'clone'].map((k) => [k, 99999]))
 const game = () => { const g = createGame({ ...SIM_CFG, seed: 4 }); g.eventSeen = { ...NO_EVENTS }; g.cash = 500_000; return g }
 const signed = (g: GameState, id: string, o: Partial<Artist> = {}): Artist => {
   const a: Artist = { ...structuredClone(g.artists[0]), id, stageName: id, isFounder: false, morale: 80, contract: { royalty: 0.3, advance: 1000, weeks: 500, signedWeek: 1, scope: 'monde' }, ...o }

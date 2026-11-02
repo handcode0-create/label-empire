@@ -1,3 +1,4 @@
+import { addCred } from './credibility'
 import { cityById } from '../data/world'
 import { bestRank } from './market'
 import type { GameState } from './types'
@@ -92,6 +93,7 @@ export function acceptMeridianOffer(s0: GameState): Result2 {
   s.cash += MERIDIAN_OFFER.cash
   s.reputation = Math.max(0, s.reputation - MERIDIAN_OFFER.repPenalty)
   s.deal = { kind: 'offre', weeksLeft: MERIDIAN_OFFER.weeks, levy: MERIDIAN_OFFER.levy }
+  addCred(s, -10)
   return ok(s, `Accord signé : +$${MERIDIAN_OFFER.cash.toLocaleString('fr-FR')}, mais Meridian prélève ${MERIDIAN_OFFER.levy * 100} % de vos recettes pendant ${MERIDIAN_OFFER.weeks} semaines et votre réputation baisse de ${MERIDIAN_OFFER.repPenalty}.`)
 }
 
@@ -122,6 +124,7 @@ export function applyBailout(s: GameState): void {
   s.reputation = Math.max(0, s.reputation - MERIDIAN_BAILOUT.repPenalty)
   s.deal = { kind: 'sauvetage', weeksLeft: MERIDIAN_BAILOUT.weeks, levy: MERIDIAN_BAILOUT.levy }
   s.bailouts = (s.bailouts ?? 0) + 1
+  addCred(s, -4)
   s.negWeeks = 0
 }
 type Result2 = import('./types').Result

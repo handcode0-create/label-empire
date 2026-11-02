@@ -3,6 +3,7 @@ import { fxShock } from './prices'
 import { addHeat, fanPct } from './fans'
 import { addBoost, addTrend, loyaltyOf, relKey } from './dynamics'
 import { topRivalLabels } from './rivalLife'
+import { addCred } from './credibility'
 import type { Artist, Echo, EchoEvent, EventChoice, Fx, GameEvent, GameState, Result, Song } from './types'
 import { addRep, clamp, clone, drawRng, fail, ok, spend } from './util'
 import type { Rng } from './rng'
@@ -33,6 +34,51 @@ export function poachOffer(a: Artist, rival: string): Omit<GameEvent, 'id' | 'ki
 }
 
 const GENS: Gen[] = [
+  {
+    kind: 'brand', weight: 4, cooldown: 14,
+    make: (s, rng) => {
+      const a = bestArtist(s)
+      if (!a || s.reputation < 12) return null
+      const brand = rng.pick(['Kola Fizz', 'Tonic Rush', 'Nova Mobile', 'Sahel Bière'])
+      const fee = Math.round((8000 + s.reputation * 450) / 500) * 500
+      return { artistId: a.id, title: `${brand} veut sponsoriser ${a.stageName}`, text: `${brand} propose un contrat de visibilité : logo sur les visuels, un titre « publicitaire » et trois apparitions. Le public regarde de près ce que vous acceptez.`, tone: 'e', choices: [
+        ch('no', 'Refuser', 'Certain : crédibilité +3, moral +3', 0, [{ t: 'cred', v: 3 }, { t: 'morale', v: 3 }]),
+        ch('yes', 'Signer le contrat complet', `Certain : +${usd(fee)} · crédibilité −6, moral de l'artiste −5`, 0, [{ t: 'cash', v: fee }, { t: 'cred', v: -6 }, { t: 'morale', v: -5 }]),
+        ch('fair', 'Négocier un partenariat éthique', `Estimé : +${usd(Math.round(fee * 0.45))} · crédibilité −1`, 0, [{ t: 'cash', v: Math.round(fee * 0.45) }, { t: 'cred', v: -1 }])] }
+    },
+  },
+  {
+    kind: 'payola', weight: 3, cooldown: 18,
+    make: (s) => {
+      const hit = recentHit(s)
+      if (!hit) return null
+      return { songId: hit.id, title: `Une radio propose de « pousser » ${hit.title}`, text: 'Un programmateur de radio laisse entendre qu’une enveloppe suffirait à faire tourner votre titre en boucle. Ce genre de pratique finit toujours par se savoir.', tone: 'r', choices: [
+        ch('no', 'Refuser', 'Certain : crédibilité +3', 0, [{ t: 'cred', v: 3 }]),
+        ch('pay', 'Payer l’enveloppe', 'Estimé : écoutes ×1,3 pendant 4 semaines · coût $6 000 · crédibilité −9 · risque de scandale', 6000, [{ t: 'boost', kind: 'streams', mult: 1.3, weeks: 4, songId: hit.id, label: 'Rotation radio achetée' }, { t: 'cred', v: -9 }, { t: 'roll', p: 0.3, win: [], lose: [{ t: 'rep', v: -2 }, { t: 'cred', v: -5 }], loseText: 'Un journaliste a flairé l’affaire : réputation −2.' }])] }
+    },
+  },
+  {
+    kind: 'quartier', weight: 4, cooldown: 12,
+    make: (s) => {
+      const r = roster(s)
+      const a = r.length ? [...r].sort((x, y) => y.morale - x.morale)[r.length - 1] : undefined
+      if (!a) return null
+      return { artistId: a.id, title: `${a.stageName} rêve d’un concert de quartier`, text: `${a.stageName} veut jouer gratuitement dans le quartier où tout a commencé. Pas de caméra de télé, pas de sponsor : juste ceux qui l’ont vu naître.`, tone: 'g', choices: [
+        ch('yes', 'Organiser le concert', 'Certain : crédibilité +5, moral +10, fans +400 · coût $3 000', 3000, [{ t: 'cred', v: 5 }, { t: 'morale', v: 10 }, { t: 'fans', v: 400 }]),
+        ch('later', 'Reporter à plus tard', 'Certain : moral −4', 0, [{ t: 'morale', v: -4 }])] }
+    },
+  },
+  {
+    kind: 'clone', weight: 3, cooldown: 24,
+    make: (s) => {
+      if (s.reputation < 40) return null
+      const a = bestArtist(s)
+      if (!a || a.isFounder) return null
+      return { artistId: a.id, title: `Cloner la voix de ${a.stageName} ?`, text: `Un studio propose de reproduire la voix de ${a.stageName} avec une intelligence artificielle pour sortir des titres « bonus » sans l’artiste. L’argent est tentant, mais ${a.stageName} n’a pas été consulté.`, tone: 'r', choices: [
+        ch('no', 'Refuser et en parler à l’artiste', 'Certain : crédibilité +3, fidélité +6', 0, [{ t: 'cred', v: 3 }, { t: 'loyalty', v: 6 }]),
+        ch('yes', 'Accepter l’offre', 'Certain : +$25 000 · crédibilité −8, fidélité de l’artiste −10', 0, [{ t: 'cash', v: 25000 }, { t: 'cred', v: -8 }, { t: 'loyalty', v: -10 }])] }
+    },
+  },
   {
     kind: 'fx', weight: 5, cooldown: 8,
     make: (s, rng) => {
@@ -268,6 +314,7 @@ function applyFx(s: GameState, ev: GameEvent, fx: Fx, rng: Rng, out: string[]) {
   switch (fx.t) {
     case 'cash': s.cash = Math.max(0, s.cash + fx.v); if (fx.v < 0) s.spent += -fx.v; else s.stats.totalRevenue += fx.v; out.push(`${fx.v >= 0 ? '+' : '−'}${usd(Math.abs(fx.v))}`); break
     case 'rep': addRep(s, fx.v); out.push(`réputation ${fx.v >= 0 ? '+' : '−'}${Math.abs(fx.v)}`); break
+    case 'cred': addCred(s, fx.v); out.push(`crédibilité ${fx.v >= 0 ? '+' : '−'}${Math.abs(fx.v)}`); break
     case 'morale': for (const a of targets(s, ev, fx.a)) a.morale = clamp(a.morale + fx.v, 0, 100); break
     case 'loyalty': for (const a of targets(s, ev, fx.a)) a.loyalty = clamp(loyaltyOf(a) + fx.v, 0, 100); break
     case 'fatigue': for (const a of targets(s, ev, fx.a)) a.fatigue = clamp(a.fatigue + fx.v, 0, 100); break

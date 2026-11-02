@@ -1,3 +1,4 @@
+import { churnFactor } from './credibility'
 import { CITIES, cityById } from '../data/world'
 import { liveCity } from './prices'
 import type { Artist, GameState, Song } from './types'
@@ -45,7 +46,7 @@ export function fanTick(s: GameState, notes: Notes) {
     // la ferveur revient vers 50, baisse sans sortie, monte avec un succès
     a.heat = clamp(heatOf(a) + (50 - heatOf(a)) * 0.03 - (idle > 12 ? 0.5 : 0) + (hit ? 1 : 0), 0, 100)
     const base = idle < 6 ? 0.001 : idle < 12 ? 0.006 : 0.015
-    const churn = base * (1.5 - heatOf(a) / 100)
+    const churn = base * (1.5 - heatOf(a) / 100) * churnFactor(s)
     for (const k of Object.keys(a.fans)) a.fans[k] = Math.floor(a.fans[k] * (1 - churn))
     // migration : une fraction des fans suit l'artiste dans les villes voisines (même zone) où il n'est pas encore installé
     if (hit && total(a) > 5000) {

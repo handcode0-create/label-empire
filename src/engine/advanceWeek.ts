@@ -13,6 +13,7 @@ import { fanTick, releaseReaction, saturation } from './fans'
 import { fxRate, fxTick, liveCity, marketTick, streamValueMult } from './prices'
 import { rumorsTick } from './rumors'
 import { lifeTick } from './artistLife'
+import { credRelease, credTick } from './credibility'
 import { rivalsTick } from './rivalLife'
 import { rivalsAndRefresh, resolveContests } from './scouting'
 import { runTourStops } from './tour'
@@ -46,6 +47,7 @@ export function advanceWeek(s0: GameState): GameState {
       for (const id of song.release.cityIds) if (!s.stats.countriesReached.includes(id)) s.stats.countriesReached.push(id)
       notes.push({ tag: 'Sortie', text: `« ${song.title} » est disponible dans ${song.release.cityIds.length} territoire(s).`, tone: 'g' })
       releaseReaction(s, song, notes)
+      credRelease(s, song.quality)
     }
   }
 
@@ -120,6 +122,7 @@ export function advanceWeek(s0: GameState): GameState {
   worldTick(s, notes)
   echoesTick(s, notes)
   lifeTick(s, notes)
+  credTick(s, notes)
   fxTick(s, notes)
   marketTick(s, notes)
   rumorsTick(s, notes)

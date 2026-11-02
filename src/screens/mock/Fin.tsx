@@ -3,6 +3,7 @@ import { totalFans } from '../../engine/util'
 import { guard, useGame } from '../../store/gameStore'
 import { compact, usd } from '../../lib'
 import { EPILOGUE_LOSE, epilogueWin } from '../../data/story'
+import { credEpilogue, credOf, credTier } from '../../engine/credibility'
 
 export default function Fin() {
   const g = useGame((s) => s.game)
@@ -25,7 +26,7 @@ export default function Fin() {
         <div className="disp" style={{fontSize: 120, lineHeight: 1, letterSpacing: '0.08em', color: accent, textShadow: `0 0 40px ${win ? 'rgba(255,198,61,0.5)' : 'rgba(255,84,112,0.5)'}`}}>{win ? 'VICTOIRE' : 'DÉFAITE'}</div>
         <div className="lbl" style={{fontSize: 16, letterSpacing: '0.28em', color: '#B3A6D9'}}>{win ? `${g.label.name} règne sur la scène mondiale` : `${g.label.name} ferme ses portes : faillite malgré le sauvetage de Meridian`}</div>
       </div>
-      <div className="mut" style={{position: 'absolute', left: 290, right: 290, top: 330, textAlign: 'center', fontSize: 16, lineHeight: 1.5, color: '#D8D0F5'}}>{(win ? epilogueWin(g) : EPILOGUE_LOSE).replace('{label}', g.label.name)}</div>
+      <div className="mut" style={{position: 'absolute', left: 290, right: 290, top: 322, textAlign: 'center', fontSize: 15, lineHeight: 1.45, color: '#D8D0F5'}}>{(win ? epilogueWin(g) + ' ' + credEpilogue(g) : EPILOGUE_LOSE).replace('{label}', g.label.name)}</div>
       <div style={{position: 'absolute', left: 150, right: 150, top: 440, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14}}>
         <div className="pn cut" style={{textAlign: 'center'}}><div className="lbl">Durée</div><div className="num" style={{marginTop: 6}}>{years ? `${years} an${years > 1 ? 's' : ''}` : `${g.week - 1} sem.`}</div><div className="mut" style={{fontSize: 13}}>{g.week - 1} semaines</div></div>
         <div className="pn cut" style={{textAlign: 'center'}}><div className="lbl">Villes conquises</div><div className="num" style={{marginTop: 6, color: '#FF7DBB'}}>{g.stats.countriesReached.length}</div><div className="mut" style={{fontSize: 13}}>sur {conts} continent{conts > 1 ? 's' : ''}</div></div>
@@ -34,7 +35,7 @@ export default function Fin() {
         <div className="pn cut" style={{textAlign: 'center'}}><div className="lbl">Trésorerie finale</div><div className="num" style={{marginTop: 6, color: accent}}>{usd(g.cash)}</div><div className="mut" style={{fontSize: 13}}>{g.loan ? 'prêt en cours' : 'sans dette'}</div></div>
       </div>
       <div style={{position: 'absolute', left: 150, right: 150, top: 640, display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center'}}>
-        <span className="tag tg">Réputation finale : {Math.floor(g.reputation)}</span><span className="tag tc">Revenus cumulés : {usd(g.stats.totalRevenue)}</span><span className="tag ti">Score : {score.toLocaleString('fr-FR')}</span>
+        <span className="tag tg">Réputation finale : {Math.floor(g.reputation)}</span><span className="tag tc">Revenus cumulés : {usd(g.stats.totalRevenue)}</span><span className="tag ti">Score : {score.toLocaleString('fr-FR')}</span><span className={'tag t' + ({ g: 'g', c: 'c', e: 'e', r: 'r_', i: 'i' } as Record<string, string>)[credTier(credOf(g)).tone]}>{credTier(credOf(g)).name} · {Math.round(credOf(g))}</span>
       </div>
       <div style={{position: 'absolute', left: 0, right: 0, bottom: 70, display: 'flex', gap: 18, justifyContent: 'center'}}>
         {win && <a href="Hub.dc.html" className="btn" style={{height: 60}} onClick={guard(() => { freeMode() })}>Continuer en mode libre</a>}

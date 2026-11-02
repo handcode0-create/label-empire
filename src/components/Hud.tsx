@@ -2,6 +2,7 @@ import { palierFor } from '../data/world'
 import { useGame } from '../store/gameStore'
 import { totalFans } from '../engine/util'
 import { compact, fmt, initials } from '../lib'
+import { credOf, credTier } from '../engine/credibility'
 
 /** Barre du haut, identique à la maquette mais alimentée par l'état du jeu. */
 export default function Hud() {
@@ -14,6 +15,8 @@ export default function Hud() {
   const logo = game?.label.logoId ?? cfg.logoId
   const week = game?.week ?? 1
   const pal = palierFor(rep)
+  const cred = game ? credOf(game) : 50
+  const tier = credTier(cred)
   return (
     <header className="hud">
       <a href="Label.dc.html" title="Fiche du label" style={{ display: 'contents' }} onClick={(e) => { e.preventDefault(); if (!game) return; useGame.getState().select({ labelName: name }); useGame.getState().go('Label') }}>
@@ -23,6 +26,7 @@ export default function Hud() {
       <div className="sp" />
       <div className="coin" title="Trésorerie"><i style={{ background: '#FFC63D' }}>$</i><b style={cash < 0 ? { color: '#FF5470' } : undefined}>{cash < 0 ? '−' : ''}{fmt(Math.abs(cash))}</b></div>
       <div className="coin" title="Réputation (100 = victoire)"><i style={{ background: '#8B5CF6', color: '#fff' }}>★</i><b>{Math.floor(rep)}</b><small>Réputation</small></div>
+      <div className="coin" title={`Crédibilité : ${tier.name}. ${tier.text}`}><i style={{ background: cred >= 58 ? '#3DDC97' : cred < 40 ? '#FF5470' : '#B3A6D9', color: '#1A0B2E' }}>✦</i><b>{Math.round(cred)}</b><small>Crédib.</small></div>
       <div className="coin" title="Fans de tous vos artistes"><i style={{ background: '#35D3F0' }}>♪</i><b>{compact(fans)}</b><small>Fans</small></div>
       <div className="coin" title="Actions restantes cette semaine"><i style={{ background: '#3DDC97' }}>◆</i><b>{game?.ap ?? 6}/6</b><small>Actions</small></div>
       <div style={{ textAlign: 'right' }}><div className="lbl">Semaine</div><div className="disp" style={{ fontSize: 22, lineHeight: 1 }}>{(week - 1) % 52 + 1} · An {Math.floor((week - 1) / 52) + 1}</div></div>

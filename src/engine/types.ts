@@ -158,7 +158,7 @@ export interface ChartRow { rank: number; title: string; artist: string; label: 
 
 /** Effets d'un choix d'événement (sérialisables). `roll` : issue incertaine. */
 export type Fx =
-  | { t: 'cash'; v: number } | { t: 'rep'; v: number }
+  | { t: 'cash'; v: number } | { t: 'rep'; v: number } | { t: 'cred'; v: number }
   | { t: 'morale'; a?: string; v: number } | { t: 'loyalty'; a?: string; v: number } | { t: 'fatigue'; a?: string; v: number }
   | { t: 'fans'; a?: string; city?: string; v: number }
   | { t: 'boost'; kind: 'hype' | 'streams' | 'city'; mult: number; weeks: number; songId?: string; cityId?: string; label: string }
@@ -214,6 +214,7 @@ export interface GameState {
   objectives: string[] // objectifs accomplis
   deal: { kind: 'offre' | 'sauvetage'; weeksLeft: number; levy: number } | null // accord avec Meridian Group
   bailouts: number
+  credibility?: number // 0..100 : image du label (absent = 50)
   pitches: Pitch[] // démarchages de playlists
   awards: Award[] // palmarès des cérémonies
   trends: Trend[] // tendances de genres en cours

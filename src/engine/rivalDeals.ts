@@ -1,5 +1,6 @@
 import { cityById } from '../data/world'
 import { prestige } from './prices'
+import { addCred } from './credibility'
 import { allRivalArtists, rivalArtistIn } from './rivalLife'
 import type { RivalArtist } from './rivals'
 import { ARTIST_SKILLS } from './types'
@@ -54,6 +55,7 @@ export function buyoutRival(s0: GameState, rivalId: string): Result {
   s.artists.push(a)
   s.rivals.signed = [...(s.rivals.signed ?? []), r.id]
   addRep(s, 0.4)
+  addCred(s, -1)
   s.log.push(`Rachat : ${r.stageName} quitte ${r.labelName} pour votre label.`)
   return ok(s, `${r.stageName} rejoint votre label. ${r.labelName} a empoché ${money(q.price)}.`)
 }

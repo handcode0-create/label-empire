@@ -1,3 +1,4 @@
+import { addCred, credOf } from './credibility'
 import { GENRES, cityById } from '../data/world'
 import { weekNo } from '../lib'
 import { departToRival } from './rivalLife'
@@ -121,6 +122,7 @@ function artistLife(s: GameState, notes: Notes) {
     l += hit ? 1 : 0
     l += recent ? 0.4 : -0.6
     l -= (egoOf(a) - 50) / 120
+    l += (credOf(s) - 50) / 250 // un label crédible retient mieux ses artistes
     if (a.traits.includes('Loyal')) l += 0.3
     a.loyalty = clamp(l, 0, 100)
     if (a.loyalty < 25 && a.morale < 40 && rng.chance(0.06)) notes.push({ tag: 'Artiste', text: `${a.stageName} envisage de quitter le label : fidélité au plus bas (${Math.round(a.loyalty)}).`, tone: 'r' })
@@ -128,6 +130,7 @@ function artistLife(s: GameState, notes: Notes) {
       const to = a.contract ? departToRival(s, a, a.poachedBy) : null
       notes.push({ tag: 'Contrat', text: `${a.stageName} quitte le label${to ? ` et rejoint ${to}` : ''}.`, tone: 'r' })
       s.artists = s.artists.filter((x) => x.id !== a.id)
+      addCred(s, -2)
     }
   }
   // relations : dérive lente vers 0, conflit si trop bas
