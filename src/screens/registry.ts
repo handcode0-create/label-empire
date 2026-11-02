@@ -6,6 +6,7 @@ import Concours from './mock/Concours'
 import Contrat from './mock/Contrat'
 import Decouverte from './mock/Decouverte'
 import Ecriture from './mock/Ecriture'
+import Enquete from './mock/Enquete'
 import Equipe from './mock/Equipe'
 import Fin from './mock/Fin'
 import Finances from './mock/Finances'
@@ -50,6 +51,7 @@ export const SCREENS: Record<string, () => React.JSX.Element> = {
   Contrat,
   Decouverte,
   Ecriture,
+  Enquete,
   Equipe,
   Fin,
   Finances,

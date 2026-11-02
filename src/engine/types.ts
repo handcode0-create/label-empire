@@ -218,6 +218,7 @@ export interface GameState {
   deal: { kind: 'offre' | 'sauvetage'; weeksLeft: number; levy: number } | null // accord avec Meridian Group
   bailouts: number
   credibility?: number // 0..100 : image du label (absent = 50)
+  inquiry?: { clues: Record<string, { week: number; verified?: boolean; verifyDue?: number }>; links: string[]; heat: number; alerted?: boolean } // enquête sur Meridian (plan Horizon)
   pitches: Pitch[] // démarchages de playlists
   awards: Award[] // palmarès des cérémonies
   trends: Trend[] // tendances de genres en cours

@@ -1,3 +1,4 @@
+import { inquiryStrength } from '../engine/inquiry'
 import { cityById, palierFor } from './world'
 import { usd } from '../lib'
 import type { GameState } from '../engine/types'
@@ -17,7 +18,7 @@ export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
   joueur: { name: 'Vous', role: 'Fondateur', gradient: '#FFC63D,#FF3D9A', side: 'right', portrait: 'story-joueur' },
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
-export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' | 'roster-diner' | 'awa-exclusif' }[] }
+export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' | 'dossier-attendre' | 'roster-diner' | 'awa-exclusif' }[] }
 export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport' | 'plateau' | 'redaction' | 'ceremonie' | 'agence' | 'terrasse' | 'tour'
 /** Décors à générer (voir docs/images/PROMPTS_MANQUANTS.md) : tant que l'image n'existe pas, le décor de secours est utilisé. */
 export const BG_FALLBACK: Partial<Record<Bg, Bg>> = { plateau: 'studio', redaction: 'bureau', ceremonie: 'scene', agence: 'ville', terrasse: 'nuit', tour: 'finale' }
@@ -365,10 +366,23 @@ const ARC_SCENES: Scene[] = [
       I('C’est le plan Horizon dans sa forme la plus sale, patron. Ils n’achètent pas des labels seulement : ils achètent des places dans les classements.', 'tension'),
       A('Je peux tout publier demain matin. Mais Tomás Reyes a des avocats et la mémoire longue.', 'tension'),
       { who: 'joueur', text: 'Il faut décider maintenant.', mood: 'tension', choices: [
-        { label: 'Publier le dossier (+2,5 de réputation, offensive de Meridian pendant 8 semaines)', effect: 'dossier-publier', reply: [A('Alors demain, le monde saura. Préparez-vous à la riposte, elle sera brutale.', 'confiance'), P('Qu’elle vienne. Le public choisira ce qu’il veut écouter.', 'confiance')] },
-        { label: 'Négocier une trêve (−1 de réputation, pas d’offensive ~6 mois)', effect: 'dossier-negocier', reply: [I('Une trêve, c’est un répit. Pas une victoire. Mais notre catalogue aura le temps de grandir à l’abri.', 'neutre'), A('Je garde les originaux. Si Tomás recommence, ils partiront le jour même.', 'tension')] },
+        { label: 'Publier le dossier (réputation et durée de l’offensive selon la solidité de l’enquête)', effect: 'dossier-publier', reply: [A('Alors demain, le monde saura. Préparez-vous à la riposte, elle sera brutale.', 'confiance'), P('Qu’elle vienne. Le public choisira ce qu’il veut écouter.', 'confiance')] },
+        { label: 'Négocier une trêve (pas d’offensive ~6 mois ; plus avantageux si le dossier est solide)', effect: 'dossier-negocier', reply: [I('Une trêve, c’est un répit. Pas une victoire. Mais notre catalogue aura le temps de grandir à l’abri.', 'neutre'), A('Je garde les originaux. Si Tomás recommence, ils partiront le jour même.', 'tension')] },
+        { label: 'Pas encore : je veux des preuves incontestables (écran Enquête)', effect: 'dossier-attendre', reply: [A('Prudent. Mais chaque semaine, Meridian peut apprendre que quelqu’un a ouvert l’enveloppe. Trouvez-moi des preuves qui tiennent devant un juge.', 'tension'), I('Un dossier solide change tout : la publication fait plus de dégâts, la négociation rapporte plus.', 'neutre')] },
       ] },
       N('Quelle que soit la décision, quelque chose a changé : Meridian sait désormais que {label} sait.'),
+    ],
+  },
+  {
+    id: 'dossier-pret', bg: 'redaction', title: 'Acte 3 · Le dossier est prêt', when: (g) => g.eventSeen?.['dossier-attendre'] !== undefined && g.eventSeen?.['dossier'] === undefined && inquiryStrength(g) >= 8,
+    lines: [
+      N('Awa étale les pièces sur la table : virements, factures, captures, un témoignage enregistré. Pour la première fois, le puzzle tient debout.'),
+      A('Voilà. Chaque lien est recoupé. Si je publie, Tomás ne pourra pas nous attaquer sur les faits.', 'confiance'),
+      I('C’est exactement ce qu’il faut pour que la décision pèse vraiment, patron. À vous de choisir ce que vous en faites.', 'confiance'),
+      { who: 'joueur', text: 'Le moment est venu.', mood: 'tension', choices: [
+        { label: 'Publier le dossier (plus la preuve est solide, plus le gain est grand)', effect: 'dossier-publier', reply: [A('Demain, à la une. Avec ça, personne chez Meridian ne dormira cette nuit.', 'confiance')] },
+        { label: 'Négocier une trêve en position de force', effect: 'dossier-negocier', reply: [A('Une trêve avec un dossier pareil, c’est un contrat. Vous pouvez dicter vos conditions.', 'neutre')] },
+      ] },
     ],
   },
   {

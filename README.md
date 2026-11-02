@@ -111,3 +111,6 @@ Depuis les classements, un clic sur n'importe quel artiste ouvre sa fiche. Pour 
 
 ## Arcs d'artistes
 Les artistes du label vivent de petites histoires en plusieurs temps (événements + suites différées) : polémique sur les réseaux, épuisement et retour, mariage et famille, et — pour un artiste formé, fidèle et populaire — l'envie de fonder son label (sous-label co-fondé, ou départ béni : il devient un label rival amical visible dans les classements). Un arc à la fois par artiste ; le journal est affiché dans le panneau « Histoire » de sa fiche. Code : `src/engine/arcs.ts`.
+
+## Enquête Horizon
+Après la rencontre avec Awa Sylla, un tableau d'enquête (écran « Enquête », lien sur le Hub) permet de réunir 8 indices (chances selon le profil de votre équipe, 1 action + de l'argent), de les relier par des fils rouges (liens valides seulement), et de les faire vérifier par Awa (résultat 2 semaines plus tard). Les démarches ratées augmentent la méfiance de Meridian (offensive à 3). Trois solidités (fragile, solide ≥ 8, irréfutable ≥ 18) changent la portée de « Publier » (réputation, durée de l'offensive, frais d'avocats) et de « Négocier » (jusqu'à +25 000 $). Nouveau choix « attendre » dans la scène du dossier, puis la scène « Le dossier est prêt » quand il est solide. Code : `src/engine/inquiry.ts`.

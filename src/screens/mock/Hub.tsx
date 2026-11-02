@@ -1,3 +1,4 @@
+import { TIER_NAME, inquiryOpen, inquiryStrength, tierOf } from '../../engine/inquiry'
 import { placeLabels } from '../../data/mapLabels'
 import { useMemo, useState } from 'react'
 import Hud from '../../components/Hud'
@@ -84,6 +85,12 @@ export default function Hub() {
           </div>
         </div>
         <div style={{width: 376, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto', maxHeight: 'calc(var(--sh, 900px) - 128px)', paddingBottom: 4}}>
+          {inquiryOpen(g) && g.eventSeen?.['dossier'] === undefined && (
+            <div className="pn" role="button" tabIndex={0} style={{cursor: 'pointer'}} onClick={() => go('Enquete')} onKeyDown={(e) => e.key === 'Enter' && go('Enquete')}>
+              <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Enquête Horizon</span><span className="sp" /><span className="tag te">{Object.keys(g.inquiry?.clues ?? {}).length}/8 indices</span></div>
+              <div style={{fontSize: 13, marginTop: 6}}>{TIER_NAME[tierOf(inquiryStrength(g))]} · ouvrir le tableau d'enquête avec Awa.</div>
+            </div>
+          )}
           <div className="pn sel" title={STORY_GOAL}>
             <div style={{display: 'flex', alignItems: 'center'}}><span className="lbl">Objectif de l'histoire</span><span className="sp" /><span className="tag te">{goal.title}</span></div>
             <div style={{fontSize: 14, marginTop: 8, lineHeight: 1.4}}>{goal.text}</div>

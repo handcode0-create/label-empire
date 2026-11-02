@@ -14,6 +14,7 @@ import { fxRate, fxTick, liveCity, marketTick, streamValueMult } from './prices'
 import { rumorsTick } from './rumors'
 import { lifeTick } from './artistLife'
 import { credRelease, credTick } from './credibility'
+import { inquiryTick } from './inquiry'
 import { rivalsTick } from './rivalLife'
 import { rivalsAndRefresh, resolveContests } from './scouting'
 import { runTourStops } from './tour'
@@ -123,6 +124,7 @@ export function advanceWeek(s0: GameState): GameState {
   echoesTick(s, notes)
   lifeTick(s, notes)
   credTick(s, notes)
+  inquiryTick(s, notes)
   fxTick(s, notes)
   marketTick(s, notes)
   rumorsTick(s, notes)
