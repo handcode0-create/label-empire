@@ -11,6 +11,7 @@ import Fin from './mock/Fin'
 import Finances from './mock/Finances'
 import Label from './mock/Label'
 import Hub from './mock/Hub'
+import Joueur from './mock/Joueur'
 import Main from './mock/Main'
 import Menu from './mock/Menu'
 import Mixage from './mock/Mixage'
@@ -53,6 +54,7 @@ export const SCREENS: Record<string, () => React.JSX.Element> = {
   Fin,
   Finances,
   Hub,
+  Joueur,
   Label,
   Main,
   Menu,

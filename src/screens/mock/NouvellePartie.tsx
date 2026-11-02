@@ -5,6 +5,7 @@ import { CAPITALS } from '../../engine/newGame'
 import { useEffect, useState } from 'react'
 import Chip from '../../components/Chip'
 import { useGame } from '../../store/gameStore'
+import { FOUNDER_AVATARS } from '../../data/avatars'
 
 // Fichier généré par scripts/port-mockups.cjs depuis la maquette (NouvellePartie.dc.html).
 const readFile = (f: File | undefined, cb: (d: string) => void) => { if (!f) return; if (f.size > 1_500_000) { useGame.getState().say('Image trop lourde (1,5 Mo maximum).', 'err'); return } const r = new FileReader(); r.onload = () => cb(String(r.result)); r.readAsDataURL(f) }
@@ -103,5 +104,4 @@ export default function NouvellePartie() {
   )
 }
 
-const FOUNDER_AVATARS = ['story-joueur', 'story-joueur-m', ...['afrique-ouest', 'europe', 'amerique-nord', 'amerique-latine'].flatMap((r) => ['f1', 'f2', 'm1', 'm2'].map((v) => `${r}-${v}`)), ...['asie-est', 'asie-sud-ouest', 'oceanie'].flatMap((r) => ['f1', 'm1'].map((v) => `${r}-${v}`))]
 const compactUsd = (n: number) => n >= 1e9 ? '$1 Md' : n >= 1e6 ? '$' + n / 1e6 + ' M' : '$' + n / 1000 + ' k'

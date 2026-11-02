@@ -105,3 +105,6 @@ Depuis les classements, un clic sur n'importe quel artiste ouvre sa fiche. Pour 
 
 ## Histoire : suite (actes 2 à 4)
 11 scènes de plus, accrochées aux objectifs et aux événements réels : le passé de Kwame (Griot Records, racheté par Meridian), les cinq villes, le dîner du roster (choix : -3 000 $, moral +8), la une d'Awa après la publication du dossier (choix : interview exclusive, +0,6 de réputation) ou son silence après la trêve, le top 10 mondial, la réaction de Tomás quand vous rachetez un artiste rival, les cinq continents, le diamant, le numéro un mondial et l'indépendance vis-à-vis de Meridian. L'épilogue de victoire (`epilogueWin`) se complète selon vos choix (dossier publié ou trêve, aucun accord avec Meridian, artistes rachetés).
+
+## Profil du joueur et paramètres
+Écran « Profil » (dernier onglet de la barre latérale) : modifier le nom du fondateur, la nationalité, le genre principal, l'avatar (ou une photo importée) et le logo ; renommer le label coûte 2 000 $ (annoncé dans l'actualité). Carrière en un coup d'œil, options (sauvegarde auto, animations réduites, sons, mémorisées dans le navigateur), sauvegarde manuelle, export/import `.json`, retour menu, nouvelle partie et suppression avec double confirmation.

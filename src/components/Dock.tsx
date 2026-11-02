@@ -7,6 +7,7 @@ const ITEMS: { key: string; href: string; label: string; short?: string; d: Reac
   { key: 'tournees', href: 'Tournee.dc.html', label: 'Tournées', d: <path d="M3 13l18-9-6 17-3-7-9-1z" /> },
   { key: 'equipe', href: 'Equipe.dc.html', label: 'Équipe', d: <><rect x={3} y={7} width={18} height={13} rx={2} /><path d="M9 7V5h6v2M3 13h18" /></> },
   { key: 'finances', href: 'Finances.dc.html', label: 'Finances', d: <path d="M3 7h16a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2V7zM3 7l2-3h12M16 14h2" /> },
+  { key: 'joueur', href: 'Joueur.dc.html', label: 'Profil', d: <><circle cx={12} cy={8} r={4} /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></> },
 ]
 
 /** Barre de navigation latérale commune à tous les écrans de jeu. */

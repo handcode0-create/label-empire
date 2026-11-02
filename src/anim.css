@@ -41,3 +41,4 @@
 @keyframes logoSpin{0%{opacity:0;transform:scale(.3) rotate(-25deg)}65%{transform:scale(1.12) rotate(4deg)}100%{opacity:1;transform:none}}
 .sp-title{background:linear-gradient(100deg,#F4F0FF 30%,#FF7DBB 45%,#35D3F0 55%,#F4F0FF 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 4.5s linear 1.6s infinite}
 @media (prefers-reduced-motion: reduce){.sp-title,.sp-spark{animation:none!important}}
+.rm *,.rm *::before,.rm *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}

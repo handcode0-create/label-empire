@@ -41,3 +41,6 @@ export function avatarKey(a: { id: string; stageName: string; realName?: string;
   return `${r.startsWith('afrique') ? 'afrique-ouest' : r}-${g}${1 + (hash(a.id) % 2)}`
 }
 export const ALL_AVATAR_KEYS = AVATAR_REGIONS.flatMap((r) => ['f1', 'f2', 'm1', 'm2'].map((v) => `${r.id}-${v}`))
+
+/** Portraits proposés au joueur pour son personnage. */
+export const FOUNDER_AVATARS = ['story-joueur', 'story-joueur-m', ...['afrique-ouest', 'europe', 'amerique-nord', 'amerique-latine'].flatMap((r) => ['f1', 'f2', 'm1', 'm2'].map((v) => `${r}-${v}`)), ...['asie-est', 'asie-sud-ouest', 'oceanie'].flatMap((r) => ['f1', 'm1'].map((v) => `${r}-${v}`))]

@@ -12,9 +12,15 @@ const initial: NewGameConfig = {
   hqCityId: 'abidjan', currency: 'USD', difficulty: 'normal', seed: Date.now() % 2 ** 31,
 }
 
+const normalize = (g: GameState): GameState => ({ ...g, tournament: g.tournament ?? null, seenScenes: g.seenScenes ?? [], projects: g.projects ?? [], objectives: g.objectives ?? [], deal: g.deal ?? null, bailouts: g.bailouts ?? 0, certs: g.certs ?? [], pitches: g.pitches ?? [], awards: g.awards ?? [], missions: g.missions ?? [], drafts: g.drafts ?? [], trends: g.trends ?? [], boosts: g.boosts ?? [], rivalMoves: g.rivalMoves ?? [], meridian: g.meridian ?? { phase: 'calme', until: 0, since: 0 }, relations: g.relations ?? {}, eventSeen: g.eventSeen ?? {}, news: g.news ?? [], markets: g.markets ?? {}, payout: g.payout ?? 1, rumors: g.rumors ?? [], fx: g.fx ?? {}, echoes: g.echoes ?? [], history: g.history ?? [], rivals: g.rivals ?? makeRivals({ ...g, trends: g.trends ?? [] } as GameState) })
+
 export const sum = (o: Record<string, number>) => Object.values(o).reduce((a, b) => a + b, 0)
 
 const SAVE_KEY = 'label-empire-save-v2'
+const OPT_KEY = 'label-empire-options-v1'
+export interface Options { sound: boolean; autosave: boolean; reduceMotion: boolean }
+const readOptions = (): Options => { const d: Options = { sound: true, autosave: true, reduceMotion: false }; try { const t = localStorage.getItem(OPT_KEY); return t ? { ...d, ...JSON.parse(t) } : d } catch { return d } }
+const applyOptions = (o: Options) => { try { document.documentElement.classList.toggle('rm', o.reduceMotion); localStorage.setItem(OPT_KEY, JSON.stringify(o)) } catch { /* indisponible */ } }
 const readSave = (): GameState | null => { try { const t = localStorage.getItem(SAVE_KEY); return t ? (JSON.parse(t) as GameState) : null } catch { return null } }
 const writeSave = (g: GameState | null) => { try { if (g) localStorage.setItem(SAVE_KEY, JSON.stringify(g)); else localStorage.removeItem(SAVE_KEY) } catch { /* stockage indisponible */ } }
 
@@ -29,7 +35,7 @@ interface Store {
   toast: Toast | null
   modal: Modal
   scene: string | null
-  options: { sound: boolean; autosave: boolean }
+  options: Options
   patch: (p: Partial<NewGameConfig>) => void
   setSkill: (group: 'staffSkills' | 'artistSkills', key: string, delta: number) => void
   errors: () => string[]
@@ -46,7 +52,11 @@ interface Store {
   setModal: (m: Modal) => void
   playScene: (id: string) => void
   endScene: () => void
-  setOption: (k: 'sound' | 'autosave', v: boolean) => void
+  setOption: (k: keyof Options, v: boolean) => void
+  saveNow: () => void
+  exportSave: () => void
+  importSave: (text: string) => boolean
+  deleteSave: () => void
   go: (screen: string) => void
   freeMode: () => void
 }
@@ -59,7 +69,7 @@ export const useGame = create<Store>((set, get) => ({
   toast: null,
   modal: null,
   scene: null,
-  options: { sound: true, autosave: true },
+  options: readOptions(),
   patch: (p) => set((s) => ({ config: { ...s.config, ...p } })),
   setSkill: (group, key, delta) => set((s) => {
     const cur = s.config[group]
@@ -103,7 +113,7 @@ export const useGame = create<Store>((set, get) => ({
   load: () => {
     const g = readSave()
     if (!g) { get().say('Aucune sauvegarde trouvée.', 'err'); return false }
-    set({ game: { ...g, tournament: g.tournament ?? null, seenScenes: g.seenScenes ?? [], projects: g.projects ?? [], objectives: g.objectives ?? [], deal: g.deal ?? null, bailouts: g.bailouts ?? 0, certs: g.certs ?? [], pitches: g.pitches ?? [], awards: g.awards ?? [], missions: g.missions ?? [], drafts: g.drafts ?? [], trends: g.trends ?? [], boosts: g.boosts ?? [], rivalMoves: g.rivalMoves ?? [], meridian: g.meridian ?? { phase: 'calme', until: 0, since: 0 }, relations: g.relations ?? {}, eventSeen: g.eventSeen ?? {}, news: g.news ?? [], markets: g.markets ?? {}, payout: g.payout ?? 1, rumors: g.rumors ?? [], fx: g.fx ?? {}, echoes: g.echoes ?? [], history: g.history ?? [], rivals: g.rivals ?? makeRivals({ ...g, trends: g.trends ?? [] } as GameState) } })
+    set({ game: normalize(g) })
     return true
   },
   quit: () => { set({ game: null }) },
@@ -118,7 +128,28 @@ export const useGame = create<Store>((set, get) => ({
     set({ game: n })
     if (get().options.autosave) writeSave(n)
   },
-  setOption: (k, v) => set((s) => ({ options: { ...s.options, [k]: v } })),
+  setOption: (k, v) => set((s) => { const options = { ...s.options, [k]: v }; applyOptions(options); return { options } }),
+  saveNow: () => { const g = get().game; if (!g) return; writeSave(g); get().say('Partie sauvegardée dans ce navigateur.') },
+  exportSave: () => {
+    const g = get().game
+    if (!g) return
+    try {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(g)], { type: 'application/json' }))
+      const a = document.createElement('a'); a.href = url; a.download = `label-empire-${g.label.name.replace(/\W+/g, '-').toLowerCase()}-sem${g.week}.json`; a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 2000)
+      get().say('Sauvegarde exportée.')
+    } catch { get().say("Export impossible dans ce navigateur.", 'err') }
+  },
+  importSave: (text) => {
+    try {
+      const g = JSON.parse(text) as GameState
+      if (!g || typeof g.week !== 'number' || !g.label?.name || !Array.isArray(g.artists) || !Array.isArray(g.songs)) throw new Error('format')
+      const n = normalize(g)
+      set({ game: n }); writeSave(n); get().say(`Partie « ${n.label.name} » importée (semaine ${n.week}).`)
+      return true
+    } catch { get().say("Ce fichier n'est pas une sauvegarde valide.", 'err'); return false }
+  },
+  deleteSave: () => { writeSave(null); set({ game: null }); get().say('Sauvegarde supprimée.') },
   go: (screen) => { location.hash = screen },
   freeMode: () => {
     const g = get().game
@@ -132,4 +163,5 @@ export const useGame = create<Store>((set, get) => ({
 export const guard = (fn: () => boolean | void) => (e: { preventDefault: () => void }) => { if (fn() === false) e.preventDefault() }
 
 // Outil de test en développement : permet aux scripts de navigateur de lire/écrire l'état.
+applyOptions(readOptions())
 if (import.meta.env.DEV) (window as unknown as { __game: typeof useGame }).__game = useGame
