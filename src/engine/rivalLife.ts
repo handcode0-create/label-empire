@@ -34,6 +34,7 @@ export interface RivalState {
   prev: RivalCharts // semaine précédente
   week: number
   signed?: string[] // artistes rivaux rachetés par le joueur (ils quittent le monde rival)
+  founded?: { name: string; hqCityId: string; founder: string; week: number }[] // labels fondés par d'anciens artistes du joueur
 }
 
 /** Échelle des classements rivaux (réglage d'équilibrage) et croissance du marché au fil des semaines. */
@@ -147,7 +148,8 @@ export function rivalProjectIn(s: GameState, id: string): RivalProject | undefin
 /** Labels rivaux avec l'effectif actuel (les transferts déplacent les artistes). */
 export function rivalLabelsIn(s: GameState): (RivalLabel & { prestige: number })[] {
   const R = s.rivals
-  return rivalWorld().labels.map((l) => {
+  const all: RivalLabel[] = [...rivalWorld().labels, ...(R?.founded ?? []).map((f) => ({ name: f.name, hqCityId: f.hqCityId, artistIds: [] as string[] }))]
+  return all.map((l) => {
     const ids = allRivalArtists(s).filter((a) => (R?.dyn[a.id]?.label ?? a.labelName) === l.name).map((a) => a.id)
     const prestige = ids.length ? ids.reduce((t, id) => t + (R?.dyn[id]?.pop ?? 0.3), 0) / ids.length : 0
     return { ...l, artistIds: ids, prestige }
@@ -197,6 +199,17 @@ export function signToRival(s: GameState, cand: Artist, notes: Notes) {
   const pop = clamp(0.18 + 0.12 * cand.potential + rng.next() * 0.05, 0.2, 0.85)
   makeExtra(s, rng, { id: `rx-${cand.id}`, stage: cand.stageName, real: cand.realName, city: cand.originCityId, genre: cand.genre, label, pop })
   notes.push({ tag: 'Rival', text: `${label} a signé ${cand.stageName} (${cityById(cand.originCityId).name}, ${cand.genre}) : un concurrent de plus sur ce créneau.`, tone: 'r' })
+}
+/** Un ancien artiste du joueur fonde son propre label : il apparaît désormais parmi les labels rivaux. */
+export function foundLabel(s: GameState, a: Artist): string {
+  s.rivals ??= makeRivals(s)
+  const R = s.rivals
+  R.founded ??= []
+  const taken = new Set([...rivalWorld().labels.map((l) => l.name), ...R.founded.map((f) => f.name), s.label.name])
+  let name = `${a.stageName} Music`
+  for (let i = 2; taken.has(name); i++) name = `${a.stageName} Music ${i}`
+  R.founded.push({ name, hqCityId: a.originCityId, founder: a.stageName, week: s.week })
+  return name
 }
 /** Un artiste quitte votre label pour un concurrent : on le retrouvera dans les classements. */
 export function departToRival(s: GameState, a: Artist, label?: string) {

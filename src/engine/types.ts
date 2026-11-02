@@ -59,6 +59,8 @@ export interface Artist {
   ego?: number // 0..100 : monte avec le succès
   offer?: { label: string; until: number } // offre concurrente en cours
   heat?: number // 0..100 : ferveur du public
+  arcActive?: string // arc d'histoire en cours (un seul à la fois)
+  arcs?: { id: string; week: number; text: string; end?: boolean }[] // journal des arcs vécus avec le label
 }
 
 export interface SongRelease {
@@ -167,6 +169,7 @@ export type Fx =
   | { t: 'rivalCut'; v: number } | { t: 'meridian'; phase: 'calme' | 'offensive'; weeks: number; region?: string }
   | { t: 'fxCity'; city: string; v: number } | { t: 'release'; songId: string }
   | { t: 'fanPct'; a?: string; v: number } | { t: 'heat'; a?: string; v: number }
+  | { t: 'arc'; a?: string; id: string; text: string; end?: boolean } | { t: 'found'; a?: string }
   | { t: 'later'; after: number; text: string; tone?: Echo['tone']; fx?: Fx[]; event?: EchoEvent }
   | { t: 'roll'; p: number; win: Fx[]; lose: Fx[]; winText?: string; loseText?: string }
 export interface EventChoice { id: string; label: string; detail: string; cost: number; fx?: Fx[] }

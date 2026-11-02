@@ -1,3 +1,4 @@
+import { arcTitle } from '../../engine/arcs'
 import Hud from "../../components/Hud";
 import Dock from "../../components/Dock";
 import Avatar from "../../components/Avatar";
@@ -379,6 +380,21 @@ export default function Artiste() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            {mine && (mine.arcs?.length ?? 0) > 0 && (
+              <div className="pn">
+                <div className="lbl">Histoire avec {mine.stageName}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+                  {[...(mine.arcs ?? [])].reverse().slice(0, 6).map((x, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", fontSize: 13 }}>
+                      <span className={"tag " + (x.end ? "tg" : "te")}>{arcTitle(x.id)}</span>
+                      <span>{x.text}</span>
+                      <span className="mut">sem. {(x.week - 1) % 52 + 1}</span>
+                    </div>
+                  ))}
+                </div>
+                {mine.arcActive && <div className="mut" style={{ fontSize: 12, marginTop: 10 }}>Arc en cours : {arcTitle(mine.arcActive)}.</div>}
               </div>
             )}
             {mine && !mine.isFounder && (

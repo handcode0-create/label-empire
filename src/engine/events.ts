@@ -2,8 +2,9 @@ import { CITIES, GENRES, cityById } from '../data/world'
 import { fxShock } from './prices'
 import { addHeat, fanPct } from './fans'
 import { addBoost, addTrend, loyaltyOf, relKey } from './dynamics'
-import { topRivalLabels } from './rivalLife'
+import { foundLabel, topRivalLabels } from './rivalLife'
 import { addCred } from './credibility'
+import { arcEvent } from './arcs'
 import type { Artist, Echo, EchoEvent, EventChoice, Fx, GameEvent, GameState, Result, Song } from './types'
 import { addRep, clamp, clone, drawRng, fail, ok, spend } from './util'
 import type { Rng } from './rng'
@@ -34,6 +35,10 @@ export function poachOffer(a: Artist, rival: string): Omit<GameEvent, 'id' | 'ki
 }
 
 const GENS: Gen[] = [
+  {
+    kind: 'arc', weight: 6, cooldown: 5,
+    make: (s, rng) => arcEvent(s, rng),
+  },
   {
     kind: 'brand', weight: 4, cooldown: 14,
     make: (s, rng) => {
@@ -321,6 +326,14 @@ function applyFx(s: GameState, ev: GameEvent, fx: Fx, rng: Rng, out: string[]) {
     case 'fans': for (const a of targets(s, ev, fx.a)) { const c = fx.city ?? a.originCityId; a.fans[c] = Math.max(0, (a.fans[c] ?? 0) + fx.v) } out.push(`fans ${fx.v >= 0 ? '+' : '−'}${Math.abs(fx.v)}`); break
     case 'boost': addBoost(s, { kind: fx.kind, mult: fx.mult, weeks: fx.weeks, songId: fx.songId ?? ev.songId, cityId: fx.cityId, label: fx.label }); break
     case 'trend': addTrend(s, { genre: fx.genre, mult: fx.mult, start: s.week, until: s.week + fx.weeks, kind: fx.kind, cause: fx.cause }); break
+    case 'arc': {
+      for (const a of targets(s, ev, fx.a)) {
+        a.arcs = [...(a.arcs ?? []), { id: fx.id, week: s.week, text: fx.text, end: fx.end }].slice(-20)
+        if (fx.end) a.arcActive = undefined; else a.arcActive = fx.id
+      }
+      break
+    }
+    case 'found': { const a = targets(s, ev, fx.a)[0]; if (a && !a.isFounder) { const name = foundLabel(s, a); a.departing = true; a.poachedBy = name; out.push(`${a.stageName} fonde « ${name} »`) }; break }
     case 'leave': { const a = s.artists.find((x) => x.id === fx.a); if (a && !a.isFounder) { a.departing = true; a.poachedBy = fx.to }; break }
     case 'relation': { const k = relKey(fx.a, fx.b); s.relations[k] = clamp((s.relations[k] ?? 0) + fx.v, -100, 100); break }
     case 'rivalCut': for (const m of s.rivalMoves ?? []) m.strength = Math.round(m.strength * fx.v * 100) / 100; break
@@ -393,5 +406,7 @@ export function dueEchoEvent(s: GameState, week: number): GameEvent | null {
   const i = (s.echoes ?? []).findIndex((e) => e.event && e.due <= week)
   if (i < 0) return null
   const [e] = s.echoes.splice(i, 1)
+  const art = e.event!.artistId
+  if (art && !s.artists.some((x) => x.id === art)) return null // l'artiste est parti entre-temps
   return { id: `e-${week}`, kind: 'suite', week, ...e.event! }
 }

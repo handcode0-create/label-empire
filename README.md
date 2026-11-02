@@ -108,3 +108,6 @@ Depuis les classements, un clic sur n'importe quel artiste ouvre sa fiche. Pour 
 
 ## Profil du joueur et paramètres
 Écran « Profil » (dernier onglet de la barre latérale) : modifier le nom du fondateur, la nationalité, le genre principal, l'avatar (ou une photo importée) et le logo ; renommer le label coûte 2 000 $ (annoncé dans l'actualité). Carrière en un coup d'œil, options (sauvegarde auto, animations réduites, sons, mémorisées dans le navigateur), sauvegarde manuelle, export/import `.json`, retour menu, nouvelle partie et suppression avec double confirmation.
+
+## Arcs d'artistes
+Les artistes du label vivent de petites histoires en plusieurs temps (événements + suites différées) : polémique sur les réseaux, épuisement et retour, mariage et famille, et — pour un artiste formé, fidèle et populaire — l'envie de fonder son label (sous-label co-fondé, ou départ béni : il devient un label rival amical visible dans les classements). Un arc à la fois par artiste ; le journal est affiché dans le panneau « Histoire » de sa fiche. Code : `src/engine/arcs.ts`.
