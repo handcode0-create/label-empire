@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { applyStoryEffect } from '../engine/storyEffects'
 import { CHARS, SCENES, contextFor, fillText, type Bg, type Line } from '../data/story'
 import { useGame } from '../store/gameStore'
 import Avatar from './Avatar'
@@ -91,6 +92,7 @@ export default function Cinematic() {
   const choose = (reply: Line[], effect?: string) => {
     if (effect === 'accept-meridian') run(acceptMeridianOffer)
     if (effect === 'repos' || effect === 'prime') run((s) => careForTourArtist(s, effect))
+    if (effect === 'dossier-publier' || effect === 'dossier-negocier') run((s) => applyStoryEffect(s, effect))
     setQueue([...queue.slice(0, i + 1), ...reply, ...queue.slice(i + 1)]); setPicked(true); setI(i + 1); setPicked(false) }
 
   useEffect(() => {

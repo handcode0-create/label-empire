@@ -5,28 +5,29 @@ import { signedCount } from '../engine/util'
 import { entrantOf } from '../engine/tournament'
 import { lastPlayed } from '../engine/tour'
 
-export type CharId = 'narrateur' | 'ines' | 'kwame' | 'tomas' | 'joueur'
+export type CharId = 'narrateur' | 'ines' | 'kwame' | 'tomas' | 'joueur' | 'awa'
 export interface Char { name: string; role: string; gradient: string; side: 'left' | 'right'; portrait?: string }
 /** Personnages de l'histoire (fictifs). Les portraits viennent de public/avatars/story/<clé>.webp, sinon monogramme. */
 export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
   ines: { name: 'Inès Marchetti', role: 'Directrice des opérations', gradient: '#FF3D9A,#FFC63D', side: 'left', portrait: 'story-ines' },
   kwame: { name: 'Kwame Baro', role: 'Maître de cérémonie', gradient: '#35D3F0,#8B5CF6', side: 'left', portrait: 'story-kwame' },
   tomas: { name: 'Tomás Reyes', role: 'Directeur de Meridian Group', gradient: '#8B5CF6,#FF5470', side: 'left', portrait: 'story-tomas' },
+  awa: { name: 'Awa Sylla', role: 'Journaliste d’investigation', gradient: '#3DDC97,#35D3F0', side: 'left' },
   joueur: { name: 'Vous', role: 'Fondateur', gradient: '#FFC63D,#FF3D9A', side: 'right', portrait: 'story-joueur' },
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
-export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' }[] }
+export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' }[] }
 export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport'
 export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean }
 
-export interface Ctx { cash: string; palier: string; goal: string; label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string; artiste: string; villeTournee: string; salle: string; billets: string; capacite: string; taux: string; tournee: string }
+export interface Ctx { bureau: string; cash: string; palier: string; goal: string; label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string; artiste: string; villeTournee: string; salle: string; billets: string; capacite: string; taux: string; tournee: string }
 export function contextFor(g: GameState): Ctx {
   const t = g.tournament
   const winner = t?.winnerId ? entrantOf(t, t.winnerId).stageName : ''
   const lp = lastPlayed(g)
   const lpArtist = lp ? g.artists.find((a) => a.id === lp.tour.artistId) : undefined
   return {
-    cash: usd(g.cash), palier: palierFor(g.reputation).name, goal: goalFor(g).text,
+    bureau: g.offices.length ? cityById(g.offices[g.offices.length - 1].cityId).name : '', cash: usd(g.cash), palier: palierFor(g.reputation).name, goal: goalFor(g).text,
     label: g.label.name, founder: g.label.founder, city: cityById(g.label.hqCityId).name,
     artiste: lpArtist?.stageName ?? 'Votre artiste', villeTournee: lp ? cityById(lp.stop.cityId).name : '', salle: lp?.stop.venue ?? '', billets: lp ? (lp.stop.sold ?? 0).toLocaleString('fr-FR') : '', capacite: lp ? lp.stop.capacity.toLocaleString('fr-FR') : '', taux: lp ? String(Math.round(((lp.stop.sold ?? 0) / lp.stop.capacity) * 100)) : '', tournee: lp?.tour.name ?? '',
     tournoi: t?.name ?? '', ville: t ? cityById(t.cityId).name : '', winner,
@@ -40,6 +41,7 @@ const I = (text: string, mood?: Mood): Line => ({ who: 'ines', text, mood })
 const K = (text: string, mood?: Mood): Line => ({ who: 'kwame', text, mood })
 const T = (text: string, mood?: Mood): Line => ({ who: 'tomas', text, mood })
 const P = (text: string, mood?: Mood): Line => ({ who: 'joueur', text, mood })
+const A = (text: string, mood?: Mood): Line => ({ who: 'awa', text, mood })
 
 /** Le fil rouge : battre Meridian Group en atteignant 100 de réputation (label mondial) avant d'être racheté. */
 export const STORY_GOAL = 'Accomplir tous les objectifs et devenir le premier label mondial face à Meridian Group.'
@@ -49,9 +51,9 @@ export function goalFor(g: GameState): Goal {
   const released = g.songs.some((x) => x.stage === 'released')
   if (g.reputation < 100 && signedCount(g) === 0 && !g.artists.some((a) => a.isFounder && g.songs.some((x) => x.artistId === a.id))) return { step: 'artiste', title: 'Une voix', text: 'Trouver une voix : signez votre premier artiste (Découvrir, concours ou Grand Tournoi) ou écrivez pour le fondateur.' }
   if (!released) return { step: 'titre', title: 'Un premier titre', text: 'Écrire, enregistrer, mixer puis sortir un premier titre : Meridian regarde déjà vos débuts.' }
-  if (g.reputation < 25) return { step: 'local', title: 'Label national', text: 'Atteindre 25 de réputation : sortez des titres régulièrement et faites-vous un nom.' }
-  if (g.reputation < 50) return { step: 'national', title: 'Label régional', text: 'Atteindre 50 de réputation : ouvrez un bureau, visez plusieurs pays et gardez vos artistes loin de Meridian.' }
-  if (g.reputation < 75) return { step: 'regional', title: 'Label continental', text: 'Atteindre 75 de réputation : partez en tournée à l’étranger et dépassez les titres de Meridian aux classements.' }
+  if (g.reputation < 30) return { step: 'local', title: 'Label national', text: 'Atteindre 30 de réputation : sortez des titres régulièrement et faites-vous un nom.' }
+  if (g.reputation < 55) return { step: 'national', title: 'Label régional', text: 'Atteindre 55 de réputation : ouvrez un bureau, visez plusieurs pays et gardez vos artistes loin de Meridian.' }
+  if (g.reputation < 80) return { step: 'regional', title: 'Label continental', text: 'Atteindre 80 de réputation : partez en tournée à l’étranger et dépassez les titres de Meridian aux classements.' }
   if (g.reputation < 100) return { step: 'continental', title: 'Label mondial', text: 'Atteindre 100 de réputation et devenir le numéro un mondial, face à Meridian Group.' }
   return { step: 'fin', title: 'Légende', text: 'Vous avez gagné la guerre contre Meridian : le monde est à vous.' }
 }
@@ -160,7 +162,7 @@ export const SCENES: Scene[] = [
     ],
   },
   {
-    id: 'rival-1', bg: 'nuit', title: 'Acte 2 · Un nom qui circule', when: (g) => g.reputation >= 25,
+    id: 'rival-1', bg: 'nuit', title: 'Acte 2 · Un nom qui circule', when: (g) => g.reputation >= 30,
     lines: [
       N('Un nom commence à circuler dans les couloirs de l’industrie : {label}. Quelqu’un a décidé de venir voir de plus près.'),
       T('Ainsi, c’est vous, {founder}. Meridian Group suit vos chiffres depuis un mois.', 'confiance'),
@@ -170,11 +172,11 @@ export const SCENES: Scene[] = [
         { label: 'Non.', reply: [P('La réponse n’a pas changé, Tomás.', 'tension')] },
       ] },
       T('Tout le monde est à vendre, jusqu’au jour où le prix devient trop bas pour refuser. Rendez-vous au sommet, si vous y arrivez.', 'tension'),
-      I('Il ne bluffe pas : ses recruteurs sont partout où brillent les nouveaux talents. Prochain palier : cinquante points.', 'tension'),
+      I('Il ne bluffe pas : ses recruteurs sont partout où brillent les nouveaux talents. Prochain palier : cinquante-cinq points.', 'tension'),
     ],
   },
   {
-    id: 'rival-2', bg: 'bureau', title: 'Acte 3 · Le plan Horizon', when: (g) => g.reputation >= 50,
+    id: 'rival-2', bg: 'bureau', title: 'Acte 3 · Le plan Horizon', when: (g) => g.reputation >= 55,
     lines: [
       T('Vous avez grandi plus vite que prévu, {founder}. Je n’aime pas qu’on me prenne mes villes.', 'tension'),
       P('Je ne prends rien. Je sors de bons titres, et le public suit.', 'confiance'),
@@ -186,12 +188,12 @@ export const SCENES: Scene[] = [
     ],
   },
   {
-    id: 'sommet', bg: 'finale', title: 'Acte 4 · Le sommet', when: (g) => g.reputation >= 75,
+    id: 'sommet', bg: 'finale', title: 'Acte 4 · Le sommet', when: (g) => g.reputation >= 80,
     lines: [
       N('Les salles se remplissent, les classements se resserrent. {label} n’est plus un secret.'),
       K('Ce soir, le public vous réclame, {founder}. Et il y a quelqu’un au premier rang qui ne sourit pas.', 'confiance'),
       T('Cent points de réputation, c’est là que se joue la légende. Si vous les atteignez, Meridian Group fermera ses portes. Sinon, je rachèterai tout.', 'confiance'),
-      I('Il joue sa dernière carte, patron. Plus qu’un palier.', 'tension'),
+      I('Il joue sa dernière carte, patron. Plus qu’un dernier palier.', 'tension'),
       P('Alors regardez bien, Tomás. Ce n’est pas la fin, c’est le début de l’histoire.', 'confiance'),
     ],
   },
@@ -272,6 +274,121 @@ const TOUR_SCENES: Scene[] = [
   },
 ]
 SCENES.push(...TOUR_SCENES)
+
+const done = (g: GameState, id: string) => (g.objectives ?? []).includes(id)
+/** Scènes de l'histoire déclenchées par les objectifs : le scénario avance avec la progression du label. */
+const ARC_SCENES: Scene[] = [
+  {
+    id: 'equipe-grandit', bg: 'bureau', title: 'Acte 1 · Une vraie équipe', when: (g) => done(g, 'equipe'),
+    lines: [
+      N('Sept chaises autour de la table, et plus personne ne mange debout. Le local de {city} a changé de visage.'),
+      I('Il y a six mois, vous étiez deux dans une pièce qui sentait la peinture. Aujourd’hui, on dit « le label » comme on dit « la maison ».', 'joie'),
+      P('Une équipe ne se compte pas en têtes. Elle se compte en gens prêts à rester quand ça se complique.', 'confiance'),
+      I('Alors préparez-vous : Meridian ne s’attaque jamais à un label, il s’attaque à ceux qui le font tourner.', 'tension'),
+    ],
+  },
+  {
+    id: 'premier-clip', bg: 'studio', title: 'Acte 1 · Mise en images', when: (g) => g.songs.some((s) => s.clip?.status === 'sorti'),
+    lines: [
+      N('Un plateau de tournage, des câbles partout, un réalisateur qui crie « coupez ! » pour la onzième fois.'),
+      I('Le clip est sorti, patron. Les gens ne se contentent plus d’écouter : ils regardent, ils partagent, ils reconnaissent.', 'joie'),
+      P('Un visage, une ville, une couleur. C’est comme ça qu’un nom devient une image.', 'confiance'),
+    ],
+  },
+  {
+    id: 'duo-artistes', bg: 'bureau', title: 'Acte 2 · Deux voix, un label', when: (g) => done(g, 'deux-artistes'),
+    lines: [
+      N('Deux artistes dans le même couloir, un seul mur à partager pour les affiches.'),
+      I('Deux voix, c’est le début d’un roster. Et le début des ennuis : l’ego, la jalousie, les studios réservés au même moment.', 'tension'),
+      P('Je préfère une rivalité interne qui fait grandir qu’une loyauté qui s’endort.', 'confiance'),
+      I('Surveillez leur humeur et leur fidélité, patron. Meridian guette ceux qui se sentent oubliés.', 'tension'),
+    ],
+  },
+  {
+    id: 'presse-awa', bg: 'bureau', title: 'Acte 2 · La presse s’en mêle', when: (g) => done(g, 'fans-100k'),
+    lines: [
+      N('Une journaliste attend à l’accueil depuis une heure. Elle a refusé le café, accepté le silence.'),
+      A('Awa Sylla, pour « Écho des Marchés ». Cent mille fans en si peu de temps, c’est rare. Ça ne s’achète pas, d’habitude.', 'confiance'),
+      P('Alors je vous dirai comment ça se gagne : en sortant de bons titres, et en restant humble avec ceux qui les écoutent.', 'confiance'),
+      A('Beau discours. Je travaille sur un sujet qui vous concerne : les classements de Meridian sont trop propres. Trop réguliers.', 'tension'),
+      I('Elle a raison de poser la question. Nous en reparlerons quand vous serez assez haut pour qu’ils aient peur.', 'neutre'),
+      A('Gardez mon numéro. Un jour, vous aurez besoin d’une plume qui ne dépend de personne.', 'confiance'),
+    ],
+  },
+  {
+    id: 'disque-or', bg: 'scene', title: 'Acte 2 · Le premier disque d’or', when: (g) => (g.certs ?? []).length >= 1,
+    lines: [
+      K('Mesdames et messieurs, un instant de silence : le label reçoit sa toute première certification !', 'joie'),
+      N('Le cadre doré passe de main en main. Dans la salle, quelqu’un pleure sans oser l’admettre.'),
+      P('Ce disque appartient à chaque personne qui a écouté ce titre en boucle un soir de pluie.', 'joie'),
+      I('Meridian en a mille dans ses couloirs. Mais celui-ci, patron, personne ne vous l’a offert.', 'confiance'),
+    ],
+  },
+  {
+    id: 'bureau-etranger', bg: 'ville', title: 'Acte 2 · Une adresse à l’étranger', when: (g) => done(g, 'bureau'),
+    lines: [
+      N('{bureau}, un matin de pluie fine. Au rez-de-chaussée d’un immeuble ordinaire, une plaque neuve : {label}.'),
+      I('Un bureau local change tout, patron : des relais radio, des promoteurs qui décrochent, des contrats négociés sans passer par un fuseau horaire.', 'confiance'),
+      P('Meridian a une adresse dans chaque capitale. Désormais, nous aussi.', 'confiance'),
+      I('Attention au loyer et au personnel : une adresse coûte chaque semaine, qu’on y joue ou non.', 'neutre'),
+    ],
+  },
+  {
+    id: 'album-premiere', bg: 'nuit', title: 'Acte 3 · Écoute privée', when: (g) => done(g, 'album'),
+    lines: [
+      N('Un toit-terrasse, quelques bougies, des enceintes posées sur une table pliante. Les premiers invités arrivent en silence.'),
+      K('Je n’ai pas besoin de lire les chiffres. Je regarde les visages : ils savent déjà que c’est un grand disque.', 'confiance'),
+      P('Un album, c’est une promesse tenue sur quarante minutes. Je voulais qu’il sonne comme une ville entière.', 'joie'),
+      I('La presse l’a reçu hier. Awa Sylla m’a écrit une seule ligne : « Enfin du vrai. »', 'joie'),
+    ],
+  },
+  {
+    id: 'dossier-horizon', bg: 'bureau', title: 'Acte 3 · Le dossier Horizon', when: (g) => g.reputation >= 62 && (done(g, 'album') || done(g, 'top3-pays')),
+    lines: [
+      N('Une enveloppe kraft glisse sous la porte, un mardi à la tombée de la nuit. Pas de nom, juste un numéro de téléphone.'),
+      A('Je vous l’avais promis. Ce que Meridian ne veut pas qu’on lise : des factures, des virements, des « campagnes d’écoute » programmées avant chaque sortie.', 'tension'),
+      I('C’est le plan Horizon dans sa forme la plus sale, patron. Ils n’achètent pas des labels seulement : ils achètent des places dans les classements.', 'tension'),
+      A('Je peux tout publier demain matin. Mais Tomás Reyes a des avocats et la mémoire longue.', 'tension'),
+      { who: 'joueur', text: 'Il faut décider maintenant.', mood: 'tension', choices: [
+        { label: 'Publier le dossier (+2,5 de réputation, offensive de Meridian pendant 8 semaines)', effect: 'dossier-publier', reply: [A('Alors demain, le monde saura. Préparez-vous à la riposte, elle sera brutale.', 'confiance'), P('Qu’elle vienne. Le public choisira ce qu’il veut écouter.', 'confiance')] },
+        { label: 'Négocier une trêve (−1 de réputation, pas d’offensive ~6 mois)', effect: 'dossier-negocier', reply: [I('Une trêve, c’est un répit. Pas une victoire. Mais notre catalogue aura le temps de grandir à l’abri.', 'neutre'), A('Je garde les originaux. Si Tomás recommence, ils partiront le jour même.', 'tension')] },
+      ] },
+      N('Quelle que soit la décision, quelque chose a changé : Meridian sait désormais que {label} sait.'),
+    ],
+  },
+  {
+    id: 'platine-scene', bg: 'scene', title: 'Acte 3 · Au-delà de l’or', when: (g) => (g.certs ?? []).some((c) => c.level !== 'or'),
+    lines: [
+      K('Platine ! Le disque qui ne s’obtient pas par hasard, ni par quelques bons soirs de chance.', 'joie'),
+      I('Selon le barème de la SNEP, c’est une marque que seuls des artistes installés atteignent. Les majors le savent.', 'confiance'),
+      P('On n’est plus ceux qu’on regarde de haut, Inès. On est ceux qu’on vient voir.', 'confiance'),
+    ],
+  },
+  {
+    id: 'veille-sommet', bg: 'nuit', title: 'Acte 4 · La veille', when: (g) => g.reputation >= 92,
+    lines: [
+      N('Dernier étage, la ville en bas, la lumière du bureau allumée tard. {label} n’a jamais été aussi proche du sommet.'),
+      I('Tomás a quitté son bureau cet après-midi. Il n’a laissé qu’une phrase à son assistante : « Dites-leur que je viendrai en personne. »', 'tension'),
+      P('Alors il vient voir ce qu’il a perdu.', 'confiance'),
+      I('Ou ce qu’il compte reprendre. Quelques jours encore, patron : tenez vos artistes, vos comptes, et votre calme.', 'tension'),
+    ],
+  },
+  {
+    id: 'duel-final', bg: 'finale', title: 'Acte 4 · Face à Tomás', when: (g) => g.reputation >= 98,
+    lines: [
+      N('Un salon vide au sommet d’une tour. Une baie vitrée, une seule lumière, et un homme debout face à la ville.'),
+      T('Cent points de réputation, {founder}. Je ne pensais pas voir ça de mon vivant.', 'tension'),
+      { who: 'joueur', text: 'Vous êtes venu me racheter, Tomás ?', mood: 'confiance', choices: [
+        { label: 'Vous êtes venu me racheter ?', reply: [T('Plus maintenant. Je suis venu voir celui qui a gagné.', 'surprise')] },
+        { label: 'Vous avez perdu, Tomás.', reply: [T('Peut-être. Mais je n’ai jamais été le seul à jouer contre vous : demandez aux chiffres qui vous ont suivi jusqu’ici.', 'tension')] },
+        { label: 'Merci de m’avoir dit non, la première fois.', reply: [T('C’est la première fois qu’on me remercie pour ça.', 'surprise')] },
+      ] },
+      T('Allez au bout. Le plan Horizon n’a jamais prévu quelqu’un qui sorte des bonnes chansons au lieu de payer pour les classements.', 'confiance'),
+      P('Alors regardez. Ce n’est pas la fin de Meridian, c’est le début de ceux qui n’ont plus peur.', 'confiance'),
+    ],
+  },
+]
+SCENES.push(...ARC_SCENES)
 
 export function nextStoryScene(g: GameState): Scene | undefined {
   const seen = g.seenScenes ?? []
