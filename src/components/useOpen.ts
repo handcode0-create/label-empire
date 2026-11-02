@@ -9,7 +9,7 @@ export function useOpen() {
   const { select, go } = useGame()
   const g = useGame((s) => s.game)!
   return {
-    artist: (id: string | undefined) => { if (!id) return; if (g.artists.some((a) => a.id === id)) select({ artistId: id, rivalId: null }); else select({ rivalId: id }); go('Artiste') },
+    artist: (id: string | undefined) => { if (!id) return; if (g.artists.some((a) => a.id === id)) select({ artistId: id, rivalId: null }); else select({ artistId: null, rivalId: id }); go('Artiste') },
     song: (id: string | undefined) => { if (!id) return; select({ viewSongId: id }); go('Titre') },
     label: (name: string | undefined) => { if (!name) return; select({ labelName: name }); go('Label') },
   }
