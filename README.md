@@ -143,3 +143,7 @@ Le catalogue compte 45 médias fictifs (radios, TV, presse, web, streaming) en A
 
 ## Concours en phases
 Un concours peut compter de 1 à 5 phases (finale seule par défaut), avec une phase chaque semaine ou toutes les 2 semaines. À chaque phase intermédiaire (auditions, quarts, demi-finales…), la moitié des candidats est éliminée et un talent se révèle (exclusif jusqu'à la finale) ; chaque phase supplémentaire coûte 25 % du minimum du format. Voir `startContest`, `resolveContests`, `contestPlan` dans `src/engine/scouting.ts`.
+
+## Pochettes SVG et bannière des classements
+- 24 styles de pochettes (16 nouveaux : Vinyle, Étoiles, Montagnes, Palmiers, Égaliseur, Damier, Hexagones, Lune, Flamme, Couronne, Micro, Casque, Diamant, Éclair, Spirale, Confettis) et 14 palettes. Les pochettes par défaut restent tirées parmi les 8 styles/palettes d'origine (sauvegardes inchangées) ; les nouveaux se choisissent dans le sélecteur.
+- La bannière des classements affiche une image de scène sous le dégradé (scène, studio, nuit ou cérémonie selon le classement).

@@ -13,6 +13,7 @@ import { rivalArtistIn } from '../../engine/rivalLife'
 import { CONTINENTS } from '../../data/world'
 
 const LEVELS: [ChartLevel, string][] = [['ville', 'Ville'], ['pays', 'Pays'], ['continent', 'Continent'], ['monde', 'Monde']]
+const HERO_IMG: Record<string, string> = { singles: 'scene', albums: 'studio', eps: 'nuit', artistes: 'ceremonie' }
 const KINDS: { k: ChartKind; name: string; top: string; unit: string; a: string; b: string }[] = [
   { k: 'singles', name: 'Top 100 singles', top: '100', unit: 'Singles', a: '#FF3D9A', b: '#6D3DF0' },
   { k: 'albums', name: 'Top 200 albums', top: '200', unit: 'Albums', a: '#FFC63D', b: '#FF3D9A' },
@@ -82,7 +83,7 @@ export default function Classements() {
         </div>
         <div key={kind + level + cityId} style={{display: 'flex', gap: 20, marginTop: 16, alignItems: 'flex-start'}}>
           <div style={{width: 880, borderRadius: 14, overflow: 'hidden', background: 'rgba(20,12,42,.7)', boxShadow: 'inset 0 0 0 1px var(--ln)'}}>
-            <div style={{display: 'flex', gap: 24, alignItems: 'flex-end', padding: '24px 24px 20px', background: `linear-gradient(180deg,${K.a}55 0%,${K.b}22 70%,transparent 100%)`, animation: 'lcHero .35s ease-out both'}}>
+            <div style={{display: 'flex', gap: 24, alignItems: 'flex-end', padding: '24px 24px 20px', background: `linear-gradient(180deg,${K.a}88 0%,${K.b}44 70%,rgba(12,8,32,0) 100%), linear-gradient(180deg,rgba(12,8,32,.55),rgba(12,8,32,.86)), url(/scenes/${HERO_IMG[kind] ?? 'scene'}.webp) center/cover no-repeat, #140C2A`, animation: 'lcHero .35s ease-out both'}}>
               <div style={{width: 176, height: 176, borderRadius: 10, flex: 'none', position: 'relative', overflow: 'hidden', background: `linear-gradient(135deg,${K.a},${K.b})`, boxShadow: '0 14px 36px rgba(0,0,0,.5)', color: '#fff'}}>
                 <div style={{position: 'absolute', top: 12, left: 14, fontWeight: 800, fontSize: 11, letterSpacing: '.14em', opacity: .9}}>LABEL EMPIRE</div>
                 <div style={{position: 'absolute', left: 14, bottom: 34, fontFamily: "'Rajdhani',sans-serif", fontWeight: 700, fontSize: 84, lineHeight: .85, textShadow: '0 4px 14px rgba(0,0,0,.3)'}}><span style={{fontSize: 24, display: 'block', letterSpacing: '.12em'}}>TOP</span>{K.top}</div>
