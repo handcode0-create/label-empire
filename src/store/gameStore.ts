@@ -3,6 +3,7 @@ import { advanceWeek } from '../engine/advanceWeek'
 import { makeRivals } from '../engine/rivalLife'
 import { createGame, startingCash, validateConfig } from '../engine/newGame'
 import type { GameState, NewGameConfig, Result } from '../engine/types'
+import type { Scene } from '../data/story'
 
 const initial: NewGameConfig = {
   labelName: 'Savane Records', logoId: 'anneau', founderName: 'Smith Junior', nationality: 'Ivoirienne',
@@ -35,6 +36,7 @@ interface Store {
   toast: Toast | null
   modal: Modal
   scene: string | null
+  customScene: Scene | null
   options: Options
   patch: (p: Partial<NewGameConfig>) => void
   setSkill: (group: 'staffSkills' | 'artistSkills', key: string, delta: number) => void
@@ -51,6 +53,7 @@ interface Store {
   quit: () => void
   setModal: (m: Modal) => void
   playScene: (id: string) => void
+  playCustomScene: (sc: Scene) => void
   endScene: () => void
   setOption: <K extends keyof Options>(k: K, v: Options[K]) => void
   saveNow: () => void
@@ -69,6 +72,7 @@ export const useGame = create<Store>((set, get) => ({
   toast: null,
   modal: null,
   scene: null,
+  customScene: null,
   options: readOptions(),
   patch: (p) => set((s) => ({ config: { ...s.config, ...p } })),
   setSkill: (group, key, delta) => set((s) => {
@@ -118,12 +122,14 @@ export const useGame = create<Store>((set, get) => ({
   },
   quit: () => { set({ game: null }) },
   setModal: (m) => set({ modal: m }),
-  playScene: (id) => set({ scene: id }),
+  playScene: (id) => set({ scene: id, customScene: null }),
+  playCustomScene: (sc) => set({ scene: sc.id, customScene: sc }),
   endScene: () => {
     const id = get().scene
     const g = get().game
-    set({ scene: null })
-    if (!id || !g) return
+    const custom = get().customScene
+    set({ scene: null, customScene: null })
+    if (!id || !g || custom) return
     const n = { ...g, seenScenes: [...new Set([...(g.seenScenes ?? []), id])] }
     set({ game: n })
     if (get().options.autosave) writeSave(n)

@@ -117,3 +117,8 @@ Après la rencontre avec Awa Sylla, un tableau d'enquête (écran « Enquête »
 
 ## Installation sur ordinateur (PWA)
 Label Empire est une application web installable : `public/manifest.webmanifest`, service worker `public/sw.js` (démarrage hors ligne, mises à jour automatiques) et icônes `public/icon.svg`, `icon-maskable.svg`, PNG 192/512/180, `favicon.svg` et `favicon.ico`. Dans Chrome ou Edge, le bouton « Installer l'application » (menu principal et écran Profil) ouvre l'installation ; sinon menu ⋮ → « Installer Label Empire ». Les PNG se régénèrent à partir des SVG (voir l'historique du commit). Le service worker n'est actif qu'en production.
+
+## Scènes de négociation et tampon de signature
+- Chaque proposition de contrat (signature depuis la découverte ou renégociation d'un artiste) déclenche une scène cinématique dynamique (`contractScene` dans `src/data/story.ts`) : l'artiste, sa fiche et votre offre sont mis en scène avec la voix du navigateur.
+- Offre acceptée : le contrat apparaît au centre, la signature se trace puis le tampon « SIGNÉ · APPROUVÉ » s'abat sur la page. Offre refusée : scène de refus, sans tampon.
+- Les scènes dynamiques ne sont pas enregistrées dans `seenScenes` (elles se rejouent à chaque négociation).

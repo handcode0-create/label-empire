@@ -8,6 +8,7 @@ import { evaluateOffer, renegotiate, signArtist, type Offer } from '../../engine
 import { sum } from '../../engine/util'
 import type { Artist } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
+import { contractScene } from '../../data/story'
 import {compact, stars, usd} from '../../lib'
 
 const SCOPES = [['local', 'Un pays'], ['region', 'Continent'], ['monde', 'Monde']] as const
@@ -31,6 +32,10 @@ export default function Contrat() {
   const labelShare = Math.round((1 - o.royalty) * 100)
   const submit = () => {
     const done = existing ? run((s) => renegotiate(s, existing.id, o)) : run((s) => signArtist(s, base.id, o))
+    // la scène suit chaque négociation : tampon sur la signature si l'offre est acceptée, refus sinon
+    const after = useGame.getState().game
+    const refused = !done && /refuse/i.test(useGame.getState().toast?.text ?? '')
+    if (after && (done || refused)) useGame.getState().playCustomScene(contractScene(after, base, o, existing ? 'renew' : 'sign', done))
     if (done) { select({ artistId: base.id, candidateId: null }); go('Artistes') }
   }
   const chanceTone = ev.chance === 'Probable' ? 'tg' : ev.chance === 'Incertain' ? 'te' : 'tr_'

@@ -7,7 +7,7 @@ import { entrantOf } from '../engine/tournament'
 import { lastPlayed } from '../engine/tour'
 import { rivalArtistIn } from '../engine/rivalLife'
 
-export type CharId = 'narrateur' | 'ines' | 'kwame' | 'tomas' | 'joueur' | 'awa'
+export type CharId = 'narrateur' | 'ines' | 'kwame' | 'tomas' | 'joueur' | 'awa' | 'artiste'
 export interface Char { name: string; role: string; gradient: string; side: 'left' | 'right'; portrait?: string }
 /** Personnages de l'histoire (fictifs). Les portraits viennent de public/avatars/story/<clé>.webp, sinon monogramme. */
 export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
@@ -16,13 +16,16 @@ export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
   tomas: { name: 'Tomás Reyes', role: 'Directeur de Meridian Group', gradient: '#8B5CF6,#FF5470', side: 'left', portrait: 'story-tomas' },
   awa: { name: 'Awa Sylla', role: 'Journaliste d’investigation', gradient: '#3DDC97,#35D3F0', side: 'left', portrait: 'story-awa' },
   joueur: { name: 'Vous', role: 'Fondateur', gradient: '#FFC63D,#FF3D9A', side: 'right', portrait: 'story-joueur' },
+  artiste: { name: 'L’artiste', role: 'Artiste', gradient: '#8B5CF6,#FF3D9A', side: 'left' },
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
-export interface Line { who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' | 'dossier-attendre' | 'roster-diner' | 'awa-exclusif' }[] }
+export interface Line { stamp?: boolean; who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' | 'dossier-attendre' | 'roster-diner' | 'awa-exclusif' }[] }
 export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport' | 'plateau' | 'redaction' | 'ceremonie' | 'agence' | 'terrasse' | 'tour'
 /** Décors à générer (voir docs/images/PROMPTS_MANQUANTS.md) : tant que l'image n'existe pas, le décor de secours est utilisé. */
 export const BG_FALLBACK: Partial<Record<Bg, Bg>> = { plateau: 'studio', redaction: 'bureau', ceremonie: 'scene', agence: 'ville', terrasse: 'nuit', tour: 'finale' }
-export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean }
+export interface ContractPaper { artist: string; label: string; founder: string; advance: number; royalty: number; weeks: number; scope: string; kind: 'sign' | 'renew' }
+export interface CastArtist { id: string; stageName: string; realName?: string; originCityId: string; gradient: string }
+export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean; /** scène dynamique : artiste présent et contrat montré à l'écran */ cast?: CastArtist; paper?: ContractPaper }
 
 export interface Ctx { bureau: string; cash: string; palier: string; goal: string; label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string; artiste: string; villeTournee: string; salle: string; rival: string; rivalLabel: string; billets: string; capacite: string; taux: string; tournee: string }
 export function contextFor(g: GameState): Ctx {
@@ -540,4 +543,41 @@ SCENES.push(...ARC_SCENES_2)
 export function nextStoryScene(g: GameState): Scene | undefined {
   const seen = g.seenScenes ?? []
   return SCENES.find((s) => !seen.includes(s.id) && s.when(g))
+}
+
+const SCOPE_TXT: Record<string, string> = { local: 'un pays', region: 'un continent', monde: 'le monde entier' }
+/** Scène de négociation d'un contrat (signature ou renégociation). Si l'offre est acceptée, le contrat est tamponné. */
+export function contractScene(g: GameState, a: CastArtist, o: { advance: number; royalty: number; weeks: number; scope: string }, kind: 'sign' | 'renew', accepted: boolean): Scene {
+  const part = Math.round((1 - o.royalty) * 100)
+  const dur = o.weeks % 52 === 0 ? `${o.weeks / 52} an${o.weeks > 52 ? 's' : ''}` : `${o.weeks} semaines`
+  const who = a.stageName
+  const ask = (t: string, mood?: Mood): Line => ({ who: 'artiste', text: t, mood })
+  const lines: Line[] = []
+  if (kind === 'sign') {
+    lines.push(N(`Salle de réunion de ${g.label.name}. ${who} est arrivé(e) avec son manager. Le contrat est sur la table.`))
+    lines.push(I(`« ${who} a lu votre proposition. Avance de ${usd(o.advance)}, ${part} % pour le label, ${dur}, sur ${SCOPE_TXT[o.scope] ?? o.scope}. À vous de défendre vos chiffres. »`, 'neutre'))
+    lines.push(P(`« Voilà ce que je vous offre. Une équipe, un budget et une vraie stratégie. Je veux que votre nom compte. »`, 'confiance'))
+    if (accepted) {
+      lines.push(ask(`« Vous avez compris ce qu'on cherchait. Ça me va. Où est-ce que je signe ? »`, 'joie'))
+      lines.push(I('« Ici, en bas de page. Et ici, pour les territoires. »'))
+      lines.push({ who: 'narrateur', text: `${who} signe. Le tampon du label s'abat sur la page.`, stamp: true })
+      lines.push(ask(`« C'est fait. Maintenant, faisons du bruit. »`, 'confiance'))
+    } else {
+      lines.push(ask(`« Non. Mon manager attendait mieux : l'avance, la part ou la durée. Je ne signe pas comme ça. »`, 'tension'))
+      lines.push(I('« Le dossier reste ouvert. Revoyez les conditions et revenez avec une meilleure offre. »'))
+    }
+  } else {
+    lines.push(N(`${who} demande à revoir son contrat chez ${g.label.name}. Les deux parties s'installent face à face.`))
+    lines.push(ask(`« Mes chiffres ont changé depuis la signature. Je veux que ça se voie dans le contrat. »`, 'confiance'))
+    lines.push(P(`« Prime de ${usd(o.advance)}, ${part} % pour le label, ${dur}. Voilà ma révision. »`, 'confiance'))
+    if (accepted) {
+      lines.push(ask(`« D'accord. On repart ensemble, plus fort. Je signe. »`, 'joie'))
+      lines.push({ who: 'narrateur', text: `Le nouvel avenant est signé et tamponné.`, stamp: true })
+      lines.push(I('« Le moral de votre artiste remonte. Beau travail. »', 'joie'))
+    } else {
+      lines.push(ask(`« Ce n'est pas assez. Je reste sous mon contrat actuel, mais je m'en souviendrai. »`, 'tension'))
+      lines.push(I('« Mieux vaut le laisser souffler avant de relancer la discussion. »'))
+    }
+  }
+  return { id: `contrat-${kind}-${a.id}-${g.week}`, bg: 'bureau', title: kind === 'sign' ? 'Négociation' : 'Renégociation', lines, when: () => false, cast: a, paper: accepted ? { artist: who, label: g.label.name, founder: g.label.founder, advance: o.advance, royalty: o.royalty, weeks: o.weeks, scope: SCOPE_TXT[o.scope] ?? o.scope, kind } : undefined }
 }

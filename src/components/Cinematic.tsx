@@ -1,7 +1,8 @@
 import { speak, stopSpeaking } from '../voice'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { applyStoryEffect } from '../engine/storyEffects'
-import { BG_FALLBACK, CHARS, SCENES, contextFor, fillText, type Bg, type Line } from '../data/story'
+import { BG_FALLBACK, CHARS, SCENES, contextFor, fillText, type Bg, type ContractPaper, type Line } from '../data/story'
+import { usd } from '../lib'
 import { useGame } from '../store/gameStore'
 import Avatar from './Avatar'
 import { acceptMeridianOffer } from '../engine/objectives'
@@ -65,7 +66,8 @@ export default function Cinematic() {
   const game = useGame((s) => s.game)
   const end = useGame((s) => s.endScene)
   const run = useGame((s) => s.run)
-  const scene = SCENES.find((s) => s.id === id)
+  const custom = useGame((s) => s.customScene)
+  const scene = custom && custom.id === id ? custom : SCENES.find((s) => s.id === id)
   const ctx = useMemo(() => (game ? contextFor(game) : null), [game])
   const [queue, setQueue] = useState<Line[]>([])
   const [i, setI] = useState(0)
@@ -77,7 +79,7 @@ export default function Cinematic() {
   const founderKey = founderLabel?.founderAvatar ?? (founderLabel?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur')
   const founderPhoto = founderLabel?.photo
 
-  useEffect(() => { if (scene) { setQueue([...scene.lines, { who: 'narrateur', text: 'Objectif · {goal}' }]); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (scene) { setQueue(scene.paper !== undefined || scene.cast ? [...scene.lines] : [...scene.lines, { who: 'narrateur', text: 'Objectif · {goal}' }]); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!scene?.title) return; const t = setTimeout(() => setTitleDone(true), 2300); return () => clearTimeout(t) }, [scene?.id, scene?.title])
 
   const line = queue[i]
@@ -131,7 +133,10 @@ export default function Cinematic() {
   }
   const shown = (['left', 'right'] as const).map((s) => ({ side: s, who: slots.current[s] })).filter((x): x is { side: 'left' | 'right'; who: string } => !!x.who)
   const speaker = CHARS[line.who as keyof typeof CHARS]
-  const name = line.who === 'joueur' ? ctx.founder : speaker?.name
+  const cast = scene.cast
+  const name = line.who === 'joueur' ? ctx.founder : line.who === 'artiste' && cast ? cast.stageName : speaker?.name
+  const stampAt = queue.findIndex((l) => l.stamp)
+  const showPaper = !!scene.paper && stampAt >= 0 && i >= stampAt
 
   return (
     <div onClick={advance} role="dialog" aria-label="Scène" style={{ position: 'absolute', inset: 0, zIndex: 80, background: SKY[scene.bg], overflow: 'hidden', cursor: 'pointer', fontFamily: "'DM Sans', system-ui, sans-serif", color: '#F4F0FF' }}>
@@ -141,11 +146,11 @@ export default function Cinematic() {
       {shown.map(({ side, who }) => {
         const c = CHARS[who as keyof typeof CHARS]
         const on = line.who === who
-        const nm = who === 'joueur' ? ctx.founder : c.name
+        const nm = who === 'joueur' ? ctx.founder : who === 'artiste' && cast ? cast.stageName : c.name
         return (
           <div key={who + side} className={side === 'left' ? 'an-slide-l' : 'an-slide-r'} style={{ position: 'absolute', bottom: 300, [side]: 150, width: 320, textAlign: 'center', transition: 'transform .3s, filter .3s, opacity .3s', transform: on ? 'scale(1.08)' : 'scale(.94)', filter: on ? 'none' : 'brightness(.55) saturate(.7)', opacity: titleDone ? 1 : 0 }}>
             <div className={on && !done ? 'an-talk' : ''} style={{ display: 'flex', justifyContent: 'center' }}>
-              <Avatar keyName={who === 'joueur' ? founderKey : c.portrait} src={who === 'joueur' ? founderPhoto : undefined} name={nm} gradient={c.gradient} size={230} style={{ boxShadow: `0 0 0 6px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.6), 0 0 90px ${on ? 'rgba(255,61,154,.5)' : 'transparent'}`, fontSize: 90 }} />
+              <Avatar {...(who === 'artiste' && cast ? { artist: cast } : { keyName: who === 'joueur' ? founderKey : c.portrait, gradient: c.gradient, name: nm })} src={who === 'joueur' ? founderPhoto : undefined} size={230} style={{ boxShadow: `0 0 0 6px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.6), 0 0 90px ${on ? 'rgba(255,61,154,.5)' : 'transparent'}`, fontSize: 90 }} />
             </div>
             <div style={{ display: 'inline-block', marginTop: 14, padding: '6px 16px 8px', borderRadius: 14, background: 'rgba(12,8,32,.72)', backdropFilter: 'blur(6px)' }}>
               <div className="disp" style={{ fontSize: 26 }}>{nm}</div>
@@ -154,6 +159,7 @@ export default function Cinematic() {
           </div>
         )
       })}
+      {showPaper && scene.paper && <ContractStamp p={scene.paper} fresh={i === stampAt} />}
       {/* bandes cinéma */}
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, background: '#05030F', animation: 'bars .8s ease-out both', height: 84 }} />
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 200, background: 'linear-gradient(0deg,#05030F 70%,transparent)' }} />
@@ -181,6 +187,36 @@ export default function Cinematic() {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+/** Contrat posé au centre : la signature se trace, puis le tampon s'abat dessus. */
+function ContractStamp({ p, fresh }: { p: ContractPaper; fresh: boolean }) {
+  const part = Math.round((1 - p.royalty) * 100)
+  const dur = p.weeks % 52 === 0 ? `${p.weeks / 52} an${p.weeks > 52 ? 's' : ''}` : `${p.weeks} semaines`
+  const d = fresh ? 1 : 0
+  return (
+    <div data-testid="contract-paper" style={{ position: 'absolute', left: '50%', top: 118, width: 430, marginLeft: -215, zIndex: 2, padding: '26px 30px 22px', borderRadius: 6, background: 'linear-gradient(180deg,#FBF6E8,#EFE6CC)', color: '#2A1B4D', boxShadow: '0 30px 80px rgba(0,0,0,.65)', transform: 'rotate(-1.5deg)', overflow: 'hidden' }}>
+      <div className="disp" style={{ fontSize: 26, letterSpacing: '.04em', textAlign: 'center' }}>{p.kind === 'sign' ? 'CONTRAT D’ARTISTE' : 'AVENANT AU CONTRAT'}</div>
+      <div style={{ textAlign: 'center', fontSize: 13, opacity: .7, marginTop: 2 }}>{p.label}</div>
+      <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 18px', fontSize: 15, lineHeight: 1.35 }}>
+        <span>Artiste</span><b style={{ textAlign: 'right' }}>{p.artist}</b>
+        <span>{p.kind === 'sign' ? 'Avance' : 'Prime'}</span><b style={{ textAlign: 'right' }}>{usd(p.advance)}</b>
+        <span>Part du label</span><b style={{ textAlign: 'right' }}>{part} %</b>
+        <span>Durée</span><b style={{ textAlign: 'right' }}>{dur}</b>
+        <span>Territoires</span><b style={{ textAlign: 'right' }}>{p.scope}</b>
+      </div>
+      <div style={{ position: 'relative', height: 112, marginTop: 14, borderTop: '1px dashed rgba(42,27,77,.35)' }}>
+        <span style={{ position: 'absolute', left: 0, bottom: 4, fontSize: 12, opacity: .6 }}>Signature de l’artiste</span>
+        <span style={{ position: 'absolute', right: 0, bottom: 4, fontSize: 12, opacity: .6 }}>{p.founder}, pour le label</span>
+        <svg viewBox="0 0 220 70" style={{ position: 'absolute', left: 6, top: 8, width: 230, height: 76 }}>
+          <path d="M6 52 C20 8, 34 6, 38 30 S 50 62, 66 30 S 84 12, 96 40 S 120 58, 132 26 S 150 22, 160 44 L 212 40" fill="none" stroke="#1B2A7A" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} strokeDashoffset={d} style={fresh ? { animation: 'sign 1.4s .3s ease-out forwards' } : { strokeDashoffset: 0 }} />
+        </svg>
+        <div data-testid="stamp" className={fresh ? 'stamp-slam' : ''} style={{ position: 'absolute', right: 0, top: 6, width: 178, height: 96, display: 'grid', placeItems: 'center', border: '5px double #C21E4F', borderRadius: 12, color: '#C21E4F', transform: 'rotate(-12deg)', textAlign: 'center', ...(fresh ? { animationDelay: '1.7s' } : {}) }}>
+          <div><div className="disp" style={{ fontSize: 40, lineHeight: 1 }}>SIGNÉ</div><div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.2em', marginTop: 4 }}>APPROUVÉ</div></div>
+        </div>
+      </div>
     </div>
   )
 }

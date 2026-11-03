@@ -13,6 +13,7 @@ const PROFILES: Record<string, Profile> = {
   kwame: { gender: 'm', pitch: 0.88, rate: 1.06, slot: 0 },
   tomas: { gender: 'm', pitch: 0.68, rate: 0.93, slot: 1 },
   joueur: { gender: 'n', pitch: 1.0, rate: 1.0, slot: 2 },
+  artiste: { gender: 'm', pitch: 0.95, rate: 1.03, slot: 3 },
 }
 const FEMALE = /(denise|eloise|éloïse|julie|hortense|amelie|amélie|marie|claire|audrey|aurelie|aurélie|sylvie|brigitte|charline|vivienne|brigitte|female|femme|lea|léa|celine|céline)/i
 const MALE = /(henri|paul|claude|antoine|remy|rémy|thomas|nicolas|mathieu|jerome|jérôme|guillaume|maxime|hugo|male|homme|lucas)/i
