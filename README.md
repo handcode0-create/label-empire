@@ -140,3 +140,6 @@ Le catalogue compte 45 médias fictifs (radios, TV, presse, web, streaming) en A
 - 7 nouvelles villes : Kinshasa, Casablanca, Madrid, Amsterdam, Atlanta, Miami, Bogotá (26 destinations au total).
 - Concours : toutes les villes dont la réputation requise ne dépasse pas la vôtre de plus de 25 (`CONTEST_RANGE`) sont ouvertes (New York et Los Angeles dès 15 de réputation) ; les autres sont affichées verrouillées.
 - Boutons « 🎲 Générer » pour le nom d'un concours et d'une tournée (`src/data/eventNames.ts`) ; la tournée reçoit un nom généré dès l'ouverture, et un nom reste obligatoire.
+
+## Concours en phases
+Un concours peut compter de 1 à 5 phases (finale seule par défaut), avec une phase chaque semaine ou toutes les 2 semaines. À chaque phase intermédiaire (auditions, quarts, demi-finales…), la moitié des candidats est éliminée et un talent se révèle (exclusif jusqu'à la finale) ; chaque phase supplémentaire coûte 25 % du minimum du format. Voir `startContest`, `resolveContests`, `contestPlan` dans `src/engine/scouting.ts`.

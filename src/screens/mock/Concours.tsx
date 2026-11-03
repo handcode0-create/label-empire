@@ -4,7 +4,7 @@ import Hud from "../../components/Hud";
 import Dock from "../../components/Dock";
 import Slider from "../../components/Slider";
 import { CITIES, cityById } from "../../data/world";
-import { CONTEST_FORMATS, CONTEST_RANGE, startContest } from "../../engine/scouting";
+import { CONTEST_FORMATS, CONTEST_RANGE, contestPhaseName, contestPlan, phaseExtraCost, startContest } from "../../engine/scouting";
 import { generateContestName } from "../../data/eventNames";
 import { createRng } from "../../engine/rng";
 import { useGame } from "../../store/gameStore";
@@ -22,6 +22,8 @@ export default function Concours() {
   const [format, setFormat] = useState<keyof typeof CONTEST_FORMATS>("salle");
   const f = CONTEST_FORMATS[format];
   const [budget, setBudget] = useState(12000);
+  const [phases, setPhases] = useState(1);
+  const [interval, setIntervalW] = useState<1 | 2>(2);
   const juryOptions = [
     ...g.staff.slice(0, 2).map((m) => m.name),
     "Invité local",
@@ -176,6 +178,29 @@ export default function Concours() {
               style={{ marginTop: 14 }}
             />
             <div className="lbl" style={{ marginTop: 16 }}>
+              Phases du concours
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <span key={n} className={"chip" + (phases === n ? " on" : "")} role="button" style={{ cursor: "pointer" }} onClick={() => setPhases(n)}>
+                  {n === 1 ? "Finale seule" : n + " phases"}
+                </span>
+              ))}
+            </div>
+            {phases > 1 && (
+              <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
+                <span className="mut" style={{ fontSize: 13 }}>Une phase toutes les</span>
+                {([1, 2] as const).map((n) => (
+                  <span key={n} className={"chip" + (interval === n ? " on" : "")} role="button" style={{ cursor: "pointer" }} onClick={() => setIntervalW(n)}>
+                    {n === 1 ? "semaine" : "2 semaines"}
+                  </span>
+                ))}
+                <span className="mut" style={{ fontSize: 13 }}>
+                  {Array.from({ length: phases }, (_, i) => contestPhaseName(i + 1, phases)).join(" → ")} · finale en {phases * interval} semaines · +{usd((phases - 1) * phaseExtraCost(format))} · un talent se révèle à chaque phase
+                </span>
+              </div>
+            )}
+            <div className="lbl" style={{ marginTop: 16 }}>
               Jury
             </div>
             <div
@@ -216,13 +241,13 @@ export default function Concours() {
               <div>
                 <span className="tag tc">Certain</span>
                 <div style={{ marginTop: 6 }}>
-                  Coût : {usd(budget)} aujourd'hui
+                  Coût : {usd(budget + (phases - 1) * phaseExtraCost(format))} aujourd'hui
                 </div>
               </div>
               <div>
                 <span className="tag te">Estimé</span>
                 <div style={{ marginTop: 6 }}>
-                  ~{estimate} candidats, 4 finalistes
+                  ~{estimate} candidats, {4 + phases - 1} talents révélés
                 </div>
               </div>
               <div>
@@ -251,7 +276,7 @@ export default function Concours() {
               e.preventDefault();
               if (
                 run((s) =>
-                  startContest(s, { name, cityId, format, budget, jury }),
+                  startContest(s, { name, cityId, format, budget, jury, phases, interval }),
                 )
               )
                 say(`Concours « ${name} » lancé : finale dans 2 semaines.`);
@@ -327,7 +352,7 @@ export default function Concours() {
                 <span className="lbl">Progression du concours</span>
                 <span className="sp" />
                 <span className="mut" style={{ fontSize: 13 }}>
-                  Semaine {elapsed} sur {total} · finale en {wk(shown.endWeek)}
+                  {contestPlan(shown).phases > 1 ? `Phase ${Math.min((shown.phase ?? 0) + 1, contestPlan(shown).phases)}/${contestPlan(shown).phases} · ${shown.remaining ?? shown.candidates} candidats · ` : ""}Semaine {elapsed} sur {total} · finale en {wk(shown.endWeek)}
                 </span>
               </div>
               <div className="mt" style={{ marginTop: 8 }}>

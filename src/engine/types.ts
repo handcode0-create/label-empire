@@ -136,6 +136,8 @@ export interface Tour {
 export interface Contest {
   id: string; name: string; cityId: string; format: 'ligne' | 'salle' | 'tv'; budget: number; jury: string[]
   startWeek: number; endWeek: number; status: 'ouvert' | 'termine'; finalists: string[]; candidates: number
+  /** Phases (1 = finale seule) et rythme en semaines entre deux phases ; absents sur les anciennes sauvegardes (1 phase, 2 semaines). */
+  phases?: number; interval?: number; phase?: number; remaining?: number
 }
 
 export interface Duel { id: string; a: string; b: string; coached?: string; coachPoints?: number; scoreA?: number; scoreB?: number; winner?: string }

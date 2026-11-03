@@ -138,7 +138,12 @@ export const CONTEST_FORMATS = { ligne: { label: 'Audition en ligne', min: 3000,
 
 /** Un concours peut se tenir dans une ville dont la réputation requise dépasse la vôtre d'au plus cette marge. */
 export const CONTEST_RANGE = 25
-export function startContest(s0: GameState, c: { name: string; cityId: string; format: Contest['format']; budget: number; jury: string[] }): Result {
+export const CONTEST_PHASE_NAMES = ['Auditions', 'Quarts de finale', 'Demi-finales', 'Phase éliminatoire', 'Finale'] as const
+export const contestPhaseName = (idx: number, phases: number) => (idx >= phases ? 'Finale' : phases === 2 ? 'Demi-finales' : CONTEST_PHASE_NAMES[Math.min(idx - 1, 3)])
+/** Coût par phase supplémentaire (avant la finale), selon le format. */
+export const phaseExtraCost = (format: Contest['format']) => Math.round(CONTEST_FORMATS[format].min * 0.25)
+export const contestPlan = (k: Pick<Contest, 'phases' | 'interval'>) => ({ phases: Math.max(1, Math.min(5, k.phases ?? 1)), interval: k.interval === 1 ? 1 : 2 })
+export function startContest(s0: GameState, c: { name: string; cityId: string; format: Contest['format']; budget: number; jury: string[]; phases?: number; interval?: number }): Result {
   const s = clone(s0)
   const city = cityById(c.cityId)
   const f = CONTEST_FORMATS[c.format]
@@ -148,15 +153,35 @@ export function startContest(s0: GameState, c: { name: string; cityId: string; f
   if (s.contests.some((x) => x.status === 'ouvert' && x.cityId === c.cityId)) return fail(s0, 'Un concours est déjà ouvert dans cette ville.')
   const e = useAp(s)
   if (e) return fail(s0, e)
-  const e2 = spend(s, c.budget, `Concours ${c.name}`)
+  const plan = contestPlan(c)
+  const total = c.budget + (plan.phases - 1) * phaseExtraCost(c.format)
+  const e2 = spend(s, total, `Concours ${c.name}`)
   if (e2) return fail(s0, e2)
   const rng = drawRng(s)
-  s.contests.push({ id: `k-${s.week}-${rng.int(1000, 9999)}`, name: c.name, cityId: c.cityId, format: c.format, budget: c.budget, jury: c.jury, startWeek: s.week, endWeek: s.week + 2, status: 'ouvert', finalists: [], candidates: Math.round(c.budget / f.per * (0.8 + rng.next() * 0.4)) })
-  return ok(s, `Concours « ${c.name} » lancé : finale dans 2 semaines.`)
+  s.contests.push({ id: `k-${s.week}-${rng.int(1000, 9999)}`, name: c.name, cityId: c.cityId, format: c.format, budget: c.budget, jury: c.jury, startWeek: s.week, endWeek: s.week + (plan.phases === 1 ? 2 : plan.phases * plan.interval), phases: plan.phases, interval: plan.interval, phase: 0, status: 'ouvert', finalists: [], candidates: Math.round(c.budget / f.per * (0.8 + rng.next() * 0.4)) })
+  const dur = plan.phases === 1 ? 2 : plan.phases * plan.interval
+  return ok(s, `Concours « ${c.name} » lancé : ${plan.phases} phase${plan.phases > 1 ? 's' : ''}, finale dans ${dur} semaines.`)
 }
 
 export function resolveContests(s: GameState, notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[]) {
   for (const k of s.contests) {
+    if (k.status === 'ouvert') {
+      const plan = contestPlan(k)
+      // phases intermédiaires : une toutes les `interval` semaines, avec élimination et révélation d'un talent
+      const step = plan.interval
+      const nextPhase = (k.phase ?? 0) + 1
+      if (plan.phases > 1 && nextPhase < plan.phases && k.startWeek + nextPhase * step <= s.week + 1) {
+        const rng = drawRng(s)
+        k.phase = nextPhase
+        const before = k.remaining ?? k.candidates
+        k.remaining = Math.max(8, Math.round(before * 0.5))
+        const a = generateCandidate(rng, s, k.cityId, k.budget / 40000 + k.jury.length * 0.08 + staffSkill(s, 'reperage') * 0.03 + 0.1)
+        a.status = 'concours'; a.contestId = k.id; a.exclusiveUntil = k.endWeek + 2; a.rivalInterest = 0
+        s.pool.unshift(a); k.finalists.push(a.id)
+        notes.push({ tag: 'Concours', text: `« ${k.name} » · ${contestPhaseName(nextPhase, plan.phases)} : ${before} candidats, ${k.remaining} qualifiés. ${a.stageName} se révèle : exclusivité jusqu'à la finale.`, tone: 'c' })
+        continue
+      }
+    }
     if (k.status === 'ouvert' && k.endWeek > s.week + 1) {
       notes.push({ tag: 'Concours', text: `« ${k.name} » se poursuit : finale en ${wk(k.endWeek)}.`, tone: 'c' })
       continue
@@ -170,7 +195,7 @@ export function resolveContests(s: GameState, notes: { tag: string; text: string
       a.status = 'concours'; a.contestId = k.id; a.exclusiveUntil = s.week + 2; a.rivalInterest = 0
       s.pool.unshift(a); ids.push(a.id)
     }
-    k.finalists = ids; k.status = 'termine'
+    k.finalists = [...k.finalists, ...ids]; k.status = 'termine'
     notes.push({ tag: 'Concours', text: `La finale de « ${k.name} » a eu lieu : 4 finalistes à découvrir.`, tone: 'c' })
   }
 }
