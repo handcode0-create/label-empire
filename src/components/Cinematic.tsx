@@ -1,3 +1,4 @@
+import { speak, stopSpeaking } from '../voice'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { applyStoryEffect } from '../engine/storyEffects'
 import { BG_FALLBACK, CHARS, SCENES, contextFor, fillText, type Bg, type Line } from '../data/story'
@@ -89,6 +90,13 @@ export default function Cinematic() {
   }, [i, titleDone, text]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const done = typed >= text.length
+  // Voix : lit chaque réplique avec la voix du personnage, et se tait à la fin de la scène.
+  const voiceOn = useGame((st) => st.options.voice)
+  useEffect(() => {
+    if (!voiceOn || !titleDone || !line || !text) return
+    speak(text, { who: line.who, look: founderLabel?.founderLook })
+  }, [i, titleDone, text, voiceOn, scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => stopSpeaking(), [scene?.id])
   const advance = () => {
     if (!titleDone) { setTitleDone(true); return }
     if (!line) return
@@ -150,6 +158,7 @@ export default function Cinematic() {
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, background: '#05030F', animation: 'bars .8s ease-out both', height: 84 }} />
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 200, background: 'linear-gradient(0deg,#05030F 70%,transparent)' }} />
       <button onClick={(e) => { e.stopPropagation(); end() }} className="btn s sm" style={{ position: 'absolute', right: 24, top: 22, zIndex: 3 }}>Passer la scène</button>
+      <button onClick={(e) => { e.stopPropagation(); const st = useGame.getState(); st.setOption('voice', !st.options.voice); if (st.options.voice) stopSpeaking() }} className="btn s sm" aria-pressed={voiceOn} title="Lecture à voix haute" style={{ position: 'absolute', right: 230, top: 22, zIndex: 3 }}>{voiceOn ? '🔊 Voix activée' : '🔈 Voix désactivée'}</button>
       <div className="lbl" style={{ position: 'absolute', left: 28, top: 32, zIndex: 3 }}>{scene.title ?? ''}</div>
       {/* titre d'ouverture */}
       {!titleDone && (

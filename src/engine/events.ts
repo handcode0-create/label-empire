@@ -122,6 +122,7 @@ const GENS: Gen[] = [
     kind: 'gig', weight: 5, cooldown: 6,
     make: (s, rng) => {
       const a = rng.pick(s.artists)
+      if (!a) return null
       const c = cityById(a.originCityId)
       return { artistId: a.id, cityId: c.id, title: `Invitation au ${c.festivals[0]}`, text: `${a.stageName} est invité à jouer à ${c.name}. Un cachet, de la visibilité… et de la fatigue en plus.`, tone: 'c', choices: [
         ch('go', 'Accepter', 'Estimé : +$4 000, +300 fans, fatigue +10', 0, [{ t: 'cash', v: 4000 }, { t: 'fans', city: c.id, v: 300 }, { t: 'fatigue', v: 10 }, later(4, `Des spectateurs de ${c.name} réclament un nouveau concert.`, { fx: [{ t: 'fans', city: c.id, v: 200 }], tone: 'g' })]),
@@ -143,6 +144,7 @@ const GENS: Gen[] = [
     make: (s, rng) => {
       if (s.reputation < 8) return null
       const a = rng.pick(s.artists)
+      if (!a) return null
       const brand = rng.pick(['Soleil Cola', 'Kora Mobile', 'Lagune Sneakers', 'Baobab Télécom', 'Maquis Gold'])
       return { artistId: a.id, title: `${brand} veut s'associer à ${a.stageName}`, text: 'Une marque propose un partenariat. L’argent est bon, mais l’image de l’artiste est en jeu.', tone: 'c', choices: [
         ch('accept', 'Accepter l’offre', 'Estimé : +$7 000 · Incertain : 25 % de bad buzz (réputation −1) · la marque reviendra', 0, [{ t: 'cash', v: 7000 }, later(8, `${brand} voit les résultats de la campagne et propose de prolonger.`, { tone: 'c', event: { artistId: a.id, title: `${brand} veut prolonger avec ${a.stageName}`, text: 'La campagne a bien fonctionné. La marque offre une prolongation, avec exclusivité.', tone: 'c', choices: [
@@ -206,6 +208,7 @@ const GENS: Gen[] = [
     make: (s, rng) => {
       if (s.reputation < 15) return null
       const a = bestArtist(s) ?? rng.pick(s.artists)
+      if (!a) return null
       const c = rng.pick(CITIES.filter((x) => x.minRep <= s.reputation && x.festivals.length))
       return { artistId: a.id, cityId: c.id, title: `${a.stageName} en tête d'affiche : ${c.festivals[0]}`, text: `Les organisateurs de ${c.name} proposent une place de tête d'affiche. Gros cachet, grosse fatigue.`, tone: 'g', choices: [
         ch('go', 'Accepter', 'Estimé : +$9 000, +800 fans, fatigue +15, fidélité +4', 0, [{ t: 'cash', v: 9000 }, { t: 'fans', city: c.id, v: 800 }, { t: 'fatigue', v: 15 }, { t: 'loyalty', v: 4 }, later(6, `Les images du festival de ${c.name} circulent encore : l'audience se consolide.`, { fx: [{ t: 'fans', city: c.id, v: 400 }, { t: 'rep', v: 0.1 }], tone: 'g' })]),
@@ -300,7 +303,8 @@ export function makeEvent(s: GameState): GameEvent | null {
   const bag = eligible.flatMap((g) => Array(g.weight).fill(g) as Gen[])
   for (let tries = 0; tries < 12 && bag.length; tries++) {
     const g = bag[Math.floor(rng.next() * bag.length)]
-    const e = g.make(s, rng)
+    let e: ReturnType<Gen['make']> = null
+    try { e = g.make(s, rng) } catch { e = null } // un générateur défaillant ne doit jamais bloquer la semaine
     if (!e) { for (let i = bag.length - 1; i >= 0; i--) if (bag[i] === g) bag.splice(i, 1); continue }
     return { id: `e-${s.week}`, kind: g.kind, week: s.week, ...e }
   }

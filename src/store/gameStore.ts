@@ -18,8 +18,8 @@ export const sum = (o: Record<string, number>) => Object.values(o).reduce((a, b)
 
 const SAVE_KEY = 'label-empire-save-v2'
 const OPT_KEY = 'label-empire-options-v1'
-export interface Options { sound: boolean; autosave: boolean; reduceMotion: boolean }
-const readOptions = (): Options => { const d: Options = { sound: true, autosave: true, reduceMotion: false }; try { const t = localStorage.getItem(OPT_KEY); return t ? { ...d, ...JSON.parse(t) } : d } catch { return d } }
+export interface Options { sound: boolean; autosave: boolean; reduceMotion: boolean; voice: boolean; voiceRate: number; voiceVolume: number }
+const readOptions = (): Options => { const d: Options = { sound: true, autosave: true, reduceMotion: false, voice: false, voiceRate: 1, voiceVolume: 1 }; try { const t = localStorage.getItem(OPT_KEY); return t ? { ...d, ...JSON.parse(t) } : d } catch { return d } }
 const applyOptions = (o: Options) => { try { document.documentElement.classList.toggle('rm', o.reduceMotion); localStorage.setItem(OPT_KEY, JSON.stringify(o)) } catch { /* indisponible */ } }
 const readSave = (): GameState | null => { try { const t = localStorage.getItem(SAVE_KEY); return t ? (JSON.parse(t) as GameState) : null } catch { return null } }
 const writeSave = (g: GameState | null) => { try { if (g) localStorage.setItem(SAVE_KEY, JSON.stringify(g)); else localStorage.removeItem(SAVE_KEY) } catch { /* stockage indisponible */ } }
@@ -52,7 +52,7 @@ interface Store {
   setModal: (m: Modal) => void
   playScene: (id: string) => void
   endScene: () => void
-  setOption: (k: keyof Options, v: boolean) => void
+  setOption: <K extends keyof Options>(k: K, v: Options[K]) => void
   saveNow: () => void
   exportSave: () => void
   importSave: (text: string) => boolean
@@ -164,4 +164,4 @@ export const guard = (fn: () => boolean | void) => (e: { preventDefault: () => v
 
 // Outil de test en développement : permet aux scripts de navigateur de lire/écrire l'état.
 applyOptions(readOptions())
-if (import.meta.env.DEV) (window as unknown as { __game: typeof useGame }).__game = useGame
+if (import.meta.env.DEV && typeof window !== 'undefined') (window as unknown as { __game: typeof useGame }).__game = useGame

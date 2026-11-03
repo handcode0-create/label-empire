@@ -12,6 +12,7 @@ import { REBRAND_COST, editIdentity } from '../../engine/player'
 import { totalFans } from '../../engine/util'
 import { compact, usd } from '../../lib'
 import { useGame } from '../../store/gameStore'
+import { hasFrenchVoice, speak, stopSpeaking, voiceSupported } from '../../voice'
 
 const readFile = (f: File | undefined, cb: (d: string) => void) => { if (!f) return; if (f.size > 1_500_000) { useGame.getState().say('Image trop lourde (1,5 Mo maximum).', 'err'); return } const r = new FileReader(); r.onload = () => cb(String(r.result)); r.readAsDataURL(f) }
 
@@ -133,7 +134,14 @@ export default function Joueur() {
             <div className="h2">Paramètres</div>
             <Toggle on={options.autosave} onChange={(v) => setOption('autosave', v)} title="Sauvegarde automatique" hint="À chaque action et à chaque semaine." />
             <Toggle on={options.reduceMotion} onChange={(v) => setOption('reduceMotion', v)} title="Animations réduites" hint="Supprime transitions et mouvements." />
-            <Toggle on={options.sound} onChange={(v) => setOption('sound', v)} title="Sons du jeu" hint="Bientôt disponible." />
+            <Toggle on={options.voice} onChange={(v) => { setOption('voice', v); if (!v) stopSpeaking(); else speak('La voix est activée. Bienvenue dans votre label.', { who: 'ines', force: true }) }} title="Voix (lecture à voix haute)" hint={voiceSupported() ? (hasFrenchVoice() ? 'Scènes de l’histoire et événements, avec une voix par personnage.' : 'Aucune voix française détectée : la voix par défaut de l’appareil sera utilisée.') : 'Non disponible dans ce navigateur.'} />
+            {options.voice && (
+              <div className="row" style={{ gridTemplateColumns: '1fr', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}><span className="mut" style={{ fontSize: 12, width: 62 }}>Vitesse</span>{([['Lente', 0.85], ['Normale', 1], ['Rapide', 1.2]] as const).map(([l, v]) => <Chip key={l} on={options.voiceRate === v} onClick={() => setOption('voiceRate', v)}>{l}</Chip>)}</div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}><span className="mut" style={{ fontSize: 12, width: 62 }}>Volume</span>{([['Doux', 0.4], ['Moyen', 0.7], ['Fort', 1]] as const).map(([l, v]) => <Chip key={l} on={options.voiceVolume === v} onClick={() => setOption('voiceVolume', v)}>{l}</Chip>)}<button className="btn s sm" style={{ cursor: 'pointer', marginLeft: 'auto' }} onClick={() => speak('Voici la voix du narrateur. Et voici celle de Kwame.', { who: 'narrateur', force: true })}>Tester</button></div>
+              </div>
+            )}
+            <Toggle on={options.sound} onChange={(v) => setOption('sound', v)} title="Sons du jeu" hint="Effets sonores (à venir)." />
             <div className="row" style={{ gridTemplateColumns: '1fr auto', alignItems: 'center' }}><div><b>Application</b><div className="mut" style={{ fontSize: 12 }}>Jouer dans sa propre fenêtre, même hors ligne.</div></div><InstallButton /></div>
             <div className="row" style={{ gridTemplateColumns: '1fr auto' }}><span className="mut">Difficulté</span><span className="tag ti">{diff}</span></div>
             <div className="row" style={{ gridTemplateColumns: '1fr auto' }}><span className="mut">Siège du label</span><b>{cityById(L.hqCityId).name}</b></div>

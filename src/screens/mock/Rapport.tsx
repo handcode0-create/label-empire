@@ -1,3 +1,4 @@
+import SpeakButton from '../../components/SpeakButton'
 import { CONTINENTS, cityById } from '../../data/world'
 import { resolveEvent } from '../../engine/economy'
 import { guard, useGame } from '../../store/gameStore'
@@ -40,7 +41,7 @@ export default function Rapport() {
           {ev ? (
             <div className="pn sel" style={{flex: 1}}>
               <div style={{display: 'flex', gap: 10, alignItems: 'center'}}><span className="tag tr_">Événement</span><span className="lbl">{ev.cityId ? cityById(ev.cityId).name : 'Industrie'}</span></div>
-              <div className="h2" style={{marginTop: 10, fontSize: 28}}>{ev.title}</div>
+              <div style={{display: 'flex', alignItems: 'center', gap: 12}}><div className="h2" style={{marginTop: 10, fontSize: 28, flex: 1}}>{ev.title}</div><SpeakButton text={`${ev.title}. ${ev.text}`} auto={ev.id} /></div>
               <p className="mut" style={{margin: '8px 0 14px'}}>{ev.text}</p>
               {ev.resolved ? <div><div className="tag tg">Décision prise : {ev.resolved}</div>{ev.outcome && <div className="mut" style={{marginTop: 10, fontSize: 14}}>{ev.outcome}</div>}</div> : (
                 <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
