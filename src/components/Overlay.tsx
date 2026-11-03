@@ -70,20 +70,24 @@ export default function Overlay() {
       )}
       {modal && (
         <div onClick={() => setModal(null)} style={{ position: 'absolute', inset: 0, zIndex: 60, background: 'rgba(8,4,18,.78)', display: 'grid', placeItems: 'center' }}>
-          <div className="pn cut" onClick={(e) => e.stopPropagation()} style={{ width: 520 }}>
+          <div className="pn cut" onClick={(e) => e.stopPropagation()} style={{ width: 520, padding: '26px 30px', color: '#F2EEFF', fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: 16, lineHeight: 1.55 }}>
             {modal === 'options' && (<>
-              <div className="h2">Options</div>
-              <label style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 18, fontSize: 16 }}>
+              <div className="h2" style={{ color: '#fff', margin: 0 }}>Options</div>
+              <label style={{ display: 'flex', gap: 14, alignItems: 'center', marginTop: 20, fontSize: 16, cursor: 'pointer' }}>
                 <input type="checkbox" checked={options.autosave} onChange={(e) => setOption('autosave', e.target.checked)} style={{ width: 22, height: 22, accentColor: '#FF3D9A' }} />Sauvegarde automatique à chaque action
               </label>
-              <label style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 14, fontSize: 16 }}>
+              <label style={{ display: 'flex', gap: 14, alignItems: 'center', marginTop: 14, fontSize: 16, cursor: 'pointer' }}>
                 <input type="checkbox" checked={options.sound} onChange={(e) => setOption('sound', e.target.checked)} style={{ width: 22, height: 22, accentColor: '#FF3D9A' }} />Sons du jeu (à venir)
               </label>
-              <div className="mut" style={{ marginTop: 14, fontSize: 13 }}>La sauvegarde est stockée dans ce navigateur.</div>
+              <div style={{ marginTop: 18, fontSize: 13, color: '#A99FCB' }}>La sauvegarde est stockée dans ce navigateur.</div>
             </>)}
             {modal === 'credits' && (<>
-              <div className="h2">Crédits</div>
-              <div style={{ marginTop: 16, lineHeight: 1.7 }}>Label Empire est un jeu de gestion de label musical imaginé et conçu par <b>HANCODE STUDIO</b> (Abidjan).<br />Conception : Smith Junior.<br />Les artistes, labels et marques sont fictifs ; les villes et pays sont réels.</div>
+              <div className="h2" style={{ color: '#fff', margin: 0 }}>Crédits</div>
+              <div style={{ marginTop: 18, display: 'grid', gap: 10, color: '#D9D2F2' }}>
+                <div>Label Empire est un jeu de gestion de label musical imaginé et conçu par <b style={{ color: '#fff' }}>HANCODE STUDIO</b> (Abidjan).</div>
+                <div>Conception : <b style={{ color: '#fff' }}>Smith Junior</b>.</div>
+                <div>Les artistes, labels et marques sont fictifs ; les villes et pays sont réels.</div>
+              </div>
             </>)}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 22 }}><button className="btn" style={{ height: 48, border: 0, cursor: 'pointer' }} onClick={() => setModal(null)}>Fermer</button></div>
           </div>
