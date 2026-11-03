@@ -132,3 +132,6 @@ Un artiste perce d'abord dans sa ville d'origine (ex. New York si vous y install
 ## Certifications selon la réputation & langue des noms
 - Un niveau de disque n'est homologué que si le label a la réputation requise : platine 30, double platine 45, triple platine 60, diamant 75 (l'or n'a pas de minimum). Les écoutes seules ne suffisent plus (`CERT_MIN_REP`, `levelForRep`).
 - Les noms d'EP/albums suggérés suivent la langue de l'artiste (français, anglais ou nouchi, modifiable) ; l'écriture d'un titre reprend aussi la langue de l'artiste choisi.
+
+## Médias du monde
+Le catalogue compte 45 médias fictifs (radios, TV, presse, web, streaming) en Afrique, Europe, Amériques, Asie/Océanie et à l'échelle mondiale. Les tarifs montent avec la portée : de ~2 000 $ pour une radio locale à 45 000 $ pour une TV nord-américaine et 120 000 $ pour la radio mondiale (réputation 75). L'écran de sortie les filtre par zone. Logos générés par `tools/logo_gen/media_logos.py`.

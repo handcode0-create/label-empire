@@ -67,3 +67,14 @@ describe('capital de départ', () => {
     expect(g.reputation).toBe(50)
   })
 })
+
+import { mediaZone } from '../data/media'
+describe('médias du monde', () => {
+  it('couvrent l’Europe, les Amériques, l’Asie et le monde, avec des tarifs élevés au sommet', () => {
+    const zones = new Set(MEDIA.map(mediaZone))
+    for (const z of ['Afrique', 'Europe', 'Amériques', 'Asie & Océanie', 'Monde']) expect(zones.has(z as never)).toBe(true)
+    expect(MEDIA.filter((m) => mediaZone(m) === 'Europe').length).toBeGreaterThanOrEqual(6)
+    expect(MEDIA.filter((m) => mediaZone(m) === 'Amériques').length).toBeGreaterThanOrEqual(6)
+    expect(Math.max(...MEDIA.map((m) => m.cost))).toBeGreaterThanOrEqual(100_000)
+  })
+})

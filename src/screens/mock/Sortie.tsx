@@ -6,7 +6,7 @@ import Dock from '../../components/Dock'
 import Slider from '../../components/Slider'
 import { LOC_OPTIONS } from '../../data/people'
 import { CITIES, affinity } from '../../data/world'
-import { MEDIA, mediaScopeLabel } from '../../data/media'
+import { MEDIA, mediaScopeLabel, mediaZone, type MediaZone } from '../../data/media'
 import { MediaLogo } from '../../components/Logo'
 import { STREAM_VALUE, royaltyShare, weeklyStreams } from '../../engine/market'
 import Cover from '../../components/Cover'
@@ -31,6 +31,7 @@ export default function Sortie() {
   const [loc, setLoc] = useState<string[]>([])
   const [media, setMedia] = useState<string[]>([])
   const [tab, setTab] = useState<'media' | 'loc'>('media')
+  const [zone, setZone] = useState<MediaZone | 'Tous'>('Tous')
   const [promo, setPromo] = useState(Math.min(5000, Math.max(0, Math.floor(g.cash * 0.1 / 500) * 500)))
   const [week, setWeek] = useState<number | null>(sel.week)
   if (!song) return (
@@ -101,13 +102,16 @@ export default function Sortie() {
                   {LOC_OPTIONS.map((l) => { const on = loc.includes(l.id); return (
                     <div key={l.id} style={{cursor: 'pointer'}} onClick={() => setLoc(on ? loc.filter((x) => x !== l.id) : [...loc, l.id])}><span style={{color: on ? '#FF7DBB' : '#9C90CC'}}>{on ? '■' : '□'}</span> <b>{l.name}</b><div className="mut" style={{fontSize: 13, marginLeft: 20}}>{usd(l.cost)} · {l.weeks} semaine{l.weeks > 1 ? 's' : ''} · {l.desc}</div></div>) })}
                 </div>) : (
-                <div style={{marginTop: 8, maxHeight: 320, overflow: 'auto'}}>
-                  {MEDIA.map((m) => { const on = media.includes(m.id); const locked = m.minRep > g.reputation; return (
+                <div style={{marginTop: 8}}>
+                  <div style={{display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6}}>{(['Tous', 'Afrique', 'Europe', 'Amériques', 'Asie & Océanie', 'Monde'] as const).map((z) => <span key={z} className={'chip' + (zone === z ? ' on' : '')} role="button" onClick={() => setZone(z)}>{z}</span>)}</div>
+                  <div style={{maxHeight: 280, overflow: 'auto'}}>
+                  {MEDIA.filter((m) => zone === 'Tous' || mediaZone(m) === zone).sort((a, b) => a.minRep - b.minRep || a.cost - b.cost).map((m) => { const on = media.includes(m.id); const locked = m.minRep > g.reputation; return (
                     <div key={m.id} className="row" role="button" style={{gridTemplateColumns: '44px 1fr auto', gap: 10, cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.5 : 1, background: on ? '#3A1B52' : undefined}} onClick={() => { if (locked) return say(`${m.name} exige ${m.minRep} de réputation.`, 'err'); setMedia(on ? media.filter((x) => x !== m.id) : [...media, m.id]) }}>
                       <MediaLogo id={m.id} size={40} />
                       <div><b style={{fontSize: 14}}>{m.name}</b><div className="mut" style={{fontSize: 12}}>{m.kind} · {mediaScopeLabel(m)}{locked ? ` · 🔒 Réputation ${m.minRep}` : ` · +${Math.round(m.boost * 100)} %`}</div></div>
                       <span style={{color: on ? '#FF7DBB' : '#FFC63D', fontSize: 13, fontWeight: 700}}>{on ? '■' : usd(mediaCost(g, m))}</span>
                     </div>) })}
+                  </div>
                 </div>)}
               </div>
             </div>
