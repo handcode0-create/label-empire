@@ -37,6 +37,13 @@ export const CERT_THRESHOLDS: Record<CertKind, Partial<Record<CertLevel, number>
   titre: Object.fromEntries(ORDER.flatMap((l) => (scaled('titre', l) ? [[l, scaled('titre', l)]] : []))),
   projet: Object.fromEntries(ORDER.flatMap((l) => (scaled('projet', l) ? [[l, scaled('projet', l)]] : []))),
 }
+/** Réputation minimale du label pour qu'un niveau soit homologué : les gros disques exigent un label installé. */
+export const CERT_MIN_REP: Record<CertLevel, number> = { or: 0, platine: 30, platine2: 45, platine3: 60, diamant: 75 }
+export const levelForRep = (kind: CertKind, streams: number, rep: number): CertLevel | null => {
+  let out: CertLevel | null = null
+  for (const l of ladder(kind)) if (streams >= CERT_THRESHOLDS[kind][l]! && rep >= CERT_MIN_REP[l]) out = l
+  return out
+}
 export const ladder = (kind: CertKind) => ORDER.filter((l) => CERT_THRESHOLDS[kind][l] !== undefined)
 export const levelInfo = (l: CertLevel) => CERT_LEVELS.find((c) => c.level === l)!
 /** Écoutes « équivalent album » : la piste la plus écoutée compte pour moitié. */
@@ -55,7 +62,7 @@ export function checkCertifications(s: GameState, notes: { tag: string; text: st
   s.certs ??= []
   revalidateCerts(s)
   const grant = (id: string, kind: CertKind, name: string, streams: number) => {
-    const lvl = levelFor(kind, streams)
+    const lvl = levelForRep(kind, streams, s.reputation)
     if (!lvl) return
     const cur = s.certs.find((c) => c.id === id)
     if (cur && ORDER.indexOf(cur.level) >= ORDER.indexOf(lvl)) return

@@ -21,3 +21,13 @@ describe('banque de titres', () => {
     const p = rivalProjectNames().map((x) => x.toLowerCase()); expect(new Set(p).size).toBe(p.length)
   })
 })
+
+describe('noms de projet par langue', () => {
+  it('propose des noms anglais quand la langue est l’anglais', () => {
+    const en = new Set(Array.from({ length: 60 }, (_, i) => generateProjectName(createRng(100 + i), { kind: 'Album', lang: 'anglais' })))
+    const fr = new Set(Array.from({ length: 60 }, (_, i) => generateProjectName(createRng(100 + i), { kind: 'Album', lang: 'français' })))
+    expect([...en].some((n) => /Chronicles|Roots|Season|Horizons|Night Flight|Light/.test(n))).toBe(true)
+    expect([...fr].some((n) => /Chroniques|Racines|Saison|Mémoires|Nuits blanches/.test(n))).toBe(true)
+    expect([...en].some((n) => /Chroniques|Racines|Saison/.test(n))).toBe(false)
+  })
+})

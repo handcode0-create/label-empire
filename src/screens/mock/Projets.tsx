@@ -19,6 +19,7 @@ export default function Projets() {
   const [selId, setSelId] = useState<string | null>(g.projects[0]?.id ?? null)
   const [name, setName] = useState('')
   const [kind, setKind] = useState<ProjectKind>('EP')
+  const [nameLang, setNameLang] = useState<string | null>(null)
   const [artistId, setArtistId] = useState(g.artists[0]?.id ?? '')
   const unlocked = CITIES.filter((c) => c.minRep <= g.reputation)
   const [cityIds, setCityIds] = useState<string[]>([])
@@ -40,9 +41,10 @@ export default function Projets() {
               <div className="lbl">Nouveau projet</div>
               <div style={{display: 'flex', gap: 8, marginTop: 10}}>
                 <input className="in" style={{fontWeight: 700}} aria-label="Nom du projet" placeholder="Nom de l'EP ou de l'album" value={name} onChange={(e) => setName(e.target.value)} />
-                <button type="button" className="btn g sm" aria-label="Suggérer un nom" title="Suggérer un nom" style={{height: 48, flex: 'none'}} onClick={() => setName(generateProjectName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { kind, artist: g.artists.find((a) => a.id === artistId)?.stageName }, [...g.projects.map((p) => p.name), ...rivalProjectNames()]))}>🎲</button>
+                <button type="button" className="btn g sm" aria-label="Suggérer un nom" title="Suggérer un nom" style={{height: 48, flex: 'none'}} onClick={() => setName(generateProjectName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { kind, artist: g.artists.find((a) => a.id === artistId)?.stageName, lang: nameLang ?? g.artists.find((a) => a.id === artistId)?.lang }, [...g.projects.map((p) => p.name), ...rivalProjectNames()]))}>🎲</button>
                 <button type="button" className="btn" style={{height: 48, flex: 'none'}} onClick={create}>Créer</button>
               </div>
+              <div style={{display: 'flex', gap: 8, marginTop: 10, alignItems: 'center'}}><span className="mut" style={{fontSize: 13}}>Langue du nom :</span>{(['français', 'anglais', 'nouchi'] as const).map((l) => <span key={l} className={'chip' + ((nameLang ?? g.artists.find((a) => a.id === artistId)?.lang) === l ? ' on' : '')} role="button" onClick={() => setNameLang(l)}>{l}</span>)}</div>
               <div style={{display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap'}}>
                 {(['EP', 'Album'] as ProjectKind[]).map((k) => <span key={k} className={'chip' + (kind === k ? ' on' : '')} role="button" onClick={() => setKind(k)}>{k} · {PROJECT_RULES[k].min}–{PROJECT_RULES[k].max} titres</span>)}
                 {g.artists.map((a) => <span key={a.id} className={'chip' + (artistId === a.id ? ' on' : '')} role="button" onClick={() => setArtistId(a.id)}>{a.stageName}</span>)}

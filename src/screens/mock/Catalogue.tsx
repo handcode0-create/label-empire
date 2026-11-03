@@ -20,6 +20,7 @@ export default function Catalogue() {
   const [artistId, setArtistId] = useState(sel.artistId && g.artists.some((a) => a.id === sel.artistId) ? sel.artistId : g.artists[0]?.id ?? '')
   const [name, setName] = useState('')
   const [kind, setKind] = useState<ProjectKind>('EP')
+  const [nameLang, setNameLang] = useState<string | null>(null)
   const [adding, setAdding] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
   const a = g.artists.find((x) => x.id === artistId) ?? g.artists[0]
@@ -32,7 +33,7 @@ export default function Catalogue() {
   const standby = free.filter((s) => s.standby && s.stage === 'mixed')
   const singles = mine.filter((s) => !projectOf(g, s.id) && (s.stage === 'released' || s.stage === 'scheduled'))
   const mixedFree = free.filter((s) => s.stage === 'mixed' && !s.standby)
-  const suggest = () => setName(generateProjectName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { kind, artist: a.stageName }, [...g.projects.map((p) => p.name), ...rivalProjectNames()]))
+  const suggest = () => setName(generateProjectName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { kind, artist: a.stageName, lang: nameLang ?? a.lang }, [...g.projects.map((p) => p.name), ...rivalProjectNames()]))
   const create = () => { if (run((s) => createProject(s, name, kind, a.id))) setName('') }
   const cover = (p: Project) => (
     <div style={{display: 'flex', gap: 14, alignItems: 'flex-end'}}>
@@ -73,6 +74,7 @@ export default function Catalogue() {
             <span className="sp" />
             <input className="in" style={{width: 260, fontWeight: 700}} aria-label="Nom du projet" placeholder="Nom de l'EP ou de l'album" value={name} onChange={(e) => setName(e.target.value)} />
             <button type="button" className="btn g sm" aria-label="Suggérer un nom" title="Suggérer un nom d'EP ou d'album" onClick={suggest}>🎲</button>
+            {(['français', 'anglais', 'nouchi'] as const).map((l) => <span key={l} className={'chip' + ((nameLang ?? a.lang) === l ? ' on' : '')} role="button" title="Langue du nom suggéré" onClick={() => setNameLang(l)}>{l}</span>)}
             {(['EP', 'Album'] as ProjectKind[]).map((k) => <span key={k} className={'chip' + (kind === k ? ' on' : '')} role="button" onClick={() => setKind(k)}>{k}</span>)}
             <button type="button" className="btn sm" onClick={create}>Créer</button>
           </div>

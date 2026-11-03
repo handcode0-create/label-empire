@@ -128,3 +128,7 @@ Chaque étape propose les cinq types de salle (club, théâtre, salle de concert
 
 ## Percée locale
 Un artiste perce d'abord dans sa ville d'origine (ex. New York si vous y installez le label). Ailleurs ses écoutes restent très faibles (≈ 4 %) tant qu'il n'a pas conquis sa ville (fans ≥ 3 % du marché local) ; ensuite la portée s'étend à la zone (≈ 70 %), à la langue (≈ 40 %), puis au reste du monde (≈ 22 %), et plus vite là où il a déjà des fans (concerts, écoutes). Voir `reachIn` dans `src/engine/market.ts` ; la fiche artiste affiche la jauge « Percée locale ». Les certifications suivent le barème SNEP (15 M d'écoutes pour un single d'or) : avec la percée locale, le premier disque arrive plus tard.
+
+## Certifications selon la réputation & langue des noms
+- Un niveau de disque n'est homologué que si le label a la réputation requise : platine 30, double platine 45, triple platine 60, diamant 75 (l'or n'a pas de minimum). Les écoutes seules ne suffisent plus (`CERT_MIN_REP`, `levelForRep`).
+- Les noms d'EP/albums suggérés suivent la langue de l'artiste (français, anglais ou nouchi, modifiable) ; l'écriture d'un titre reprend aussi la langue de l'artiste choisi.

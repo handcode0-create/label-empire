@@ -98,7 +98,8 @@ export function generateProjectName(rng: Rng, o: { kind: 'EP' | 'Album'; lang?: 
   for (let i = 0; i < 80; i++) {
     const r = rng.next()
     let t: string
-    if (r < 0.4) t = rng.pick(base)
+    if (o.lang === 'nouchi' && r < 0.3) t = `${rng.pick(NOUCHI)} ${rng.pick(base)}`
+    else if (r < 0.4) t = rng.pick(base)
     else if (r < 0.65) t = english ? `${rng.pick(bank.n)} ${rng.pick(bank.a)}` : frNoun(rng.pick(bank.n), rng.pick(bank.a))
     else if (r < 0.8) t = rng.pick(bank.p)
     else if (r < 0.9 && first) t = english ? `${first}’s ${rng.pick(base)}` : `${rng.pick(base)} de ${first}`

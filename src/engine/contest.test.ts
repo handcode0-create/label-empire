@@ -37,6 +37,7 @@ describe('certifications', () => {
     const g = createGame(cfg)
     g.songs.push({ id: 's1', title: 'Hit', artistId: g.artists[0].id, stage: 'released', stats: { streams: 35_000_000, weeks: 5, revenue: 0, lastByCity: {} } } as never)
     const notes: { tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }[] = []
+    g.reputation = 35
     const c0 = g.cash
     checkCertifications(g, notes)
     expect(g.certs[0].level).toBe('platine')

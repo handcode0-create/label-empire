@@ -31,7 +31,7 @@ export default function Ecriture() {
   const [title, setTitle] = useState(startDraft?.title ?? '')
   const [genre, setGenre] = useState(startDraft?.genre ?? artist?.genre ?? 'Afro-pop')
   const [theme, setTheme] = useState(startDraft?.theme ?? 'Amour')
-  const [lang, setLang] = useState(startDraft?.lang ?? 'français')
+  const [lang, setLang] = useState(startDraft?.lang ?? (['français', 'anglais', 'nouchi'].includes(artist?.lang ?? '') ? artist!.lang : 'français'))
   const [mood, setMood] = useState(startDraft?.mood ?? 'Solaire')
   const [writer, setWriter] = useState<'artiste' | 'externe'>(startDraft?.writer ?? 'artiste')
   const [lyrics, setLyrics] = useState(startDraft?.lyrics ?? '')
@@ -99,7 +99,7 @@ export default function Ecriture() {
           <div className="pn">
             <div className="lbl">Qui écrit ?</div>
             {g.artists.map((a) => (
-              <div key={a.id} className="row" onClick={() => { setArtistId(a.id); setWriter('artiste') }} style={{gridTemplateColumns: '1fr 70px', cursor: 'pointer'}}><div><b>{a.stageName}</b><div className="mut" style={{fontSize: 13}}>Écriture {Math.round(a.skills.ecriture)}</div></div><span className={'tag ' + (a.id === artistId && writer === 'artiste' ? 'tg' : 'te')}>{a.id === artistId && writer === 'artiste' ? 'Choisi' : 'Option'}</span></div>
+              <div key={a.id} className="row" onClick={() => { setArtistId(a.id); setWriter('artiste'); if (!draftId && ['français', 'anglais', 'nouchi'].includes(a.lang)) setLang(a.lang) }} style={{gridTemplateColumns: '1fr 70px', cursor: 'pointer'}}><div><b>{a.stageName}</b><div className="mut" style={{fontSize: 13}}>Écriture {Math.round(a.skills.ecriture)}</div></div><span className={'tag ' + (a.id === artistId && writer === 'artiste' ? 'tg' : 'te')}>{a.id === artistId && writer === 'artiste' ? 'Choisi' : 'Option'}</span></div>
             ))}
             <div className="row" onClick={() => setWriter('externe')} style={{gridTemplateColumns: '1fr 70px', cursor: 'pointer'}}><div><b>Auteur externe</b><div className="mut" style={{fontSize: 13}}>+8 qualité · {usd(EXTERNAL_WRITER_COST)}</div></div><span className={'tag ' + (writer === 'externe' ? 'tg' : 'te')}>{writer === 'externe' ? 'Choisi' : 'Option'}</span></div>
           </div>
