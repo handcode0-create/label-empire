@@ -3,6 +3,7 @@ import Dock from '../../components/Dock'
 import { missionProgress } from '../../engine/missions'
 import { useGame } from '../../store/gameStore'
 import { usd, wk } from '../../lib'
+import { AWARD_LABEL } from '../../engine/awards'
 
 const TONE: Record<string, string> = { g: 'tg', c: 'tc', e: 'te', r: 'tr_', i: 'ti' }
 
@@ -73,7 +74,7 @@ export default function Actualites() {
               <div className="lbl">Palmarès des cérémonies</div>
               {[...g.awards].reverse().slice(0, 6).map((w, i) => (
                 <div key={i} className="row" style={{gridTemplateColumns: '60px 1fr auto'}}>
-                  <span className="mut">An {w.year}</span><span>{w.category === 'titre' ? 'Titre' : 'Artiste'} : <b>{w.winner}</b></span>
+                  <span className="mut">An {w.year}</span><span>{AWARD_LABEL[w.category] ?? w.category} : <b>{w.winner}</b></span>
                   <span className={'tag ' + (w.mine ? 'tg' : w.nominated ? 'te' : 'ti')}>{w.mine ? 'Gagné' : w.nominated ? 'Nominé' : '—'}</span>
                 </div>
               ))}

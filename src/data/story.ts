@@ -1,7 +1,7 @@
 import { inquiryStrength } from '../engine/inquiry'
 import { cityById, palierFor } from './world'
 import { usd } from '../lib'
-import type { GameState } from '../engine/types'
+import type { Award, AwardCategory, GameState } from '../engine/types'
 import { signedCount } from '../engine/util'
 import { entrantOf } from '../engine/tournament'
 import { lastPlayed } from '../engine/tour'
@@ -19,13 +19,13 @@ export const CHARS: Record<Exclude<CharId, 'narrateur'>, Char> = {
   artiste: { name: 'L’artiste', role: 'Artiste', gradient: '#8B5CF6,#FF3D9A', side: 'left' },
 }
 export type Mood = 'neutre' | 'joie' | 'tension' | 'surprise' | 'confiance'
-export interface Line { stamp?: boolean; who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' | 'dossier-attendre' | 'roster-diner' | 'awa-exclusif' }[] }
+export interface Line { stamp?: boolean; trophy?: { kind: AwardCategory; winner: string; mine: boolean }; who: CharId; text: string; mood?: Mood; side?: 'left' | 'right'; choices?: { label: string; reply: Line[]; effect?: 'accept-meridian' | 'repos' | 'prime' | 'dossier-publier' | 'dossier-negocier' | 'dossier-attendre' | 'roster-diner' | 'awa-exclusif' }[] }
 export type Bg = 'ville' | 'bureau' | 'scene' | 'nuit' | 'studio' | 'arene' | 'finale' | 'aeroport' | 'plateau' | 'redaction' | 'ceremonie' | 'agence' | 'terrasse' | 'tour'
 /** Décors à générer (voir docs/images/PROMPTS_MANQUANTS.md) : tant que l'image n'existe pas, le décor de secours est utilisé. */
 export const BG_FALLBACK: Partial<Record<Bg, Bg>> = { plateau: 'studio', redaction: 'bureau', ceremonie: 'scene', agence: 'ville', terrasse: 'nuit', tour: 'finale' }
 export interface ContractPaper { artist: string; label: string; founder: string; advance: number; royalty: number; weeks: number; scope: string; kind: 'sign' | 'renew' }
 export interface CastArtist { id: string; stageName: string; realName?: string; originCityId: string; gradient: string }
-export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean; /** scène dynamique : artiste présent et contrat montré à l'écran */ cast?: CastArtist; paper?: ContractPaper }
+export interface Scene { id: string; bg: Bg; title?: string; lines: Line[]; when: (g: GameState) => boolean; /** scène dynamique sans ligne d'objectif */ custom?: boolean; /** scène dynamique : artiste présent et contrat montré à l'écran */ cast?: CastArtist; paper?: ContractPaper }
 
 export interface Ctx { bureau: string; cash: string; palier: string; goal: string; label: string; founder: string; city: string; tournoi: string; winner: string; verdict: string; ville: string; artiste: string; villeTournee: string; salle: string; rival: string; rivalLabel: string; billets: string; capacite: string; taux: string; tournee: string }
 export function contextFor(g: GameState): Ctx {
@@ -580,4 +580,19 @@ export function contractScene(g: GameState, a: CastArtist, o: { advance: number;
     }
   }
   return { id: `contrat-${kind}-${a.id}-${g.week}`, bg: 'bureau', title: kind === 'sign' ? 'Négociation' : 'Renégociation', lines, when: () => false, cast: a, paper: accepted ? { artist: who, label: g.label.name, founder: g.label.founder, advance: o.advance, royalty: o.royalty, weeks: o.weeks, scope: SCOPE_TXT[o.scope] ?? o.scope, kind } : undefined }
+}
+
+const AW_LABEL: Record<AwardCategory, string> = { titre: 'Titre de l’année', artiste: 'Artiste de l’année', album: 'Album de l’année', revelation: 'Révélation de l’année' }
+/** Cérémonie annuelle : Kwame annonce chaque trophée, les vôtres sont fêtés. */
+export function ceremonyScene(g: GameState, awards: Award[]): Scene {
+  const year = awards[0]?.year ?? Math.floor(g.week / 52)
+  const lines: Line[] = [N(`La soirée des Awards de l'An ${year}. Les projecteurs tournent, la salle retient son souffle.`), K('« Mesdames et messieurs, voici le moment que vous attendez tous : la remise des trophées ! »', 'joie')]
+  for (const a of awards) {
+    lines.push({ who: 'kwame', text: `« ${AW_LABEL[a.category]}… et le gagnant est… ${a.winner}${a.artist && a.artist !== a.winner ? ` de ${a.artist}` : ''} ! »`, mood: 'surprise', trophy: { kind: a.category, winner: a.winner, mine: a.mine } })
+    if (a.mine) lines.push(I(`« ${a.winner} ! C'est pour nous ! ${g.label.name} entre dans l'histoire ce soir. »`, 'joie'))
+    else if (a.nominated) lines.push(I('« Nous étions nominés… ce sera pour la prochaine fois. »', 'neutre'))
+  }
+  const won = awards.filter((a) => a.mine).length
+  lines.push(won ? I(`« ${won} trophée${won > 1 ? 's' : ''} pour ${g.label.name} cette année. Les primes tombent demain. »`, 'joie') : N('Les lumières s\'éteignent. Rendez-vous l\'an prochain.'))
+  return { id: `ceremonie-${year}`, bg: 'ceremonie', title: `Awards · An ${year}`, lines, when: () => false, custom: true }
 }

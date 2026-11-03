@@ -223,6 +223,7 @@ export interface GameState {
   inquiry?: { clues: Record<string, { week: number; verified?: boolean; verifyDue?: number }>; links: string[]; heat: number; alerted?: boolean } // enquête sur Meridian (plan Horizon)
   pitches: Pitch[] // démarchages de playlists
   awards: Award[] // palmarès des cérémonies
+  nominations?: Nomination // nominations annoncées avant la prochaine cérémonie
   trends: Trend[] // tendances de genres en cours
   boosts: Boost[] // effets temporaires d'événements
   rivalMoves: RivalMove[] // sorties rivales actives
@@ -271,7 +272,10 @@ export interface Mission {
 }
 export interface NewsItem { id: string; week: number; tag: string; text: string; tone: 'g' | 'c' | 'e' | 'r' | 'i' }
 
-export interface Award { year: number; week: number; category: 'titre' | 'artiste'; winner: string; artistId?: string; mine: boolean; nominated: boolean }
+export type AwardCategory = 'titre' | 'artiste' | 'album' | 'revelation'
+export interface Award { year: number; week: number; category: AwardCategory; winner: string; artistId?: string; mine: boolean; nominated: boolean; /** artiste du titre ou de l'album primé */ artist?: string }
+export interface Nominee { name: string; artist: string; artistId?: string; mine: boolean; rank: number }
+export interface Nomination { year: number; week: number; cats: { category: AwardCategory; nominees: Nominee[] }[] }
 
 export interface Draft { id: string; title: string; artistId: string; genre: string; theme: string; lang: string; mood: string; lyrics: string; writer: 'artiste' | 'externe'; feat?: { kind: 'label' | 'externe' | 'rival'; id: string }; week: number }
 export interface Clip { tier: 'lofi' | 'standard' | 'cine'; cost: number; quality: number; startWeek: number; readyWeek: number; status: 'tournage' | 'sorti'; views: number; revenue: number }

@@ -29,7 +29,7 @@ export default function Certifications() {
       <Hud />
       <div className="main" style={{ display: 'flex', gap: 20 }}>
         <div style={{ width: 900, display: 'flex', flexDirection: 'column', gap: 10, overflow: 'auto', maxHeight: 760 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><a href="Hub.dc.html" className="btn s sm">Retour</a><h1 className="h1" style={{ fontSize: 36 }}>Chambre des certifications</h1><span className="tag te">Référence SNEP</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><a href="Hub.dc.html" className="btn s sm">Retour</a><h1 className="h1" style={{ fontSize: 36 }}>Chambre des certifications</h1><a href="Awards.dc.html" className="btn s sm" onClick={(e) => { e.preventDefault(); useGame.getState().go('Awards') }}>Awards 🏆</a><span className="tag te">Référence SNEP</span></div>
           {rows.length === 0 && <div className="pn cut mut">Aucun titre sorti pour l’instant. Sortez un titre et accumulez des écoutes : les disques d’or, de platine et de diamant récompensent les gros succès.</div>}
           {rows.map((r) => {
             const lvl = levelFor(r.kind, r.streams)

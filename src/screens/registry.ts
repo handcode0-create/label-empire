@@ -1,3 +1,4 @@
+import Awards from './mock/Awards'
 import Artiste from './mock/Artiste'
 import Artistes from './mock/Artistes'
 import Battle from './mock/Battle'
@@ -43,6 +44,7 @@ export const SCREENS: Record<string, () => React.JSX.Element> = {
   Catalogue,
   Actualites,
   Certifications,
+  Awards,
   Artiste,
   Artistes,
   Battle,

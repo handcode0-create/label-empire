@@ -147,3 +147,10 @@ Un concours peut compter de 1 à 5 phases (finale seule par défaut), avec une p
 ## Pochettes SVG et bannière des classements
 - 24 styles de pochettes (16 nouveaux : Vinyle, Étoiles, Montagnes, Palmiers, Égaliseur, Damier, Hexagones, Lune, Flamme, Couronne, Micro, Casque, Diamant, Éclair, Spirale, Confettis) et 14 palettes. Les pochettes par défaut restent tirées parmi les 8 styles/palettes d'origine (sauvegardes inchangées) ; les nouveaux se choisissent dans le sélecteur.
 - La bannière des classements affiche une image de scène sous le dégradé (scène, studio, nuit ou cérémonie selon le classement).
+
+## Awards & certifications
+- **Calendrier** : nominations annoncées en semaine 44, cérémonie en semaine 52 de chaque année (`awardCalendar`).
+- **4 catégories** : Titre, Artiste, Album et Révélation de l'année ; 5 nominés (classements mondiaux), le mieux classé le soir de la cérémonie gagne.
+- **Page Awards** (Hub / Certifications) : dates, nominés, vitrine de trophées, palmarès, disques certifiés.
+- **Trophées et disques en SVG** (`components/Trophies.tsx`) : coupe, étoile, vinyle, flamme ; or / argent / bronze.
+- **Signaux** : alerte à chaque nouvelle certification ; scène de cérémonie avec Kwame et trophée à chaque remise.

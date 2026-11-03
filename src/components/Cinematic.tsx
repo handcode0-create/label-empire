@@ -5,6 +5,7 @@ import { BG_FALLBACK, CHARS, SCENES, contextFor, fillText, type Bg, type Contrac
 import { usd } from '../lib'
 import { useGame } from '../store/gameStore'
 import Avatar from './Avatar'
+import { Trophy } from './Trophies'
 import { acceptMeridianOffer } from '../engine/objectives'
 import { careForTourArtist } from '../engine/tour'
 
@@ -79,7 +80,7 @@ export default function Cinematic() {
   const founderKey = founderLabel?.founderAvatar ?? (founderLabel?.founderLook === 'm' ? 'story-joueur-m' : 'story-joueur')
   const founderPhoto = founderLabel?.photo
 
-  useEffect(() => { if (scene) { setQueue(scene.paper !== undefined || scene.cast ? [...scene.lines] : [...scene.lines, { who: 'narrateur', text: 'Objectif · {goal}' }]); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (scene) { setQueue(scene.custom || scene.paper !== undefined || scene.cast ? [...scene.lines] : [...scene.lines, { who: 'narrateur', text: 'Objectif · {goal}' }]); setI(0); setTyped(0); setPicked(false); setTitleDone(!scene.title); slots.current = {} } }, [scene?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!scene?.title) return; const t = setTimeout(() => setTitleDone(true), 2300); return () => clearTimeout(t) }, [scene?.id, scene?.title])
 
   const line = queue[i]
@@ -159,6 +160,13 @@ export default function Cinematic() {
           </div>
         )
       })}
+      {line.trophy && (
+        <div key={i} data-testid="trophy-card" style={{ position: 'absolute', left: '50%', top: 120, width: 360, marginLeft: -180, zIndex: 2, textAlign: 'center', animation: 'trophyIn .7s cubic-bezier(.2,.9,.3,1.2) both' }}>
+          <div style={{ display: 'inline-block', filter: line.trophy.mine ? 'drop-shadow(0 0 40px rgba(255,198,61,.7))' : 'none' }}><Trophy kind={line.trophy.kind} size={190} metal={line.trophy.mine ? 'or' : 'argent'} /></div>
+          <div style={{ display: 'inline-block', fontWeight: 800, fontSize: 28, marginTop: 8, padding: '6px 20px', borderRadius: 14, background: 'rgba(12,7,25,.92)', boxShadow: 'inset 0 0 0 2px #FFC63D' }}>{line.trophy.winner}</div>
+          {line.trophy.mine && <div className="tag tg" style={{ marginTop: 6 }}>Remporté par votre label</div>}
+        </div>
+      )}
       {showPaper && scene.paper && <ContractStamp p={scene.paper} fresh={i === stampAt} />}
       {/* bandes cinéma */}
       <div style={{ position: 'absolute', left: 0, right: 0, top: 0, background: '#05030F', animation: 'bars .8s ease-out both', height: 84 }} />
