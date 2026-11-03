@@ -14,7 +14,7 @@ const ITEMS: { key: string; href: string; label: string; short?: string; d: Reac
 export default function Dock({ active }: { active: string }) {
   return (
     <nav className="dock" aria-label="Navigation du jeu">
-      <a className="lg" href="Menu.dc.html" aria-label="Menu principal">LE</a>
+      <a className="lg" href="Menu.dc.html" aria-label="Menu principal" />
       {ITEMS.map((i) => (
         <a key={i.key} className={'dk' + (i.key === active ? ' on' : '')} href={i.href} aria-label={i.label}>
           <svg viewBox="0 0 24 24">{i.d}</svg>{i.short ?? i.label}

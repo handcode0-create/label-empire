@@ -14,7 +14,7 @@ export default function Menu() {
       <div className="map" style={{position: 'absolute', left: 520, top: 120, width: 960, height: 480, opacity: '0.5'}} />
       <div style={{position: 'absolute', left: 0, top: 0, bottom: 0, width: 560, background: 'linear-gradient(90deg, rgba(12,7,25,0.96) 70%, transparent)'}} />
       <div style={{position: 'absolute', left: 80, top: 72, display: 'flex', alignItems: 'center', gap: 16}}>
-        <div className="lg" style={{margin: 0}}>LE</div>
+        <div className="lg" role="img" aria-label="Label Empire" style={{margin: 0}} />
         <div className="disp" style={{fontSize: 40, letterSpacing: '0.08em'}}>LABEL EMPIRE</div>
       </div>
       <div style={{position: 'absolute', left: 80, top: 220, width: 400, display: 'flex', flexDirection: 'column', gap: 14}}>

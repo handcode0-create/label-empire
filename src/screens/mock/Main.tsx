@@ -41,7 +41,7 @@ export default function Main() {
       </svg>
       <div style={{position: 'absolute', inset: 0, background: 'radial-gradient(600px 360px at 50% 46%, rgba(18,11,36,0.92), rgba(18,11,36,0.35) 70%, transparent)'}} />
       <div style={{position: 'absolute', left: 0, right: 0, top: 250, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14}}>
-        <div className="lg" style={{width: 84, height: 84, fontSize: 34, margin: 0, animation: 'logoSpin .9s cubic-bezier(.2,.9,.3,1.2) .1s both, pulseGlow 2.4s ease-in-out 1.2s infinite'}}>LE</div>
+        <div className="lg" style={{width: 84, height: 84, fontSize: 34, margin: 0, animation: 'logoSpin .9s cubic-bezier(.2,.9,.3,1.2) .1s both, pulseGlow 2.4s ease-in-out 1.2s infinite'}} role="img" aria-label="Label Empire" />
         <div className="disp sp-title" style={{fontSize: 132, lineHeight: '0.95', letterSpacing: '0.08em', filter: 'drop-shadow(0 0 30px rgba(255,61,154,0.5))', display: 'flex'}} aria-label={title}>
           {title.split('').map((ch, i) => <span key={i} aria-hidden="true" style={{display: 'inline-block', whiteSpace: 'pre', animation: `titleIn .7s cubic-bezier(.2,.8,.2,1) ${0.35 + i * 0.07}s both`}}>{ch}</span>)}
         </div>
