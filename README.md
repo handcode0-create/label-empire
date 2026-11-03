@@ -122,3 +122,6 @@ Label Empire est une application web installable : `public/manifest.webmanifest`
 - Chaque proposition de contrat (signature depuis la découverte ou renégociation d'un artiste) déclenche une scène cinématique dynamique (`contractScene` dans `src/data/story.ts`) : l'artiste, sa fiche et votre offre sont mis en scène avec la voix du navigateur.
 - Offre acceptée : le contrat apparaît au centre, la signature se trace puis le tampon « SIGNÉ · APPROUVÉ » s'abat sur la page. Offre refusée : scène de refus, sans tampon.
 - Les scènes dynamiques ne sont pas enregistrées dans `seenScenes` (elles se rejouent à chaque négociation).
+
+## Tournées : choix de la salle et prix des billets
+Chaque étape propose les cinq types de salle (club, théâtre, salle de concert, arène, stade) avec capacité, coût, billet conseillé, remplissage et bénéfice estimés pour l'artiste. Une salle est marquée « Conseillé » (meilleur bénéfice débloqué), un « Prix optimal » maximise les recettes, et des prix rapides (−30 % à +60 %) montrent l'effet sur le remplissage. Voir `venueOptions` et `priceOptions` dans `src/engine/tour.ts`.

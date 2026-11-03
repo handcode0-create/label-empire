@@ -140,3 +140,30 @@ export function careForTourArtist(s0: GameState, kind: TourCare): Result {
   a.fatigue = clamp(a.fatigue - 25, 0, 100); a.morale = clamp(a.morale + 4, 0, 100)
   return ok(s, `${a.stageName} se repose : fatigue en baisse.`)
 }
+
+
+/** Suggestions de salles pour une ville : remplissage, coût et bénéfice estimés pour chaque type de salle. */
+export function venueOptions(s: GameState, a: Artist, cityId: string, partners: string[], week = s.week + 1) {
+  const eff = partnerEffects(partners)
+  const rows = venuesFor(cityById(cityId)).map((v) => {
+    const price = suggestedPrice(cityId, v.kind)
+    const st = { cityId, capacity: v.capacity, price, kind: v.kind }
+    const e = estimateStop(s, a, st, partners)
+    const cost = stopCost(st, null, week)
+    const profit = e.gross * (1 - eff.share) - cost
+    return { ...v, price, sold: e.sold, fill: e.fill, gross: e.gross, cost, profit, locked: v.minRep > s.reputation, best: false }
+  })
+  const ok = rows.filter((r) => !r.locked)
+  const top = ok.slice().sort((x, y) => y.profit - x.profit)[0]
+  if (top) top.best = true
+  return rows
+}
+
+/** Prix de billet qui maximise les recettes sans dépasser la capacité (balayage de 50 % à 250 % du prix conseillé). */
+export function priceOptions(s: GameState, a: Artist, stop: Pick<TourStop, 'cityId' | 'capacity' | 'kind'>, partners: string[]) {
+  const base = suggestedPrice(stop.cityId, stop.kind)
+  const at = (price: number) => { const e = estimateStop(s, a, { ...stop, price }, partners); return { price, sold: e.sold, fill: e.fill, gross: e.gross } }
+  let best = at(base)
+  for (let m = 0.5; m <= 2.5; m += 0.05) { const p = Math.max(1, Math.round(base * m)); const r = at(p); if (r.gross > best.gross) best = r }
+  return { base, optimal: best, steps: [0.7, 0.85, 1, 1.25, 1.6].map((m) => at(Math.max(1, Math.round(base * m)))) }
+}
