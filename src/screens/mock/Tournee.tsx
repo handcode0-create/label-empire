@@ -8,6 +8,8 @@ import { estimateStop, newStop, planTour, priceOptions, tourSummary, venueOption
 import type { TourStop } from '../../engine/types'
 import { useGame } from '../../store/gameStore'
 import { usd } from '../../lib'
+import { generateTourName } from '../../data/eventNames'
+import { createRng } from '../../engine/rng'
 
 const link: React.CSSProperties = { cursor: 'pointer', userSelect: 'none' }
 
@@ -16,7 +18,7 @@ export default function Tournee() {
   const { sel, run, go, say } = useGame()
   const [artistId, setArtistId] = useState(g.artists.find((a) => a.id === sel.artistId)?.id ?? g.artists[0]?.id ?? '')
   const artist = g.artists.find((a) => a.id === artistId)
-  const [name, setName] = useState(`Tournée ${g.label.name.split(' ')[0]}`)
+  const [name, setName] = useState(() => { const a0 = g.artists.find((a) => a.id === (g.artists.find((x) => x.id === sel.artistId)?.id ?? g.artists[0]?.id)); return generateTourName(createRng((Date.now() >>> 0) ^ 0x9e37), { artist: a0?.stageName ?? 'Tournée', cities: sel.cityId ? [cityById(sel.cityId).name] : [], year: Math.floor((g.week - 1) / 52) + 2027, lang: a0?.lang }, g.tours.map((t) => t.name)) })
   const [stops, setStops] = useState<TourStop[]>(() => (sel.cityId ? [newStop(sel.cityId, g.week + 2)] : []))
   const [partners, setPartners] = useState<string[]>([])
   const [picker, setPicker] = useState(false)
@@ -30,6 +32,7 @@ export default function Tournee() {
     if (g.reputation < minRep) return say(`Ce partenaire exige une réputation de ${minRep}.`, 'err')
     setPartners([...partners, id])
   }
+  const genName = () => setName(generateTourName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { artist: artist?.stageName ?? 'Tournée', cities: stops.map((x) => cityById(x.cityId).name), year: Math.floor((g.week - 1) / 52) + 2027, lang: artist?.lang }, g.tours.map((t) => t.name)))
   const sum = artist && stops.length ? tourSummary(g, artist, stops, partners) : { cost: 0, revenue: 0, profit: 0 }
   const fills = artist ? stops.map((s) => ({ s, f: estimateStop(g, artist, s, partners).fill })) : []
   const worst = fills.slice().sort((a, b) => a.f - b.f)[0]
@@ -47,7 +50,7 @@ export default function Tournee() {
       <div className="main" style={{display: 'flex', gap: 20}}>
         <div style={{width: 700, display: 'flex', flexDirection: 'column', gap: 10}}>
           <div style={{display: 'flex', alignItems: 'center', gap: 12}}><h1 className="h1" style={{fontSize: 36}}>Nouvelle tournée</h1><span className="sp" />{g.artists.map((x) => <span key={x.id} className={'chip' + (x.id === artistId ? ' on' : '')} role="button" onClick={() => setArtistId(x.id)}>{x.stageName}</span>)}</div>
-          <div className="pn cut" style={{padding: '14px 18px'}}><label htmlFor="tn" className="lbl">Nom de la tournée</label><input id="tn" className="in" style={{marginTop: 8, fontSize: 20, fontWeight: 700}} value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div className="pn cut" style={{padding: '14px 18px'}}><label htmlFor="tn" className="lbl">Nom de la tournée</label><div style={{display: 'flex', gap: 8, marginTop: 8}}><input id="tn" className="in" style={{fontSize: 20, fontWeight: 700}} value={name} onChange={(e) => setName(e.target.value)} /><button type="button" className="btn g sm" aria-label="Générer un nom de tournée" title="Générer un nom" style={{height: 48, flex: 'none'}} onClick={genName}>🎲 Générer</button></div></div>
           <div className="map" style={{height: 130, position: 'relative'}}>
             <div className="mk g" style={{left: cityById(artist.originCityId).x + '%', top: cityById(artist.originCityId).y + '%'}} />
             {unlocked.map((c) => { const n = stops.findIndex((x) => x.cityId === c.id); const lb = tourLabels[c.id]; return (

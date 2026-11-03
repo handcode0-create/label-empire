@@ -136,13 +136,15 @@ export function renegotiate(s0: GameState, artistId: string, o: Offer): Result {
 // ---------- concours ----------
 export const CONTEST_FORMATS = { ligne: { label: 'Audition en ligne', min: 3000, per: 400 }, salle: { label: 'Audition en salle', min: 6000, per: 140 }, tv: { label: 'Show télévisé', min: 20000, per: 60 } } as const
 
+/** Un concours peut se tenir dans une ville dont la réputation requise dépasse la vôtre d'au plus cette marge. */
+export const CONTEST_RANGE = 25
 export function startContest(s0: GameState, c: { name: string; cityId: string; format: Contest['format']; budget: number; jury: string[] }): Result {
   const s = clone(s0)
   const city = cityById(c.cityId)
   const f = CONTEST_FORMATS[c.format]
   if (!c.name.trim()) return fail(s0, 'Donnez un nom au concours.')
   if (c.budget < f.min) return fail(s0, `Budget minimum pour ce format : ${money(f.min)}.`)
-  if (city.minRep > s.reputation + 10) return fail(s0, `Réputation insuffisante pour ${city.name} (${city.minRep} requis).`)
+  if (city.minRep > s.reputation + CONTEST_RANGE) return fail(s0, `Réputation insuffisante pour ${city.name} (${city.minRep - CONTEST_RANGE} requis).`)
   if (s.contests.some((x) => x.status === 'ouvert' && x.cityId === c.cityId)) return fail(s0, 'Un concours est déjà ouvert dans cette ville.')
   const e = useAp(s)
   if (e) return fail(s0, e)

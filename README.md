@@ -135,3 +135,8 @@ Un artiste perce d'abord dans sa ville d'origine (ex. New York si vous y install
 
 ## Médias du monde
 Le catalogue compte 45 médias fictifs (radios, TV, presse, web, streaming) en Afrique, Europe, Amériques, Asie/Océanie et à l'échelle mondiale. Les tarifs montent avec la portée : de ~2 000 $ pour une radio locale à 45 000 $ pour une TV nord-américaine et 120 000 $ pour la radio mondiale (réputation 75). L'écran de sortie les filtre par zone. Logos générés par `tools/logo_gen/media_logos.py`.
+
+## Destinations, concours et noms générés
+- 7 nouvelles villes : Kinshasa, Casablanca, Madrid, Amsterdam, Atlanta, Miami, Bogotá (26 destinations au total).
+- Concours : toutes les villes dont la réputation requise ne dépasse pas la vôtre de plus de 25 (`CONTEST_RANGE`) sont ouvertes (New York et Los Angeles dès 15 de réputation) ; les autres sont affichées verrouillées.
+- Boutons « 🎲 Générer » pour le nom d'un concours et d'une tournée (`src/data/eventNames.ts`) ; la tournée reçoit un nom généré dès l'ouverture, et un nom reste obligatoire.

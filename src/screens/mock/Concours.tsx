@@ -4,17 +4,17 @@ import Hud from "../../components/Hud";
 import Dock from "../../components/Dock";
 import Slider from "../../components/Slider";
 import { CITIES, cityById } from "../../data/world";
-import { CONTEST_FORMATS, startContest } from "../../engine/scouting";
+import { CONTEST_FORMATS, CONTEST_RANGE, startContest } from "../../engine/scouting";
+import { generateContestName } from "../../data/eventNames";
+import { createRng } from "../../engine/rng";
 import { useGame } from "../../store/gameStore";
 import { usd, wk } from "../../lib";
 
 export default function Concours() {
   const g = useGame((s) => s.game)!;
   const { run, select, say } = useGame();
-  const cities = CITIES.filter((c) => c.minRep <= g.reputation + 10).slice(
-    0,
-    6,
-  );
+  const cities = CITIES.filter((c) => c.minRep <= g.reputation + CONTEST_RANGE).sort((a, b) => a.minRep - b.minRep);
+  const lockedCities = CITIES.filter((c) => c.minRep > g.reputation + CONTEST_RANGE).sort((a, b) => a.minRep - b.minRep);
   const [name, setName] = useState(
     "Révélation " + cityById(cities[0]?.id ?? "abidjan").name,
   );
@@ -64,9 +64,10 @@ export default function Concours() {
     : 0;
   const changeCity = (id: string) => {
     setCityId(id);
-    if (name.startsWith("Révélation "))
-      setName("Révélation " + cityById(id).name);
+    const prev = cityById(cityId).name;
+    if (!name.trim() || name.includes(prev)) setName(name.split(prev).join(cityById(id).name) || "Révélation " + cityById(id).name);
   };
+  const genName = () => setName(generateContestName(createRng((Date.now() ^ (name.length * 7919)) >>> 0), { city: city.name, format, lang: city.lang }, g.contests.map((x) => x.name)));
   return (
     <div className="scr">
       <Dock active="artistes" />
@@ -92,13 +93,15 @@ export default function Concours() {
             <label htmlFor="cn" className="lbl">
               Nom du concours
             </label>
-            <input
-              id="cn"
-              className="in"
-              style={{ marginTop: 8 }}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <input
+                id="cn"
+                className="in"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <button type="button" className="btn g sm" aria-label="Générer un nom de concours" title="Générer un nom" style={{ height: 48, flex: "none" }} onClick={genName}>🎲 Générer</button>
+            </div>
             <div className="lbl" style={{ marginTop: 16 }}>
               Pays et ville
             </div>
@@ -108,6 +111,8 @@ export default function Concours() {
                 gap: 8,
                 marginTop: 8,
                 flexWrap: "wrap",
+                maxHeight: 132,
+                overflow: "auto",
               }}
             >
               {cities.map((c) => (
@@ -118,6 +123,11 @@ export default function Concours() {
                   onClick={() => changeCity(c.id)}
                 >
                   {c.country} · {c.name}
+                </span>
+              ))}
+              {lockedCities.map((c) => (
+                <span key={c.id} className="chip" style={{ cursor: "pointer", opacity: 0.5 }} title={`Réputation ${c.minRep - CONTEST_RANGE} requise`} onClick={() => say(`${c.name} : réputation ${c.minRep - CONTEST_RANGE} requise pour y organiser un concours.`, "err")}>
+                  🔒 {c.country} · {c.name}
                 </span>
               ))}
             </div>
