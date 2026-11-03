@@ -3,6 +3,7 @@ import Avatar from '../../components/Avatar'
 import Chip from '../../components/Chip'
 import Dock from '../../components/Dock'
 import Hud from '../../components/Hud'
+import InstallButton from '../../components/InstallButton'
 import { LabelLogo } from '../../components/Logo'
 import { FOUNDER_AVATARS } from '../../data/avatars'
 import { GENRES, NATIONALITIES, cityById, palierFor } from '../../data/world'
@@ -133,6 +134,7 @@ export default function Joueur() {
             <Toggle on={options.autosave} onChange={(v) => setOption('autosave', v)} title="Sauvegarde automatique" hint="À chaque action et à chaque semaine." />
             <Toggle on={options.reduceMotion} onChange={(v) => setOption('reduceMotion', v)} title="Animations réduites" hint="Supprime transitions et mouvements." />
             <Toggle on={options.sound} onChange={(v) => setOption('sound', v)} title="Sons du jeu" hint="Bientôt disponible." />
+            <div className="row" style={{ gridTemplateColumns: '1fr auto', alignItems: 'center' }}><div><b>Application</b><div className="mut" style={{ fontSize: 12 }}>Jouer dans sa propre fenêtre, même hors ligne.</div></div><InstallButton /></div>
             <div className="row" style={{ gridTemplateColumns: '1fr auto' }}><span className="mut">Difficulté</span><span className="tag ti">{diff}</span></div>
             <div className="row" style={{ gridTemplateColumns: '1fr auto' }}><span className="mut">Siège du label</span><b>{cityById(L.hqCityId).name}</b></div>
           </div>

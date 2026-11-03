@@ -1,4 +1,5 @@
 import { useGame, guard } from '../../store/gameStore'
+import InstallButton from '../../components/InstallButton'
 import { cityById, palierFor } from '../../data/world'
 import { totalFans } from '../../engine/util'
 import { compact, usd } from '../../lib'
@@ -22,6 +23,7 @@ export default function Menu() {
         <a href="Hub.dc.html" className="btn s" onClick={guard(() => load())}>Charger une partie</a>
         <a href="Menu.dc.html" className="btn s" onClick={guard(() => { setModal('options'); return false })}>Options</a>
         <a href="Menu.dc.html" className="btn s" onClick={guard(() => { setModal('credits'); return false })}>Crédits</a>
+        <InstallButton className="btn s" style={{ border: 0 }} />
         <a href="Main.dc.html" className="btn s" onClick={() => quit()} style={{opacity: '0.8'}}>Quitter</a>
       </div>
       {g && (
