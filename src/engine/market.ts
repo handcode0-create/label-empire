@@ -44,6 +44,23 @@ function officeBoost(s: GameState, city: City) {
 /** Écoutes hebdomadaires maximales de l'ensemble du label dans une ville : le marché se sature (réputation 0 → 1,1 × la taille du marché, 100 → 2 ×). */
 export const cityCapacity = (s: GameState, city: City) => city.base * (1.1 + 0.9 * Math.min(1, s.reputation / 100))
 
+/**
+ * Percée locale : un artiste perce d'abord dans sa ville d'origine. Ailleurs, son écoute reste faible tant que
+ * la ville d'origine n'est pas conquise (fans ≥ 4 % du marché local), puis s'étend d'abord à la zone, ensuite à la langue,
+ * enfin au reste du monde ; des fans sur place (concerts, écoutes) accélèrent l'implantation.
+ */
+export const BREAKTHROUGH_HOME = 0.03
+export function reachIn(s: GameState, artistId: string, city: City): { mult: number; home: boolean; breakthrough: number } {
+  const a = s.artists.find((x) => x.id === artistId)
+  if (!a) return { mult: 1, home: true, breakthrough: 1 }
+  if (a.originCityId === city.id) return { mult: 1, home: true, breakthrough: 1 }
+  const home = cityById(a.originCityId)
+  const hb = Math.min(1, (a.fans[home.id] ?? 0) / (home.base * BREAKTHROUGH_HOME))
+  const tier = home.region === city.region ? 0.7 : home.lang === city.lang ? 0.4 : 0.22
+  const own = Math.min(1, (a.fans[city.id] ?? 0) / (city.base * 0.02))
+  return { mult: Math.min(1, 0.04 + hb * tier + own * hb * 0.4), home: false, breakthrough: hb }
+}
+
 /** E = B · Q · A · (1+M) · D(t) · (1+F) : écoutes d'un titre sur une ville, pour une semaine donnée. */
 export function weeklyStreams(s: GameState, song: Song, city0: City, week: number): number {
   const city = liveCity(s, city0)
@@ -57,9 +74,10 @@ export function weeklyStreams(s: GameState, song: Song, city0: City, week: numbe
   const promoF = Math.min(0.8, r.promo / r.cityIds.length / (city.base * 0.004)) + staffSkill(s, 'marketing') * 0.02
   const M = promoF + locBoost(song, city) + officeBoost(s, city) + mediaBoost(song, city)
   const direct = r.cityIds.includes(city.id)
+  const reach = reachIn(s, song.artistId, city).mult
   const dyn = trendMult(s, song.genre, week, city) * boostMult(s, song, city.id, week) * pressureMult(s, song, city.id, week)
   const base = city.base * 0.25 * q * q * affinity(song.genre, city) * (1 + M) * (1 + fanF) * decay * (1 + song.hype) * dyn * modsOf(s).streams * STREAM_SCALE
-  if (direct) return base
+  if (direct) return base * reach
   // diffusion : zone, langue
   let diffusion = 0
   for (const id of r.cityIds) {
@@ -67,7 +85,7 @@ export function weeklyStreams(s: GameState, song: Song, city0: City, week: numbe
     const k = src.region === city.region ? 0.08 : src.lang === city.lang ? 0.04 : 0
     if (k) diffusion += k * city.base * 0.25 * q * q * affinity(song.genre, city) * decay
   }
-  return diffusion * modsOf(s).streams * STREAM_SCALE * trendMult(s, song.genre, week, city) * pressureMult(s, song, city.id, week)
+  return diffusion * reach * modsOf(s).streams * STREAM_SCALE * trendMult(s, song.genre, week, city) * pressureMult(s, song, city.id, week)
 }
 
 export const royaltyShare = (s: GameState, song: Song) => (s.artists.find((a) => a.id === song.artistId)?.contract?.royalty ?? 0) + (song.feat?.share ?? 0)

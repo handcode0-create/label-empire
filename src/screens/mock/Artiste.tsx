@@ -4,8 +4,8 @@ import Dock from "../../components/Dock";
 import Avatar from "../../components/Avatar";
 import { LabelLogo } from "../../components/Logo";
 import { gradientFor, useOpen } from "../../components/useOpen";
-import { cityById } from "../../data/world";
-import { chartFor } from "../../engine/market";
+import { CITIES, cityById } from "../../data/world";
+import { BREAKTHROUGH_HOME, chartFor, reachIn } from "../../engine/market";
 import { projectOf, projectSongs, projectStreams } from "../../engine/projects";
 import { rivalOrigin, rivalTotalPlays } from "../../engine/rivals";
 import { rivalArtistIn } from "../../engine/rivalLife";
@@ -382,6 +382,22 @@ export default function Artiste() {
                 </div>
               </div>
             )}
+            {mine && (() => {
+              const home = cityById(mine.originCityId)
+              const pct = Math.min(100, Math.round(((mine.fans[home.id] ?? 0) / (home.base * BREAKTHROUGH_HOME)) * 100))
+              const next = [...CITIES].filter((c) => c.id !== home.id && c.minRep <= g.reputation).map((c) => ({ c, m: reachIn(g, mine.id, c).mult })).sort((a, b) => b.m - a.m).slice(0, 3)
+              return (
+                <div className="pn" data-testid="breakthrough">
+                  <div className="lbl">Percée locale · {home.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+                    <div className="meter" style={{ flex: 1, height: 8, borderRadius: 6, background: "rgba(255,255,255,.12)", overflow: "hidden" }}><div style={{ width: pct + "%", height: "100%", background: pct >= 100 ? "#3DDC97" : "linear-gradient(90deg,#FF3D9A,#FFC63D)" }} /></div>
+                    <b>{pct} %</b>
+                  </div>
+                  <div className="mut" style={{ fontSize: 13, marginTop: 8 }}>{pct >= 100 ? `${mine.stageName} a conquis ${home.name} : sa musique s'étend maintenant aux villes voisines, puis plus loin.` : `Un artiste perce d'abord dans sa ville d'origine. Tant que ${home.name} n'est pas conquise, ses écoutes ailleurs restent faibles. Sortez vos titres et faites des concerts à ${home.name}.`}</div>
+                  {pct >= 100 && next.length > 0 && <div style={{ fontSize: 13, marginTop: 8 }}>Villes les plus accessibles : {next.map((x) => `${x.c.name} (${Math.round(x.m * 100)} %)`).join(", ")}</div>}
+                </div>
+              )
+            })()}
             {mine && (mine.arcs?.length ?? 0) > 0 && (
               <div className="pn">
                 <div className="lbl">Histoire avec {mine.stageName}</div>

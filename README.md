@@ -125,3 +125,6 @@ Label Empire est une application web installable : `public/manifest.webmanifest`
 
 ## Tournées : choix de la salle et prix des billets
 Chaque étape propose les cinq types de salle (club, théâtre, salle de concert, arène, stade) avec capacité, coût, billet conseillé, remplissage et bénéfice estimés pour l'artiste. Une salle est marquée « Conseillé » (meilleur bénéfice débloqué), un « Prix optimal » maximise les recettes, et des prix rapides (−30 % à +60 %) montrent l'effet sur le remplissage. Voir `venueOptions` et `priceOptions` dans `src/engine/tour.ts`.
+
+## Percée locale
+Un artiste perce d'abord dans sa ville d'origine (ex. New York si vous y installez le label). Ailleurs ses écoutes restent très faibles (≈ 4 %) tant qu'il n'a pas conquis sa ville (fans ≥ 3 % du marché local) ; ensuite la portée s'étend à la zone (≈ 70 %), à la langue (≈ 40 %), puis au reste du monde (≈ 22 %), et plus vite là où il a déjà des fans (concerts, écoutes). Voir `reachIn` dans `src/engine/market.ts` ; la fiche artiste affiche la jauge « Percée locale ». Les certifications suivent le barème SNEP (15 M d'écoutes pour un single d'or) : avec la percée locale, le premier disque arrive plus tard.
